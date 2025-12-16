@@ -17,7 +17,7 @@
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
 
     <style>
-        body { background-color: #F3F4F6; }
+        body { background-color: #F3F4F6; font-family: 'Inter', sans-serif; }
         .glass-panel { background: white; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .resource-card { transition: all 0.2s; }
         .resource-card:active { transform: scale(0.98); }
@@ -25,6 +25,10 @@
         /* Smooth Fade for Modals */
         .modal-enter { animation: fadeIn 0.2s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        /* Hide scrollbar for category tabs */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="pb-24">
@@ -42,26 +46,25 @@
                     <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Denton Fire Department</p>
                 </div>
             </div>
-            <!-- Profile Avatar (Dynamic) -->
-            <div class="w-10 h-10 rounded-full bg-slate-600 border-2 border-[#fbbf24] overflow-hidden relative">
-                <!-- Added ID 'profile-avatar' to target this image -->
-                <img id="profile-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Loading" class="w-full h-full object-cover transition-opacity duration-300">
+            <!-- Profile Avatar (Updated) -->
+            <div class="w-10 h-10 rounded-full bg-slate-600 border-2 border-[#fbbf24] overflow-hidden relative shadow-md">
+                <img id="profile-avatar" src="https://files.constantcontact.com/3720c3fd901/4f2373af-ad95-4bb2-8c4a-77b2ab0fbc0f.jpg" class="w-full h-full object-cover">
             </div>
         </div>
 
         <!-- SEARCH BAR -->
         <div class="relative">
             <i data-lucide="search" class="absolute left-3 top-3.5 w-5 h-5 text-slate-400"></i>
-            <input type="text" id="search-input" onkeyup="filterResources()" placeholder="Search protocols, forms, guides..." class="w-full pl-10 pr-4 py-3 bg-[#0f172a] border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#fbbf24] transition">
+            <input type="text" id="search-input" onkeyup="filterResources()" placeholder="Search protocols, forms, guides..." class="w-full pl-10 pr-4 py-3 bg-[#0f172a] border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#fbbf24] transition shadow-inner">
         </div>
     </header>
 
     <!-- CATEGORY TABS -->
-    <div class="flex gap-2 p-4 overflow-x-auto no-scrollbar">
-        <button onclick="filterCategory('all')" class="px-4 py-2 bg-[#1e293b] text-white text-xs font-bold rounded-full whitespace-nowrap shadow-sm">All Assets</button>
-        <button onclick="filterCategory('public')" class="px-4 py-2 bg-white text-slate-600 text-xs font-bold rounded-full whitespace-nowrap border border-slate-200 shadow-sm">Public Info</button>
-        <button onclick="filterCategory('internal')" class="px-4 py-2 bg-white text-slate-600 text-xs font-bold rounded-full whitespace-nowrap border border-slate-200 shadow-sm">Internal Ops</button>
-        <button onclick="filterCategory('recruiting')" class="px-4 py-2 bg-white text-slate-600 text-xs font-bold rounded-full whitespace-nowrap border border-slate-200 shadow-sm">Recruiting</button>
+    <div class="flex gap-2 p-4 overflow-x-auto no-scrollbar sticky top-[136px] bg-[#F3F4F6] z-30 pb-2">
+        <button onclick="filterCategory('all', this)" class="cat-tab active px-4 py-2 bg-[#1e293b] text-white text-xs font-bold rounded-full whitespace-nowrap shadow-sm transition-colors border border-[#1e293b]">All Assets</button>
+        <button onclick="filterCategory('public', this)" class="cat-tab px-4 py-2 bg-white text-slate-600 text-xs font-bold rounded-full whitespace-nowrap border border-slate-200 shadow-sm transition-colors hover:border-[#1e293b]">Public Info</button>
+        <button onclick="filterCategory('internal', this)" class="cat-tab px-4 py-2 bg-white text-slate-600 text-xs font-bold rounded-full whitespace-nowrap border border-slate-200 shadow-sm transition-colors hover:border-[#1e293b]">Internal Ops</button>
+        <button onclick="filterCategory('legal', this)" class="cat-tab px-4 py-2 bg-white text-slate-600 text-xs font-bold rounded-full whitespace-nowrap border border-slate-200 shadow-sm transition-colors hover:border-[#1e293b]">Legal & Forms</button>
     </div>
 
     <!-- RESOURCE GRID -->
@@ -70,33 +73,70 @@
     </main>
 
     <!-- FAB (Floating Action Button) -->
-    <button onclick="openUploadModal()" class="fixed bottom-6 right-6 w-14 h-14 bg-[#fbbf24] text-[#1e293b] rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition z-50">
+    <button onclick="openUploadModal()" class="fixed bottom-6 right-6 w-14 h-14 bg-[#fbbf24] text-[#1e293b] rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition z-50 border-2 border-white">
         <i data-lucide="plus" class="w-8 h-8"></i>
     </button>
 
+    <!-- MODAL: RESOURCE DETAILS (Info Pop-up) -->
+    <div id="details-modal" class="fixed inset-0 z-[60] bg-slate-900/90 backdrop-blur-sm hidden items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-0 overflow-hidden relative modal-enter shadow-2xl">
+            <!-- Header Image Area -->
+            <div class="h-32 bg-[#1e293b] relative flex items-center justify-center">
+                <button onclick="closeModal('details-modal')" class="absolute top-4 right-4 p-2 bg-black/20 text-white rounded-full hover:bg-black/40 transition z-10">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                <div id="detail-icon-bg" class="w-20 h-20 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white text-4xl shadow-lg border border-white/20">
+                    <!-- Icon Injected Here -->
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="text-center mb-6">
+                    <h3 id="detail-title" class="text-2xl font-black text-slate-800 mb-2 leading-tight">Title</h3>
+                    <span id="detail-category" class="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wider rounded-full">Category</span>
+                </div>
+
+                <div class="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-100">
+                    <p id="detail-desc" class="text-sm text-slate-600 leading-relaxed">Description goes here...</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="detail-open-btn" class="py-3 px-4 bg-[#1e293b] text-white font-bold rounded-xl shadow-lg hover:bg-slate-800 transition flex items-center justify-center gap-2 text-sm">
+                        <i data-lucide="external-link" class="w-4 h-4"></i> Open
+                    </button>
+                    <button id="detail-qr-btn" class="py-3 px-4 bg-white text-[#1e293b] font-bold rounded-xl shadow border border-slate-200 hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm">
+                        <i data-lucide="qr-code" class="w-4 h-4"></i> QR Code
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL: QR DISPLAY -->
-    <div id="qr-modal" class="fixed inset-0 z-[60] bg-slate-900/90 backdrop-blur-sm hidden items-center justify-center p-6">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-8 text-center relative modal-enter">
+    <div id="qr-modal" class="fixed inset-0 z-[70] bg-slate-900/95 backdrop-blur-md hidden items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-8 text-center relative modal-enter shadow-2xl border-4 border-[#1e293b]">
             <button onclick="closeModal('qr-modal')" class="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition">
                 <i data-lucide="x" class="w-4 h-4 text-slate-600"></i>
             </button>
             
             <div class="mb-6">
-                <h3 id="qr-title" class="text-xl font-bold text-slate-800 mb-1">Resource Title</h3>
-                <p class="text-xs text-slate-500 uppercase tracking-widest">Scan to Access</p>
+                <div class="w-12 h-12 bg-[#fbbf24] rounded-full flex items-center justify-center mx-auto mb-4 text-[#1e293b]">
+                    <i data-lucide="scan-line" class="w-6 h-6"></i>
+                </div>
+                <h3 id="qr-title" class="text-xl font-black text-slate-800 mb-1">Resource Title</h3>
+                <p class="text-xs text-slate-500 uppercase tracking-widest font-bold">Scan to Access</p>
             </div>
 
-            <div class="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-inner inline-block mx-auto mb-6">
+            <div class="bg-white p-4 rounded-2xl border-2 border-dashed border-slate-300 shadow-sm inline-block mx-auto mb-6 relative">
+                <div class="absolute -top-3 -left-3 w-6 h-6 border-t-4 border-l-4 border-[#1e293b] rounded-tl-lg"></div>
+                <div class="absolute -top-3 -right-3 w-6 h-6 border-t-4 border-r-4 border-[#1e293b] rounded-tr-lg"></div>
+                <div class="absolute -bottom-3 -left-3 w-6 h-6 border-b-4 border-l-4 border-[#1e293b] rounded-bl-lg"></div>
+                <div class="absolute -bottom-3 -right-3 w-6 h-6 border-b-4 border-r-4 border-[#1e293b] rounded-br-lg"></div>
                 <div id="qrcode"></div>
             </div>
 
-            <div class="flex gap-2 justify-center text-[10px] text-slate-400 font-mono bg-slate-50 p-2 rounded-lg mb-6">
-                <i data-lucide="activity" class="w-3 h-3 text-teal-500"></i>
-                <span>Tracking Enabled: Location, Time, Device</span>
-            </div>
-
-            <button class="w-full py-3 bg-[#1e293b] text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2">
-                <i data-lucide="share" class="w-4 h-4"></i> Share Link Manually
+            <button onclick="closeModal('qr-modal')" class="w-full py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition text-sm">
+                Done
             </button>
         </div>
     </div>
@@ -123,11 +163,16 @@
                 </div>
 
                 <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Description</label>
+                    <textarea id="new-desc" rows="2" placeholder="Brief description..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#fbbf24]"></textarea>
+                </div>
+
+                <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Category</label>
                     <div class="grid grid-cols-3 gap-2">
                         <button onclick="selectUploadCategory('public')" class="cat-btn py-2 bg-slate-100 rounded-lg text-xs font-bold text-slate-600 border border-transparent hover:border-[#fbbf24] focus:bg-[#1e293b] focus:text-white transition">Public</button>
                         <button onclick="selectUploadCategory('internal')" class="cat-btn py-2 bg-slate-100 rounded-lg text-xs font-bold text-slate-600 border border-transparent hover:border-[#fbbf24] focus:bg-[#1e293b] focus:text-white transition">Internal</button>
-                        <button onclick="selectUploadCategory('recruiting')" class="cat-btn py-2 bg-slate-100 rounded-lg text-xs font-bold text-slate-600 border border-transparent hover:border-[#fbbf24] focus:bg-[#1e293b] focus:text-white transition">Recruiting</button>
+                        <button onclick="selectUploadCategory('legal')" class="cat-btn py-2 bg-slate-100 rounded-lg text-xs font-bold text-slate-600 border border-transparent hover:border-[#fbbf24] focus:bg-[#1e293b] focus:text-white transition">Legal/Form</button>
                     </div>
                 </div>
 
@@ -141,7 +186,7 @@
     </div>
 
     <script>
-        // --- 1. FIREBASE CONFIGURATION (Same as ID Card) ---
+        // --- 1. FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyAnlmGZNwoPS-vBnK1AlHvNsB73q0UAkCU",
             authDomain: "simpli-fi-id.firebaseapp.com",
@@ -152,78 +197,79 @@
         };
 
         const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
+        // Note: Firestore/Auth unused for basic Catalog display but kept for future expansion
 
-        // --- 2. USER PROFILE FETCHING ---
-        async function fetchUserProfile() {
-            // Get 'u' param from URL (passed from ID card)
-            const urlParams = new URLSearchParams(window.location.search);
-            const userId = urlParams.get('u');
-
-            if (!userId) {
-                console.warn("No user ID provided. Using default avatar.");
-                return;
-            }
-
-            try {
-                // Anonymous auth to read DB
-                await auth.signInAnonymously();
-                
-                // Fetch User Doc
-                const doc = await db.collection('users').doc(userId).get();
-                
-                if (doc.exists) {
-                    const userData = doc.data();
-                    
-                    // Update Profile Picture if available
-                    if (userData.avatar_url) {
-                        const avatarEl = document.getElementById('profile-avatar');
-                        avatarEl.src = userData.avatar_url;
-                    }
-                }
-            } catch (error) {
-                console.error("Error fetching profile:", error);
-            }
-        }
-
-        // --- DATA STORE (Mock Data - Fire Department Specific) ---
+        // --- 2. RESOURCE DATA ---
         let resources = [
             {
                 id: 1,
-                title: "After the Fire Guide",
-                category: "public",
-                url: "https://www.cityofdenton.com/393/Fire-Rescue", 
-                icon: "flame",
-                color: "text-orange-500",
-                bg: "bg-orange-50"
-            },
-            {
-                id: 2,
-                title: "Recruiting Waitlist Form",
-                category: "recruiting",
-                url: "https://www.cityofdenton.com/jobs",
-                icon: "users",
+                title: "Water Shutoff Survey",
+                category: "internal",
+                url: "https://dentonfire.github.io/Water-Shutoff/water_shutoff.html",
+                desc: "Log water meter or sprinkler system shutoffs. Automatically routes notifications to Fire Prevention or Water Distribution.",
+                icon: "droplet",
                 color: "text-blue-500",
                 bg: "bg-blue-50"
             },
             {
-                id: 3,
-                title: "Smoke Alarm Request",
+                id: 7,
+                title: "Water Shutoff Command",
+                category: "internal",
+                url: "https://dentonfire.github.io/Water-Shutoff/water_shutoff_command.html",
+                desc: "Admin dashboard to view active water shutoff reports on a live map. Requires secure login.",
+                icon: "map-pin",
+                color: "text-purple-500",
+                bg: "bg-purple-50"
+            },
+            {
+                id: 2,
+                title: "Knox Box Guidelines",
                 category: "public",
-                url: "https://www.cityofdenton.com/FormCenter/Fire-Department-6/Smoke-Detector-Request-47",
-                icon: "bell",
-                color: "text-red-500",
+                url: "https://dentonfire.github.io/Knox-Box/index.html", 
+                desc: "Official ordering, installation, and gate requirements for the Knox Rapid Access System in Denton.",
+                icon: "box",
+                color: "text-orange-600",
+                bg: "bg-orange-50"
+            },
+            {
+                id: 3,
+                title: "Fire Watch Protocols",
+                category: "public",
+                url: "https://dentonfire.github.io/Fire-Watch/fire_watch_guidelines.html",
+                desc: "Procedures and printable forms for establishing a fire watch when suppression systems are impaired.",
+                icon: "eye",
+                color: "text-red-600",
                 bg: "bg-red-50"
             },
             {
                 id: 4,
-                title: "Shift Calendar 2025",
-                category: "internal",
-                url: "https://internal.denton.gov/shifts",
-                icon: "calendar",
-                color: "text-slate-500",
+                title: "After the Fire Guide",
+                category: "public",
+                url: "https://dentonfire.github.io/After-the-Fire/after_the_fire.html",
+                desc: "Comprehensive recovery guide for residents: insurance steps, document replacement, and emergency housing.",
+                icon: "home",
+                color: "text-slate-600",
                 bg: "bg-slate-100"
+            },
+            {
+                id: 5,
+                title: "Adult Liability Release",
+                category: "legal",
+                url: "https://dentonfire.github.io/DFD_Adult_Liability_Release/adult_liability_release.html",
+                desc: "Digital waiver form with signature pad for adult participants in DFD programs.",
+                icon: "file-signature",
+                color: "text-yellow-600",
+                bg: "bg-yellow-50"
+            },
+            {
+                id: 6,
+                title: "Ride-Along Agreement",
+                category: "legal",
+                url: "https://dentonfire.github.io/DFD_Ride_Along_Agreement_HIPAA/ride_along_agreement.html",
+                desc: "HIPAA observer agreement and liability waiver for ride-along participants.",
+                icon: "ambulance",
+                color: "text-red-500",
+                bg: "bg-red-50"
             }
         ];
 
@@ -231,7 +277,6 @@
         window.onload = function() {
             renderResources(resources);
             lucide.createIcons();
-            fetchUserProfile(); // Trigger the Firebase fetch
         };
 
         // --- RENDER LOGIC ---
@@ -240,19 +285,20 @@
             grid.innerHTML = '';
 
             data.forEach(item => {
+                // We pass the item index or ID to openDetails to find the object
                 const card = `
-                    <div class="resource-card glass-panel rounded-2xl p-4 flex items-center justify-between cursor-pointer group hover:border-[#fbbf24]" onclick="openQR('${item.title}', '${item.url}')">
+                    <div class="resource-card glass-panel rounded-2xl p-4 flex items-center justify-between cursor-pointer group hover:border-[#fbbf24]" onclick="openDetails(${item.id})">
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-xl ${item.bg} ${item.color} flex items-center justify-center shrink-0">
-                                <i data-lucide="${item.icon}" class="w-6 h-6"></i>
+                            <div class="w-14 h-14 rounded-xl ${item.bg} ${item.color} flex items-center justify-center shrink-0 border border-black/5 shadow-sm">
+                                <i data-lucide="${item.icon}" class="w-7 h-7"></i>
                             </div>
-                            <div>
-                                <h3 class="font-bold text-slate-800 text-sm leading-tight group-hover:text-[#1e293b]">${item.title}</h3>
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${item.category}</span>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="font-bold text-slate-800 text-sm leading-tight mb-1 group-hover:text-[#1e293b] truncate">${item.title}</h3>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 px-2 py-0.5 rounded border border-slate-100">${item.category}</span>
                             </div>
                         </div>
-                        <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-[#fbbf24] group-hover:text-[#1e293b] transition">
-                            <i data-lucide="qr-code" class="w-4 h-4"></i>
+                        <div class="ml-2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100 group-hover:bg-[#fbbf24] group-hover:text-[#1e293b] group-hover:border-[#fbbf24] transition shadow-sm">
+                            <i data-lucide="chevron-right" class="w-5 h-5"></i>
                         </div>
                     </div>
                 `;
@@ -264,11 +310,23 @@
         // --- FILTER LOGIC ---
         function filterResources() {
             const query = document.getElementById('search-input').value.toLowerCase();
-            const filtered = resources.filter(item => item.title.toLowerCase().includes(query));
+            const filtered = resources.filter(item => 
+                item.title.toLowerCase().includes(query) || 
+                item.desc.toLowerCase().includes(query)
+            );
             renderResources(filtered);
         }
 
-        function filterCategory(cat) {
+        function filterCategory(cat, btn) {
+            // Update Active Tab Style
+            document.querySelectorAll('.cat-tab').forEach(el => {
+                el.classList.remove('bg-[#1e293b]', 'text-white', 'border-[#1e293b]');
+                el.classList.add('bg-white', 'text-slate-600', 'border-slate-200');
+            });
+            btn.classList.remove('bg-white', 'text-slate-600', 'border-slate-200');
+            btn.classList.add('bg-[#1e293b]', 'text-white', 'border-[#1e293b]');
+
+            // Filter Data
             if (cat === 'all') {
                 renderResources(resources);
             } else {
@@ -277,17 +335,46 @@
             }
         }
 
-        // --- QR MODAL LOGIC ---
+        // --- MODAL: DETAILS ---
+        function openDetails(id) {
+            const item = resources.find(r => r.id === id);
+            if (!item) return;
+
+            // Populate Modal
+            document.getElementById('detail-title').innerText = item.title;
+            document.getElementById('detail-category').innerText = item.category;
+            document.getElementById('detail-desc').innerText = item.desc;
+            
+            // Icon Logic
+            const iconBg = document.getElementById('detail-icon-bg');
+            iconBg.className = `w-20 h-20 rounded-full backdrop-blur-md flex items-center justify-center text-4xl shadow-lg border border-white/20 ${item.bg.replace('bg-', 'text-')}`; // Use text color for icon in modal header for contrast, or custom
+            // Simple approach: reset classes and add defaults + dynamic color text
+            iconBg.innerHTML = `<i data-lucide="${item.icon}" class="w-10 h-10 ${item.color}"></i>`;
+            
+            // Buttons
+            document.getElementById('detail-open-btn').onclick = () => window.open(item.url, '_blank');
+            document.getElementById('detail-qr-btn').onclick = () => {
+                closeModal('details-modal');
+                openQR(item.title, item.url);
+            };
+
+            // Show Modal
+            const modal = document.getElementById('details-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+        }
+
+        // --- MODAL: QR CODE ---
         function openQR(title, url) {
             document.getElementById('qr-title').innerText = title;
-            document.getElementById('qrcode').innerHTML = ""; // Clear previous
+            const container = document.getElementById('qrcode');
+            container.innerHTML = ""; // Clear previous
             
-            // In Production: This URL would be https://api.simpli-fi-os.com/track?redirect=${url}
-            // For now, we generate the direct URL
-            new QRCode(document.getElementById("qrcode"), {
+            new QRCode(container, {
                 text: url,
-                width: 150,
-                height: 150,
+                width: 180,
+                height: 180,
                 colorDark : "#1e293b",
                 colorLight : "#ffffff",
                 correctLevel : QRCode.CorrectLevel.H
@@ -308,14 +395,15 @@
         let selectedCategory = 'public';
         function selectUploadCategory(cat) {
             selectedCategory = cat;
-            // Visual feedback logic would go here (highlighting button)
+            // Visual feedback logic...
         }
 
         function saveResource() {
             const title = document.getElementById('new-title').value;
             const url = document.getElementById('new-url').value;
+            const desc = document.getElementById('new-desc').value;
             
-            if(!title || !url) return alert("Please fill in all fields");
+            if(!title || !url) return alert("Please fill in title and URL");
 
             // Add to local array (Simulation)
             resources.unshift({
@@ -323,15 +411,19 @@
                 title: title,
                 category: selectedCategory,
                 url: url,
+                desc: desc || "No description provided.",
                 icon: "link",
-                color: "text-teal-500",
-                bg: "bg-teal-50"
+                color: "text-slate-500",
+                bg: "bg-slate-100"
             });
 
             renderResources(resources);
             closeModal('upload-modal');
             
-            // In Production: Firebase Write would happen here
+            // Clear inputs
+            document.getElementById('new-title').value = "";
+            document.getElementById('new-url').value = "";
+            document.getElementById('new-desc').value = "";
         }
 
         function closeModal(id) {
