@@ -31,14 +31,16 @@
                 extend: {
                     colors: {
                         brand: {
-                            primary: '#214F4B',
-                            accent: '#E27D60',
-                            pop: '#98A6D4',
-                            canvas: '#FBF9F7',
+                            primary: '#2d2a26',     // Dark greige – main text & headings
+                            periwinkle: '#7178c8',  // Primary accent
+                            'periwinkle-light': '#d4d7ff', // Lighter accent for gradients
+                            'periwinkle-dark': '#5a60a6',  // Darker accent
+                            gold: '#DAA520',        // NEW GOLD: Goldenrod #DAA520
+                            canvas: '#fbf9f7',      // Oatmeal base (The "Light Pink" tone)
                             surface: '#F0EFEB',
                         },
                         neu: {
-                            base: '#FBF9F7',
+                            base: '#fbf9f7',
                             shadow: '#D6D3CD',
                             highlight: '#FFFFFF',
                         }
@@ -61,13 +63,13 @@
     </script>
     <style>
         body { 
-            background-color: #FBF9F7; 
+            background-color: #ffffff; 
             overscroll-behavior-y: none;
         }
         
         a, button { -webkit-tap-highlight-color: transparent; }
 
-        /* SIMPLE CARD VIEW (Default) */
+        /* SIMPLE CARD VIEW */
         #simple-view {
             opacity: 1;
             visibility: visible;
@@ -76,7 +78,7 @@
             z-index: 10;
         }
 
-        /* FULL CARD VIEW (Expanded) */
+        /* FULL CARD VIEW */
         #full-view {
             position: fixed;
             top: 0;
@@ -91,9 +93,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #FBF9F7;
-            background: radial-gradient(#214F4B 1px, transparent 1px);
-            background-size: 24px 24px;
+            background-color: transparent; 
         }
 
         body.show-full #simple-view {
@@ -113,81 +113,95 @@
             width: 56px;
             height: 56px;
             border-radius: 50%;
-            background: #FBF9F7;
-            box-shadow: 8px 8px 16px #D6D3CD, -8px -8px 16px #FFFFFF;
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 50;
-            transition: all 0.4s ease;
+            transition: all 0.2s ease;
+            opacity: 1 !important;
         }
         .toggle-btn:hover {
-            box-shadow: 4px 4px 8px #D6D3CD, -4px -4px 8px #FFFFFF;
-            transform: scale(1.1);
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
         }
         .toggle-btn:active {
-            box-shadow: inset 4px 4px 8px #D6D3CD, inset -4px -4px 8px #FFFFFF;
+            transform: scale(0.95);
         }
 
         #expand-btn { bottom: 24px; right: 24px; }
         #collapse-btn { top: 24px; right: 24px; }
 
-        /* Letterpress */
-        .text-pressed-green {
-            color: #214F4B; 
-            text-shadow: 1px 1px 1px rgba(255,255,255,0.8), -1px -1px 0px rgba(33, 79, 75, 0.05);
+        /* Custom Gradient for the bands */
+        .bg-gradient-brand {
+            background: linear-gradient(135deg, #5a60a6 0%, #7178c8 50%, #d4d7ff 100%);
         }
     </style>
 </head>
-<body class="fixed inset-0 bg-brand-canvas bg-[radial-gradient(#214F4B_1px,transparent_1px)] [background-size:24px_24px]">
+<body class="fixed inset-0 bg-white">
+    <!-- Brighter white background with smaller, darker dots -->
+    <div class="absolute inset-0 bg-white bg-[radial-gradient(#cbd5e1_1.5px,transparent_1.5px)] [background-size:24px_24px]"></div>
 
-    <!-- SIMPLE CARD VIEW (Neumorphic Business Card) -->
-    <div id="simple-view" class="p-8 h-full flex items-center justify-center">
+    <!-- SIMPLE CARD VIEW -->
+    <div id="simple-view" class="p-8 h-full flex items-center justify-center relative z-10">
         <div class="relative w-full max-w-4xl aspect-[1.75/1] bg-neu-base bg-paper-noise rounded-[2.5rem] shadow-neu-float flex items-center justify-between border border-stone-300/50 overflow-hidden">
+            <!-- Left Side (Info) -->
             <div class="flex flex-col justify-between h-full w-2/3 p-12">
                 <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 rounded-2xl bg-neu-base shadow-neu-flat flex items-center justify-center text-brand-primary border border-white/20">
+                    <!-- Logo: Periwinkle -->
+                    <div class="w-16 h-16 rounded-2xl bg-neu-base shadow-neu-flat flex items-center justify-center text-brand-periwinkle border border-white/20">
                         <span class="text-3xl font-serif italic font-bold">S</span>
                     </div>
                     <div>
-                        <h2 class="text-2xl font-bold tracking-tight text-brand-primary/80">Simpli-FI <span class="text-brand-primary">Life</span></h2>
-                        <p class="text-xs text-brand-accent font-bold uppercase tracking-widest">Digital Identity</p>
+                        <!-- Title: Periwinkle -->
+                        <h2 class="text-2xl font-bold tracking-tight text-brand-periwinkle">Simpli-FI <span class="text-brand-periwinkle">Life</span></h2>
+                        <!-- Subtitle: Gold -->
+                        <p class="text-xs text-brand-gold font-bold uppercase tracking-widest">Systems for Home & Business</p>
                     </div>
                 </div>
 
                 <div>
-                    <h1 class="text-5xl lg:text-6xl font-black mb-2 text-pressed-green font-serif">Lindsey Lott</h1>
-                    <p class="text-brand-accent font-extrabold text-sm lg:text-base tracking-[0.25em] uppercase pl-1">Founder & Lead Organizer</p>
+                    <!-- Name: Periwinkle -->
+                    <h1 class="text-5xl lg:text-6xl font-black mb-2 text-brand-periwinkle font-serif">Lindsey Lott</h1>
+                    <!-- Role: Gold -->
+                    <p class="text-brand-gold font-extrabold text-sm lg:text-base tracking-[0.25em] uppercase pl-1">Founder & Lead Organizer</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-6 w-full">
-                    <div class="px-6 py-4 rounded-xl bg-neu-base shadow-neu-pressed flex items-center gap-3 border border-transparent hover:border-white/50 transition-colors">
-                        <i data-lucide="phone" class="w-5 h-5 text-brand-primary"></i>
-                        <span class="text-sm font-bold text-gray-600">(214) 769-3343</span>
-                    </div>
-                    <div class="px-6 py-4 rounded-xl bg-neu-base shadow-neu-pressed flex items-center gap-3 border border-transparent hover:border-white/50 transition-colors">
-                        <i data-lucide="globe" class="w-5 h-5 text-brand-primary"></i>
-                        <span class="text-sm font-bold text-gray-600">simpli-fi-life.com</span>
-                    </div>
+                    <!-- Phone: Icon Gold, Text Periwinkle -->
+                    <a href="tel:+12147693343" class="px-6 py-4 rounded-xl bg-neu-base shadow-neu-pressed flex items-center gap-3 border border-transparent hover:border-white/50 transition-colors cursor-pointer group">
+                        <i data-lucide="phone" class="w-5 h-5 text-brand-gold group-hover:scale-110 transition-transform"></i>
+                        <span class="text-sm font-bold text-brand-periwinkle">(214) 769-3343</span>
+                    </a>
+                    <!-- Web: Icon Gold, Text Periwinkle -->
+                    <a href="https://new.simpli-fi-life.com" target="_blank" class="px-6 py-4 rounded-xl bg-neu-base shadow-neu-pressed flex items-center gap-3 border border-transparent hover:border-white/50 transition-colors cursor-pointer group">
+                        <i data-lucide="globe" class="w-5 h-5 text-brand-gold group-hover:scale-110 transition-transform"></i>
+                        <span class="text-sm font-bold text-brand-periwinkle">simpli-fi-life.com</span>
+                    </a>
                 </div>
             </div>
 
-            <div class="w-1/3 h-full bg-brand-primary relative flex flex-col items-center justify-center pl-8">
+            <!-- Right Side (Color Band) -->
+            <div class="w-1/3 h-full bg-gradient-brand relative flex flex-col items-center justify-center pl-8">
                 <div class="absolute inset-0 bg-paper-noise opacity-30 mix-blend-overlay pointer-events-none"></div>
-                <div class="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px] opacity-10"></div>
+                <div class="absolute inset-0 bg-[radial-gradient(#ffffff_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-20"></div>
 
                 <div class="relative mb-8 group cursor-pointer z-20" onclick="toggleQR()">
-                    <div class="w-56 h-56 rounded-full p-3 bg-brand-primary/50 backdrop-blur-sm border border-white/10 flex items-center justify-center transition-all duration-300 group-hover:scale-105 shadow-2xl">
+                    <div class="w-56 h-56 rounded-full p-3 bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center transition-all duration-300 group-hover:scale-105 shadow-2xl">
                         <div class="w-full h-full rounded-full overflow-hidden relative border-4 border-brand-canvas">
-                            <img src="https://raw.githubusercontent.com/simpli-fi-os/assets/abc740cc26a619c8153bbfeafbcb85c23879fcdf/lindsey-lott.jpg" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Lindsey&backgroundColor=E27D60'" alt="Lindsey Lott" class="w-full h-full object-cover">
+                            <img src="https://raw.githubusercontent.com/simpli-fi-os/assets/abc740cc26a619c8153bbfeafbcb85c23879fcdf/lindsey-lott.jpg" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Lindsey&backgroundColor=7178c8'" alt="Lindsey Lott" class="w-full h-full object-cover">
                         </div>
                     </div>
-                    <div class="absolute bottom-4 right-4 w-12 h-12 rounded-full bg-brand-accent shadow-lg flex items-center justify-center text-white border-2 border-brand-primary">
+                    <!-- Checkmark: Gold -->
+                    <div class="absolute bottom-4 right-4 w-12 h-12 rounded-full bg-brand-gold shadow-lg flex items-center justify-center text-white border-2 border-white">
                         <i data-lucide="check" class="w-6 h-6 stroke-[4]"></i>
                     </div>
                 </div>
 
-                <button onclick="downloadVCard()" class="w-4/5 py-4 rounded-xl bg-brand-primary/80 backdrop-blur-md shadow-lg text-white font-extrabold text-sm uppercase tracking-wider hover:bg-brand-primary hover:text-brand-pop transition-all flex items-center justify-center gap-2 group z-20 border border-white/20">
+                <!-- Save Button: Darker bg (black/20), White Text -->
+                <button onclick="downloadVCard()" class="w-4/5 py-4 rounded-xl bg-black/20 backdrop-blur-md shadow-lg text-white font-extrabold text-sm uppercase tracking-wider hover:bg-white hover:text-brand-periwinkle transition-all flex items-center justify-center gap-2 group z-20 border border-white/40">
                     <span>Save Contact</span>
                     <i data-lucide="arrow-down-to-line" class="w-4 h-4 group-hover:translate-y-0.5 transition-transform"></i>
                 </button>
@@ -195,80 +209,91 @@
         </div>
     </div>
 
-    <!-- FULL CARD VIEW (Detailed / Long Form) -->
-    <div id="full-view">
-        <div id="scroll-container" class="w-full flex justify-center p-4 h-full overflow-y-auto">
+    <!-- FULL CARD VIEW -->
+    <div id="full-view" class="relative z-20">
+        <!-- Background for full view matching body -->
+        <div class="absolute inset-0 bg-white bg-[radial-gradient(#cbd5e1_1.5px,transparent_1.5px)] [background-size:24px_24px]"></div>
+
+        <div id="scroll-container" class="w-full flex justify-center p-4 h-full overflow-y-auto relative z-10">
             <main id="main-card" class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-brand-surface relative flex flex-col my-auto">
-                <!-- Top Banner -->
-                <div class="h-32 bg-brand-primary relative overflow-hidden shrink-0">
+                <!-- Top Banner with Gradient -->
+                <div class="h-32 bg-gradient-brand relative overflow-hidden shrink-0">
                     <div class="absolute top-4 left-4 z-10 flex items-center gap-2">
-                        <div class="w-8 h-8 bg-brand-primary text-brand-accent flex items-center justify-center font-serif text-xl italic rounded-br-lg rounded-tl-lg border border-brand-pop shadow-lg">S</div>
-                        <span class="font-serif text-white font-bold tracking-tight text-sm opacity-90">Simpli-FI <span class="font-light text-brand-pop">Life</span></span>
+                        <!-- Updated Logo border to Gold -->
+                        <div class="w-8 h-8 bg-white/20 text-white flex items-center justify-center font-serif text-xl italic rounded-br-lg rounded-tl-lg border-2 border-brand-gold shadow-lg backdrop-blur-md">S</div>
+                        <span class="font-serif text-white font-bold tracking-tight text-sm opacity-90">Simpli-FI <span class="font-light text-white">Life</span></span>
                     </div>
-                    <button onclick="toggleQR()" aria-label="Show QR Code" class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white transition-all border border-white/10 shadow-lg group">
+                    <button onclick="toggleQR()" aria-label="Show QR Code" class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm flex items-center justify-center text-white transition-all border border-white/30 shadow-lg group">
                         <i data-lucide="qr-code" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
                     </button>
-                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#98A6D4_1px,transparent_1px)] [background-size:14px_14px]"></div>
-                    <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-brand-accent rounded-full opacity-30 blur-3xl"></div>
-                    <div class="absolute top-0 right-10 w-24 h-24 bg-brand-pop rounded-full opacity-20 blur-2xl"></div>
+                    
+                    <div class="absolute inset-0 bg-[radial-gradient(#ffffff_1.5px,transparent_1.5px)] [background-size:16px_16px] opacity-20"></div>
+                    <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-brand-periwinkle-light rounded-full opacity-40 blur-3xl mix-blend-overlay"></div>
+                    <div class="absolute top-0 right-10 w-24 h-24 bg-white rounded-full opacity-30 blur-2xl"></div>
                 </div>
 
                 <!-- Profile -->
                 <div class="relative px-8 -mt-16 mb-6 text-center shrink-0">
                     <div class="inline-block relative">
                         <div class="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-brand-surface mx-auto relative z-10">
-                            <img id="profile-photo" src="https://raw.githubusercontent.com/simpli-fi-os/assets/abc740cc26a619c8153bbfeafbcb85c23879fcdf/lindsey-lott.jpg" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Lindsey&backgroundColor=E27D60'" alt="Lindsey Lott" class="w-full h-full object-cover object-center">
+                            <img id="profile-photo" src="https://raw.githubusercontent.com/simpli-fi-os/assets/abc740cc26a619c8153bbfeafbcb85c23879fcdf/lindsey-lott.jpg" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Lindsey&backgroundColor=7178c8'" alt="Lindsey Lott" class="w-full h-full object-cover object-center">
                         </div>
-                        <div class="absolute bottom-1 right-1 z-20 bg-brand-accent text-white rounded-full p-1.5 border-2 border-white shadow-sm">
+                        <!-- Checkmark: Gold -->
+                        <div class="absolute bottom-1 right-1 z-20 bg-brand-gold text-white rounded-full p-1.5 border-2 border-white shadow-sm">
                             <i data-lucide="check" class="w-3 h-3 stroke-[4]"></i>
                         </div>
                     </div>
                     <div class="mt-4">
-                        <h1 class="font-serif text-3xl font-bold text-brand-primary">Lindsey Lott</h1>
-                        <p class="text-brand-accent font-bold text-xs tracking-widest uppercase mt-1">Founder & Lead Organizer</p>
-                        <p class="text-slate-400 text-xs mt-1">Simpli-FI Life</p>
+                        <!-- Name: Periwinkle -->
+                        <h1 class="font-serif text-3xl font-bold text-brand-periwinkle">Lindsey Lott</h1>
+                        <!-- Role: Gold -->
+                        <p class="text-brand-gold font-bold text-xs tracking-widest uppercase mt-1">Founder & Lead Organizer</p>
+                        <!-- Subtitle: Updated to Periwinkle for Hierarchy -->
+                        <p class="text-brand-periwinkle text-xs mt-1">Systems for Home & Business</p>
                     </div>
                 </div>
 
                 <!-- Action Buttons -->
                 <div class="grid grid-cols-4 gap-2 px-6 mb-6 shrink-0">
+                    <!-- Icon: Gold, Text: Periwinkle (Darker for legibility) -->
                     <a href="tel:+12147693343" class="flex flex-col items-center gap-1 group">
-                        <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-slate-600 group-hover:bg-brand-primary group-hover:text-white transition shadow-sm border border-brand-surface">
-                            <i data-lucide="phone" class="w-5 h-5"></i>
+                        <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-brand-primary group-hover:bg-brand-gold group-hover:text-white transition shadow-sm border border-brand-surface">
+                            <i data-lucide="phone" class="w-5 h-5 text-brand-gold group-hover:text-white"></i>
                         </div>
-                        <span class="text-[10px] text-slate-500 font-medium">Call</span>
+                        <span class="text-[10px] text-brand-periwinkle font-medium">Call</span>
                     </a>
                     <a href="mailto:Lindsey@simpli-fi-life.com" class="flex flex-col items-center gap-1 group">
-                        <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-slate-600 group-hover:bg-brand-primary group-hover:text-white transition shadow-sm border border-brand-surface">
-                            <i data-lucide="mail" class="w-5 h-5"></i>
+                        <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-brand-primary group-hover:bg-brand-gold group-hover:text-white transition shadow-sm border border-brand-surface">
+                            <i data-lucide="mail" class="w-5 h-5 text-brand-gold group-hover:text-white"></i>
                         </div>
-                        <span class="text-[10px] text-slate-500 font-medium">Email</span>
+                        <span class="text-[10px] text-brand-periwinkle font-medium">Email</span>
                     </a>
                     <a href="https://new.simpli-fi-life.com" target="_blank" class="flex flex-col items-center gap-1 group">
-                        <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-slate-600 group-hover:bg-brand-primary group-hover:text-white transition shadow-sm border border-brand-surface">
-                            <i data-lucide="globe" class="w-5 h-5"></i>
+                        <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-brand-primary group-hover:bg-brand-gold group-hover:text-white transition shadow-sm border border-brand-surface">
+                            <i data-lucide="globe" class="w-5 h-5 text-brand-gold group-hover:text-white"></i>
                         </div>
-                        <span class="text-[10px] text-slate-500 font-medium">Site</span>
+                        <span class="text-[10px] text-brand-periwinkle font-medium">Site</span>
                     </a>
                     <button id="save-btn" onclick="downloadVCard()" class="flex flex-col items-center gap-1 group">
-                        <div class="w-12 h-12 rounded-2xl bg-brand-accent/10 flex items-center justify-center text-brand-accent group-hover:bg-brand-accent group-hover:text-white transition shadow-sm border border-brand-accent/20">
-                            <i id="save-icon" data-lucide="contact" class="w-5 h-5"></i>
+                        <div class="w-12 h-12 rounded-2xl bg-brand-periwinkle/10 flex items-center justify-center text-brand-periwinkle group-hover:bg-brand-gold group-hover:text-white transition shadow-sm border border-brand-periwinkle/20">
+                            <i id="save-icon" data-lucide="contact" class="w-5 h-5 text-brand-gold group-hover:text-white"></i>
                             <i id="loading-icon" data-lucide="loader-2" class="w-5 h-5 animate-spin hidden"></i>
                         </div>
-                        <span id="save-text" class="text-[10px] text-brand-accent font-bold">Save</span>
+                        <span id="save-text" class="text-[10px] text-brand-periwinkle font-bold">Save</span>
                     </button>
                 </div>
 
                 <!-- Current Mission -->
                 <div class="px-6 mb-6 shrink-0">
-                    <div class="relative bg-gradient-to-r from-brand-accent/10 to-transparent p-4 rounded-xl border-l-4 border-brand-accent overflow-hidden">
+                    <div class="relative bg-gradient-to-r from-brand-periwinkle/10 to-transparent p-4 rounded-xl border-l-4 border-brand-periwinkle overflow-hidden">
                         <div class="absolute right-0 top-0 opacity-5 transform translate-x-1/4 -translate-y-1/4">
-                            <i data-lucide="target" class="w-24 h-24 text-brand-accent"></i>
+                            <i data-lucide="target" class="w-24 h-24 text-brand-periwinkle"></i>
                         </div>
                         <div class="relative z-10">
                             <div class="flex items-center gap-2 mb-1">
-                                <i data-lucide="target" class="w-3 h-3 text-brand-accent"></i>
-                                <h3 class="text-[10px] font-bold text-brand-accent uppercase tracking-widest">Current Mission</h3>
+                                <!-- Target Icon: Gold -->
+                                <i data-lucide="target" class="w-3 h-3 text-brand-gold"></i>
+                                <h3 class="text-[10px] font-bold text-brand-periwinkle uppercase tracking-widest">Current Mission</h3>
                             </div>
                             <p class="text-brand-primary text-sm font-medium italic leading-relaxed">
                                 "Connecting 20 new business owners and program managers in the next 60 days to help them organize their physical spaces and inventory."
@@ -279,45 +304,46 @@
 
                 <!-- Bio -->
                 <div class="px-8 mb-6 shrink-0">
-                    <h3 class="text-xs font-bold text-brand-pop uppercase tracking-wider mb-2">About</h3>
-                    <p class="text-slate-600 text-sm leading-relaxed font-light">
-                        My appreciation for organization & systems began as a Pediatric Nurse in the ER, where structure is essential. However, those skills were truly put to the test—and refined—as I transitioned to raising and homeschooling our four children. Today, I apply that unique blend of clinical precision and practical space management to help families and businesses eliminate chaos. I am also happily married to <a href="https://www.simpli-fi-alpha.com" target="_blank" class="text-brand-primary font-medium underline decoration-brand-accent/50 hover:decoration-brand-accent">Hunter Lott</a>.
+                    <h3 class="text-xs font-bold text-brand-periwinkle uppercase tracking-wider mb-2">About</h3>
+                    <p class="text-brand-primary text-sm leading-relaxed font-light">
+                        My appreciation for organization & systems began as a Pediatric Nurse in the ER, where structure is essential. However, those skills were truly put to the test—and refined—as I transitioned to raising and homeschooling our four children. Today, I apply that unique blend of clinical precision and practical space management to help families and businesses eliminate chaos. I am also happily married to <a href="https://www.simpli-fi-alpha.com" target="_blank" class="text-brand-periwinkle font-medium underline decoration-brand-periwinkle/50 hover:decoration-brand-periwinkle">Hunter Lott</a>.
                     </p>
                 </div>
 
                 <!-- Contact Details -->
                 <div class="px-6 mb-8 space-y-3 shrink-0">
                     <a href="tel:+12147693343" class="flex items-center p-3 rounded-xl bg-brand-canvas hover:bg-brand-surface transition group">
-                        <i data-lucide="smartphone" class="w-5 h-5 text-brand-accent group-hover:text-brand-primary"></i>
+                        <i data-lucide="smartphone" class="w-5 h-5 text-brand-gold group-hover:text-brand-periwinkle"></i>
                         <div class="ml-4">
-                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Mobile</p>
-                            <p class="text-sm font-medium text-slate-900">(214) 769-3343</p>
+                            <p class="text-[10px] text-brand-primary uppercase tracking-wide">Mobile</p>
+                            <p class="text-sm font-medium text-brand-primary">(214) 769-3343</p>
                         </div>
                     </a>
                     <a href="mailto:Lindsey@simpli-fi-life.com" class="flex items-center p-3 rounded-xl bg-brand-canvas hover:bg-brand-surface transition group">
-                        <i data-lucide="at-sign" class="w-5 h-5 text-brand-accent group-hover:text-brand-primary"></i>
+                        <i data-lucide="at-sign" class="w-5 h-5 text-brand-gold group-hover:text-brand-periwinkle"></i>
                         <div class="ml-4">
-                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Email</p>
-                            <p class="text-sm font-medium text-slate-900">Lindsey@simpli-fi-life.com</p>
+                            <p class="text-[10px] text-brand-primary uppercase tracking-wide">Email</p>
+                            <p class="text-sm font-medium text-brand-primary">Lindsey@simpli-fi-life.com</p>
                         </div>
                     </a>
                 </div>
 
                 <!-- Social Links -->
                 <div class="bg-brand-surface/50 p-6 flex justify-center gap-6 border-t border-brand-surface mt-auto">
-                    <a href="https://www.instagram.com/simpli_fi_life/" target="_blank" aria-label="Instagram" class="text-slate-400 hover:text-brand-accent transition transform hover:scale-110"><i data-lucide="instagram" class="w-5 h-5"></i></a>
-                    <a href="https://www.facebook.com/Simpli.FI.Intention" target="_blank" aria-label="Facebook" class="text-slate-400 hover:text-brand-accent transition transform hover:scale-110"><i data-lucide="facebook" class="w-5 h-5"></i></a>
-                    <a href="https://www.youtube.com/@Simpli-FILife" target="_blank" aria-label="YouTube" class="text-slate-400 hover:text-brand-accent transition transform hover:scale-110"><i data-lucide="youtube" class="w-5 h-5"></i></a>
-                    <a href="https://www.linkedin.com/in/lindsey-breanne-lott/" target="_blank" aria-label="LinkedIn" class="text-slate-400 hover:text-brand-accent transition transform hover:scale-110"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                    <!-- Icons on hover: Gold -->
+                    <a href="https://www.instagram.com/simpli_fi_life/" target="_blank" aria-label="Instagram" class="text-brand-primary hover:text-brand-gold transition transform hover:scale-110"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+                    <a href="https://www.facebook.com/Simpli.FI.Intention" target="_blank" aria-label="Facebook" class="text-brand-primary hover:text-brand-gold transition transform hover:scale-110"><i data-lucide="facebook" class="w-5 h-5"></i></a>
+                    <a href="https://www.youtube.com/@Simpli-FILife" target="_blank" aria-label="YouTube" class="text-brand-primary hover:text-brand-gold transition transform hover:scale-110"><i data-lucide="youtube" class="w-5 h-5"></i></a>
+                    <a href="https://www.linkedin.com/in/lindsey-breanne-lott/" target="_blank" aria-label="LinkedIn" class="text-brand-primary hover:text-brand-gold transition transform hover:scale-110"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
                 </div>
 
                 <!-- Powered By Footer -->
-                <a href="https://card.simpli-fi-os.com" target="_blank" class="block bg-brand-primary py-3 text-center relative group cursor-pointer overflow-hidden decoration-0">
-                    <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition"></div>
-                    <div class="inline-flex items-center text-[10px] font-bold tracking-[0.2em] text-white/40 uppercase">
+                <a href="https://card.simpli-fi-os.com" target="_blank" class="block bg-gradient-brand py-3 text-center relative group cursor-pointer overflow-hidden decoration-0">
+                    <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition"></div>
+                    <div class="inline-flex items-center text-[10px] font-bold tracking-[0.2em] text-white/80 uppercase">
                         <span class="mr-2">Powered by</span>
                         <span class="transition-all duration-300 group-hover:scale-110 group-hover:text-white flex items-center gap-1">
-                            Simpli-FI <span class="text-brand-pop group-hover:text-brand-accent transition-colors duration-300">OS</span>
+                            Simpli-FI <span class="text-white group-hover:text-white transition-colors duration-300">OS</span>
                         </span>
                     </div>
                 </a>
@@ -327,30 +353,30 @@
 
     <!-- Expand (+) Button -->
     <button id="expand-btn" onclick="expandCard()" aria-label="Expand to full view" class="toggle-btn">
-        <i data-lucide="plus" class="w-8 h-8 text-brand-primary"></i>
+        <i data-lucide="plus" class="w-8 h-8 text-brand-periwinkle"></i>
     </button>
 
     <!-- Collapse (-) Button -->
     <button id="collapse-btn" onclick="collapseCard()" aria-label="Return to simple view" class="toggle-btn">
-        <i data-lucide="minus" class="w-8 h-8 text-brand-primary"></i>
+        <i data-lucide="minus" class="w-8 h-8 text-brand-periwinkle"></i>
     </button>
 
     <!-- QR Modal -->
-    <div id="qrModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-primary/80 backdrop-blur-sm" onclick="toggleQR()">
+    <div id="qrModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-periwinkle/80 backdrop-blur-sm" onclick="toggleQR()">
         <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center relative scale-95" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-4">
-                <span class="text-brand-primary font-serif font-bold italic">Simpli-FI Life</span>
-                <button onclick="toggleQR()" class="text-slate-400 hover:text-brand-accent">
+                <span class="text-brand-periwinkle font-serif font-bold italic">Simpli-FI Life</span>
+                <button onclick="toggleQR()" class="text-brand-primary hover:text-brand-periwinkle">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
             <div class="bg-brand-canvas p-4 rounded-xl border border-brand-surface mb-4 shadow-inner">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://card.simpli-fi-life.com&color=214F4B" alt="Scan QR Code" class="w-full h-auto rounded-lg mix-blend-multiply">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://card.simpli-fi-life.com&color=7178C8" alt="Scan QR Code" class="w-full h-auto rounded-lg mix-blend-multiply">
             </div>
-            <p class="text-slate-500 text-xs uppercase tracking-widest font-medium mb-4">Scan to Connect</p>
-            <div class="border-t border-dashed border-slate-200 pt-4 mt-2">
-                <p class="text-[10px] text-brand-primary/60 italic mb-2">"Don't forget to document the connection!"</p>
-                <label class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-accent/10 rounded-full text-brand-accent text-xs font-bold cursor-pointer hover:bg-brand-accent hover:text-white transition group w-full justify-center">
+            <p class="text-brand-primary text-xs uppercase tracking-widest font-medium mb-4">Scan to Connect</p>
+            <div class="border-t border-dashed border-stone-200 pt-4 mt-2">
+                <p class="text-[10px] text-brand-periwinkle/60 italic mb-2">"Don't forget to document the connection!"</p>
+                <label class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-periwinkle/10 rounded-full text-brand-periwinkle text-xs font-bold cursor-pointer hover:bg-brand-periwinkle hover:text-white transition group w-full justify-center">
                     <i data-lucide="camera" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
                     <span id="camera-text">Take a Selfie</span>
                     <input type="file" accept="image/*" capture="environment" class="hidden" onchange="handlePhotoCapture(this)">
