@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI Ops Center | God Mode</title>
+    
+    <!-- Core Deps -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Map Deps (Leaflet) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Firebase SDKs (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+
+    <style>
+        body { background-color: #0f172a; color: white; }
+        .glass-panel { 
+            background: rgba(30, 41, 59, 0.5); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+        }
+        .stat-card { transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); }
+        
+        /* Map Styles */
+        #global-map { height: 400px; width: 100%; border-radius: 1rem; z-index: 1; }
+        .leaflet-container { background: #1e293b; }
+        
+        /* Range Slider */
+        input[type=range] {
+            -webkit-appearance: none; width: 100%; background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
+            background: #fbbf24; margin-top: -6px; cursor: pointer; box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-6 font-sans flex flex-col">
+
+    <!-- HEADER -->
+    <header class="flex justify-between items-center mb-8 max-w-7xl mx-auto w-full">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20 animate-pulse">
+                <i data-lucide="globe-2"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-xl tracking-tight text-white">Simpli-FI <span class="text-indigo-400">Ops Center</span></h1>
+                <p class="text-xs text-slate-400">Global Network Monitoring</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div id="connection-status" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-400 text-xs font-bold transition-all">
+                <span class="w-2 h-2 rounded-full bg-slate-500"></span>
+                Connecting...
+            </div>
+            <button onclick="fetchData()" id="refresh-btn" class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition text-slate-400 hover:text-white flex items-center justify-center w-9 h-9">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- KPI ROW (Financials & Growth) -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-7xl mx-auto w-full mb-8">
+        
+        <!-- Total IDs (Purchase Volume) -->
+        <div class="glass-panel p-6 rounded-2xl stat-card relative overflow-hidden group">
+            <div class="absolute -right-6 -top-6 bg-blue-500/10 w-24 h-24 rounded-full group-hover:bg-blue-500/20 transition-colors"></div>
+            <div class="flex justify-between items-start mb-4 relative z-10">
+                <div class="p-2 bg-blue-500/20 rounded-lg text-blue-400"><i data-lucide="credit-card" class="w-5 h-5"></i></div>
+                <span class="text-xs text-slate-400 font-mono">TOTAL SOLD</span>
+            </div>
+            <h3 class="text-3xl font-bold text-white mb-1 relative z-10" id="stat-total">-</h3>
+            <p class="text-xs text-slate-400 relative z-10">IDs Deployed</p>
+        </div>
+
+        <!-- Virality Coefficient (K-Factor) -->
+        <div class="glass-panel p-6 rounded-2xl stat-card relative overflow-hidden group border-t-4 border-purple-500">
+            <div class="absolute -right-6 -top-6 bg-purple-500/10 w-24 h-24 rounded-full"></div>
+            <div class="flex justify-between items-start mb-4 relative z-10">
+                <div class="p-2 bg-purple-500/20 rounded-lg text-purple-400"><i data-lucide="share-2" class="w-5 h-5"></i></div>
+                <span class="text-xs text-purple-400 font-mono font-bold">VIRALITY (K)</span>
+            </div>
+            <h3 class="text-3xl font-bold text-white mb-1 relative z-10" id="stat-k-factor">1.0</h3>
+            <p class="text-xs text-slate-400 relative z-10">Shares per User</p>
+        </div>
+
+        <!-- Est. Lifetime Value (Aggregate) -->
+        <div class="glass-panel p-6 rounded-2xl stat-card border-t-4 border-emerald-500 relative overflow-hidden">
+            <div class="absolute -right-6 -top-6 bg-emerald-500/10 w-24 h-24 rounded-full"></div>
+            <div class="flex justify-between items-start mb-4 relative z-10">
+                <div class="p-2 bg-emerald-500/20 rounded-lg text-emerald-400"><i data-lucide="dollar-sign" class="w-5 h-5"></i></div>
+                <span class="text-xs text-emerald-400 font-mono font-bold">TOTAL REVENUE</span>
+            </div>
+            <h3 class="text-3xl font-bold text-white mb-1 relative z-10" id="stat-pro-rev">$0</h3>
+            <p class="text-xs text-slate-400 relative z-10">Lifetime Income</p>
+        </div>
+
+        <!-- Projected MRR -->
+        <div class="glass-panel p-6 rounded-2xl stat-card border-t-4 border-amber-500 relative overflow-hidden">
+            <div class="absolute -right-6 -top-6 bg-amber-500/10 w-24 h-24 rounded-full"></div>
+            <div class="flex justify-between items-start mb-4 relative z-10">
+                <div class="p-2 bg-amber-500/20 rounded-lg text-amber-400"><i data-lucide="zap" class="w-5 h-5"></i></div>
+                <span class="text-xs text-amber-400 font-mono font-bold">MRR</span>
+            </div>
+            <h3 class="text-3xl font-bold text-white mb-1 relative z-10" id="stat-mrr">$0</h3>
+            <p class="text-xs text-slate-400 relative z-10">Recurring Projection</p>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto w-full flex-grow">
+        
+        <!-- MAP VIEW (Dominant Feature) -->
+        <div class="lg:col-span-2 glass-panel rounded-2xl p-6 flex flex-col relative overflow-hidden">
+            <div class="flex justify-between items-center mb-4 relative z-10">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i data-lucide="map" class="w-5 h-5 text-slate-400"></i> Live Deployment Map
+                </h3>
+                <div class="flex gap-2 text-xs">
+                    <span class="flex items-center gap-1 text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Sale</span>
+                    <span class="flex items-center gap-1 text-amber-400"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Scan</span>
+                </div>
+            </div>
+            
+            <!-- Map Container -->
+            <div id="global-map" class="bg-slate-900 border border-slate-700 mb-4"></div>
+            
+            <!-- Timeline Controls -->
+            <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 relative z-10">
+                <div class="flex justify-between text-[10px] text-slate-400 uppercase font-bold mb-2">
+                    <span>Launch Day</span>
+                    <span id="timeline-date">Today</span>
+                </div>
+                <input type="range" id="timeline-slider" min="0" max="100" value="100" oninput="updateMapTime(this.value)">
+                <div class="flex justify-center mt-2">
+                    <button onclick="playTimeline()" class="flex items-center gap-1 text-xs text-white hover:text-indigo-400 transition">
+                        <i data-lucide="play-circle" class="w-4 h-4"></i> Replay Growth
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDE: Mix & Diagnostics -->
+        <div class="space-y-6 flex flex-col">
+            
+            <!-- Product Mix -->
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-sm font-bold text-white mb-4 uppercase tracking-widest text-slate-400 flex items-center justify-between">
+                    Tier Distribution
+                    <i data-lucide="pie-chart" class="w-4 h-4 text-slate-500"></i>
+                </h3>
+                <div class="relative h-40 w-full flex items-center justify-center">
+                    <canvas id="tierChart"></canvas>
+                </div>
+            </div>
+
+            <!-- System Diagnostics -->
+            <div class="glass-panel rounded-2xl p-6 flex-grow">
+                <h3 class="text-sm font-bold text-white mb-4 uppercase tracking-widest text-slate-400">Infrastructure</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-3 bg-slate-800/50 rounded-xl border border-slate-700">
+                        <span class="text-xs text-slate-300">DB Latency</span>
+                        <span class="text-xs font-bold text-emerald-400" id="latency-val">-- ms</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-slate-800/50 rounded-xl border border-slate-700">
+                        <span class="text-xs text-slate-300">Redirect Engine</span>
+                        <span class="text-xs font-bold text-emerald-400 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span> ONLINE
+                        </span>
+                    </div>
+                    <div class="mt-4 p-3 border border-dashed border-slate-600 rounded-xl text-center">
+                        <span class="text-[10px] text-slate-500 uppercase block mb-2">Deep Links</span>
+                        <div class="flex justify-center gap-3">
+                            <a href="https://console.firebase.google.com/" target="_blank" class="p-2 bg-amber-500/10 text-amber-500 rounded hover:bg-amber-500/20 transition"><i data-lucide="database" class="w-4 h-4"></i></a>
+                            <a href="https://www.notion.so/" target="_blank" class="p-2 bg-white/10 text-white rounded hover:bg-white/20 transition"><i data-lucide="table" class="w-4 h-4"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAnlmGZNwoPS-vBnK1AlHvNsB73q0UAkCU",
+            authDomain: "simpli-fi-id.firebaseapp.com",
+            projectId: "simpli-fi-id",
+            storageBucket: "simpli-fi-id.firebasestorage.app",
+            messagingSenderId: "97006103916",
+            appId: "1:97006103916:web:631c876a6eb263caf81749"
+        };
+
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        
+        let tierChartInstance = null; 
+        let mapInstance = null;
+        let mapMarkers = [];
+
+        // Initialize
+        lucide.createIcons();
+        initMap();
+
+        // --- MAP LOGIC (Leaflet) ---
+        function initMap() {
+            // Default center: US (Denton, TX approximate)
+            mapInstance = L.map('global-map', {
+                zoomControl: false,
+                attributionControl: false
+            }).setView([33.2148, -97.1331], 4);
+
+            // Dark Matter Tiles (CartoDB)
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 19
+            }).addTo(mapInstance);
+        }
+
+        // --- MOCK DATA FOR DEMO ---
+        function getMockData() {
+            return {
+                users: [
+                    { id: '1', tier: 'founder', lat: 33.2148, lng: -97.1331, type: 'sale', timestamp: Date.now() }, // Denton HQ
+                    { id: '2', tier: 'pro', lat: 32.7767, lng: -96.7970, type: 'sale', timestamp: Date.now() - 100000 }, // Dallas
+                    { id: '3', tier: 'free', lat: 30.2672, lng: -97.7431, type: 'scan', timestamp: Date.now() - 200000 }, // Austin
+                    { id: '4', tier: 'pro', lat: 40.7128, lng: -74.0060, type: 'sale', timestamp: Date.now() - 500000 }, // NYC
+                    { id: '5', tier: 'free', lat: 34.0522, lng: -118.2437, type: 'scan', timestamp: Date.now() - 800000 } // LA
+                ],
+                stats: { total: 1240, proRev: 8500, mrr: 450, kFactor: 1.4 }
+            };
+        }
+
+        async function fetchData() {
+            const btn = document.getElementById('refresh-btn');
+            btn.innerHTML = '<div class="spinner"></div>';
+            btn.disabled = true;
+            
+            const start = Date.now();
+            let isDemoMode = false;
+            
+            try {
+                if (!auth.currentUser) {
+                    try { await auth.signInAnonymously(); } 
+                    catch (e) { isDemoMode = true; }
+                }
+
+                // SIMULATION MODE (Until DB is populated with GeoPoints)
+                // Real DB call logic goes here in production
+                await new Promise(r => setTimeout(r, 800)); // Fake latency
+                const data = getMockData();
+                isDemoMode = true; // Force demo for visual check
+
+                document.getElementById('latency-val').innerText = isDemoMode ? "Simulated" : `${Date.now() - start} ms`;
+                updateStatusUI(isDemoMode);
+
+                // Update Stats
+                document.getElementById('stat-total').innerText = data.stats.total;
+                document.getElementById('stat-pro-rev').innerText = "$" + data.stats.proRev.toLocaleString();
+                document.getElementById('stat-mrr').innerText = "$" + data.stats.mrr.toLocaleString();
+                document.getElementById('stat-k-factor').innerText = data.stats.kFactor;
+
+                // Update Chart
+                updateChart(800, 400, 40); // Mock distribution
+
+                // Update Map
+                updateMapMarkers(data.users);
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('connection-status').className = "flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold";
+                document.getElementById('connection-status').innerHTML = "Error";
+            } finally {
+                btn.innerHTML = '<i data-lucide="refresh-cw" class="w-4 h-4"></i>';
+                btn.disabled = false;
+                lucide.createIcons();
+            }
+        }
+
+        function updateMapMarkers(users) {
+            // Clear old markers
+            mapMarkers.forEach(m => mapInstance.removeLayer(m));
+            mapMarkers = [];
+
+            users.forEach(u => {
+                const color = u.type === 'sale' ? '#10b981' : '#f59e0b';
+                const radius = u.type === 'sale' ? 8 : 5;
+                
+                const marker = L.circleMarker([u.lat, u.lng], {
+                    radius: radius,
+                    fillColor: color,
+                    color: "#fff",
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(mapInstance);
+                
+                marker.bindPopup(`<b>${u.type.toUpperCase()}</b><br>${u.tier} tier`);
+                mapMarkers.push(marker);
+            });
+        }
+
+        // Timeline Playback (Visual Only for Demo)
+        function playTimeline() {
+            const slider = document.getElementById('timeline-slider');
+            let val = 0;
+            const interval = setInterval(() => {
+                val += 5;
+                slider.value = val;
+                if(val >= 100) clearInterval(interval);
+            }, 100);
+        }
+
+        function updateStatusUI(isDemo) {
+            const el = document.getElementById('connection-status');
+            if(isDemo) {
+                el.className = "flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold";
+                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Demo Data`;
+            } else {
+                el.className = "flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold";
+                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Stream`;
+            }
+        }
+
+        function updateChart(free, pro, founder) {
+            const ctx = document.getElementById('tierChart').getContext('2d');
+            if (tierChartInstance) tierChartInstance.destroy();
+            tierChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Free', 'Pro', 'Founder'],
+                    datasets: [{ 
+                        data: [free, pro, founder], 
+                        backgroundColor: ['#475569', '#10b981', '#f59e0b'],
+                        borderWidth: 0 
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { usePointStyle: true, color: '#94a3b8' } } },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        window.onload = fetchData;
+    </script>
+</body>
+</html>
