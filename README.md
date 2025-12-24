@@ -34,7 +34,6 @@ Stores individual profiles and stats.
 }
 
 
-
 organizations (Collection)
 
 Stores enterprise branding and configuration.
@@ -48,7 +47,6 @@ Stores enterprise branding and configuration.
     "logo_url": "..."
   }
 }
-
 
 
 resources (Collection)
@@ -65,7 +63,6 @@ The central library of assets.
 }
 
 
-
 events (Collection)
 
 The raw log for analytics (Heatmaps).
@@ -80,7 +77,6 @@ The raw log for analytics (Heatmaps).
     "user_agent": "Mozilla/5.0..."
   }
 }
-
 
 
 3. The "Smart Redirect" Engine (Cloud Functions)
@@ -146,7 +142,6 @@ exports.smartRedirect = functions.https.onRequest(async (req, res) => {
 });
 
 
-
 4. Deployment Instructions
 
 Prerequisites
@@ -162,7 +157,6 @@ cd simpli-fi-os
 firebase login
 firebase init
 # Select: Firestore, Functions, Hosting, Storage
-
 
 
 Step 2: Enable Storage
@@ -213,7 +207,6 @@ Configure rewrite rules to handle the clean URLs.
 }
 
 
-
 Note: The wildcard /** rewrite sends all unknown traffic (like simpli-fi.com/hunter_lott) to card.html, which then reads the URL to render the correct profile.
 
 Step 4: Go Live
@@ -221,50 +214,92 @@ Step 4: Go Live
 firebase deploy
 
 
+5. Security Protocols (MANDATORY)
 
-5. Security Rules
+These rules are critical to prevent data leaks and cost overruns. Copy these into your Firebase Console immediately.
 
-firestore.rules (Database)
+A. Firestore Rules (firestore.rules)
+
+Controls who can read/write data.
 
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Public Profiles (Read-only)
+    // --- USER PROFILES ---
+    // Publicly readable for QR scans.
+    // Only writable by the owner (the user themselves) or an Admin.
     match /users/{userId} {
       allow read: if true;
-      allow write: if false; // Only via Admin SDK or Cloud Functions
+      allow write: if request.auth != null && (request.auth.uid == userId || request.auth.token.role == 'admin');
     }
 
-    // Enterprise Resources (Read-only public for redirect)
+    // --- ORGANIZATIONS ---
+    // Read-only for authenticated members.
+    // Write-only for System Admins (You/Hunter).
+    match /organizations/{orgId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.role == 'sys_admin';
+    }
+
+    // --- RESOURCES (Catalog) ---
+    // Publicly readable so the 'Smart Redirect' function can fetch the target URL.
+    // Only writable by Organization Admins (e.g., Franchise Owners).
     match /resources/{resourceId} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth != null && request.auth.token.role == 'admin';
     }
 
-    // Analytics (Write-only for public, Read for Admins)
+    // --- ANALYTICS EVENTS ---
+    // Create-only for public (anonymous scans).
+    // Read-only for Admins (Dashboard view).
+    // NO delete/update allowed to preserve data integrity.
     match /events/{eventId} {
-      allow create: if true; // The Airlock creates these
-      allow read: if request.auth != null; 
+      allow create: if true;
+      allow read: if request.auth != null && request.auth.token.role == 'admin';
+      allow update, delete: if false;
     }
   }
 }
 
 
+B. Storage Rules (storage.rules)
 
-storage.rules (File Uploads - Cost Controlled)
+Controls file uploads to prevent abuse and cost spikes.
 
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Only allow uploads to your own organization's folder
+    
+    // --- ORGANIZATION RESOURCES ---
+    // Path: /organizations/{orgId}/resources/{fileName}
     match /organizations/{orgId}/resources/{allPaths=**} {
-      allow read: if true; // Public can download
+      // Public Read: Essential for the 'Catalog' to display links/images.
+      allow read: if true;
+      
+      // Restricted Write:
+      // 1. Must be authenticated.
+      // 2. File size must be under 10MB (Cost Control).
+      // 3. File type must be standard doc/image (Security).
       allow write: if request.auth != null 
-                   && request.resource.size < 10 * 1024 * 1024 // 10MB Max File Size
-                   && request.resource.contentType.matches('application/pdf|image/.*|text/.*'); // Restrict types
+                   && request.resource.size < 10 * 1024 * 1024 
+                   && request.resource.contentType.matches('application/pdf|image/.*|text/.*|application/msword|application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    }
+    
+    // --- USER AVATARS ---
+    // Path: /users/{userId}/avatar.jpg
+    match /users/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024 // 5MB limit for avatars
+                   && request.resource.contentType.matches('image/.*');
     }
   }
 }
 
 
+C. Content Security Policy (CSP)
+
+Add this meta tag to the <head> of all HTML files (index.html, card.html, etc.) to prevent script injection attacks.
+
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' [https://cdn.tailwindcss.com](https://cdn.tailwindcss.com) [https://unpkg.com](https://unpkg.com) [https://www.gstatic.com](https://www.gstatic.com) [https://firebasestorage.googleapis.com](https://firebasestorage.googleapis.com) [https://api.qrserver.com](https://api.qrserver.com) [https://api.dicebear.com](https://api.dicebear.com); script-src 'self' 'unsafe-inline' [https://cdn.tailwindcss.com](https://cdn.tailwindcss.com) [https://unpkg.com](https://unpkg.com) [https://www.gstatic.com](https://www.gstatic.com) [https://cdn.jsdelivr.net](https://cdn.jsdelivr.net); style-src 'self' 'unsafe-inline' [https://fonts.googleapis.com](https://fonts.googleapis.com); font-src [https://fonts.gstatic.com](https://fonts.gstatic.com); img-src 'self' data: https:; connect-src 'self' [https://www.googleapis.com](https://www.googleapis.com) [https://firebasestorage.googleapis.com](https://firebasestorage.googleapis.com);">
