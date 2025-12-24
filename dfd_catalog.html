@@ -20,11 +20,18 @@
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
 
     <style>
-        body { background-color: #F3F4F6; font-family: 'Inter', sans-serif; }
+        /* DFD Specifics - Defining CSS Variables for dynamic usage */
+        :root {
+            --brand-primary: #1e293b; /* DFD Dark Blue/Slate */
+            --brand-accent: #fbbf24;  /* DFD Gold/Yellow */
+            --brand-surface: #F3F4F6;
+        }
+
+        body { background-color: var(--brand-surface); font-family: 'Inter', sans-serif; }
         .glass-panel { background: white; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .resource-card { transition: all 0.2s; border-left: 4px solid transparent; }
         .resource-card:active { transform: scale(0.98); }
-        .resource-card:hover { border-left-color: #fbbf24; }
+        .resource-card:hover { border-left-color: var(--brand-accent); }
         
         /* Smooth Fade for Modals */
         .modal-enter { animation: fadeIn 0.2s ease-out forwards; }
@@ -33,24 +40,65 @@
         /* Hide scrollbar for category tabs */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Main View Tabs - Updated for Gold Button Style */
+        .view-tab {
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 0.875rem; /* text-sm */
+            transition: all 0.2s ease;
+            color: rgba(255, 255, 255, 0.7);
+            background-color: transparent;
+            border: 1px solid transparent;
+        }
+        .view-tab:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .view-tab.active {
+            background-color: var(--brand-accent);
+            color: var(--brand-primary);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
 
-        /* DFD Specifics */
-        .bg-primary { background-color: #1e293b; }
-        .text-primary { color: #1e293b; }
-        .border-primary { border-color: #1e293b; }
-        .bg-accent { background-color: #fbbf24; }
-        .text-accent { color: #fbbf24; }
-        .border-accent { border-color: #fbbf24; }
+        /* Category Tab Styles */
+        .cat-tab {
+            transition: all 0.2s ease;
+        }
+        .cat-tab.active {
+            background-color: var(--brand-primary);
+            color: #ffffff;
+            border-color: var(--brand-primary);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .cat-tab:not(.active) {
+            background-color: #ffffff;
+            color: #475569;
+            border-color: #e2e8f0;
+        }
+        .cat-tab:not(.active):hover {
+            border-color: var(--brand-primary);
+            color: var(--brand-primary);
+        }
         
         /* Admin-Only Elements */
         .admin-only { display: none; }
+
+        /* Dynamic Text Colors */
+        .text-primary { color: var(--brand-primary); }
+        .bg-primary { background-color: var(--brand-primary); }
+        .border-primary { border-color: var(--brand-primary); }
+        .text-accent { color: var(--brand-accent); }
+        .bg-accent { background-color: var(--brand-accent); }
+        .border-accent { border-color: var(--brand-accent); }
     </style>
 </head>
 <body class="pb-24">
 
     <!-- HEADER -->
     <header class="bg-primary text-white p-6 sticky top-0 z-40 shadow-lg">
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-between mb-6">
             <div class="flex items-center gap-3">
                 <!-- DENTON FIRE LOGO -->
                 <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center p-1 shadow-md overflow-hidden">
@@ -58,42 +106,52 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">Resource Command</h1>
-                    <p class="text-[10px] text-white/60 uppercase tracking-wider font-bold">Denton Fire Department</p>
+                    <p class="text-[10px] text-white/60 uppercase tracking-wider font-bold">Denton Fire Dept</p>
                 </div>
             </div>
             <!-- Profile Avatar (Updated) -->
-            <div class="w-10 h-10 rounded-full bg-slate-600 border-2 border-[#fbbf24] overflow-hidden relative shadow-md">
+            <div class="w-10 h-10 rounded-full bg-slate-600 border-2 border-accent overflow-hidden relative shadow-md">
                 <img id="profile-avatar" src="https://files.constantcontact.com/3720c3fd901/4f2373af-ad95-4bb2-8c4a-77b2ab0fbc0f.jpg" class="w-full h-full object-cover">
             </div>
         </div>
 
-        <!-- MAIN VIEW TOGGLE -->
-        <div class="flex border-b border-white/10 mb-4">
-            <button onclick="switchMainView('resources')" id="tab-resources" class="flex-1 pb-3 text-sm font-bold text-white border-b-2 border-accent transition-colors">Resources</button>
-            <button onclick="switchMainView('contacts')" id="tab-contacts" class="flex-1 pb-3 text-sm font-bold text-white/50 border-b-2 border-transparent hover:text-white transition-colors">Contacts</button>
+        <!-- MAIN VIEW TOGGLE (Updated Style) -->
+        <div class="flex justify-center mb-4">
+            <div class="bg-black/20 p-1 rounded-full inline-flex">
+                <button onclick="switchMainView('resources')" id="tab-resources" class="view-tab active">Resources</button>
+                <button onclick="switchMainView('contacts')" id="tab-contacts" class="view-tab">Contacts</button>
+            </div>
         </div>
 
         <!-- SEARCH BAR -->
         <div class="relative">
             <i data-lucide="search" class="absolute left-3 top-3.5 w-5 h-5 text-slate-400"></i>
-            <input type="text" id="search-input" onkeyup="handleSearch()" placeholder="Search assets..." class="w-full pl-10 pr-4 py-3 bg-[#0f172a] border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#fbbf24] transition shadow-inner">
+            <input type="text" id="search-input" onkeyup="handleSearch()" placeholder="Search assets..." class="w-full pl-10 pr-4 py-3 bg-[#0f172a] border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-accent transition shadow-inner">
         </div>
     </header>
 
     <!-- VIEW 1: RESOURCES -->
     <div id="view-resources">
-        <div class="flex gap-2 p-4 overflow-x-auto no-scrollbar sticky top-[188px] bg-[#F3F4F6] z-30 pb-2">
-            <button onclick="filterCategory('all', this)" class="cat-tab active px-4 py-2 bg-primary text-white text-xs font-bold rounded-full whitespace-nowrap shadow-sm transition-colors border border-primary">All Assets</button>
-            <button onclick="filterCategory('public', this)" class="cat-tab px-4 py-2 bg-white text-slate-600 text-xs font-bold rounded-full whitespace-nowrap border border-slate-200 shadow-sm transition-colors hover:border-primary">Public Info</button>
-            <button onclick="filterCategory('internal', this)" class="cat-tab px-4 py-2 bg-white text-slate-600 text-xs font-bold rounded-full whitespace-nowrap border border-slate-200 shadow-sm transition-colors hover:border-primary">Internal Ops</button>
-            <button onclick="filterCategory('legal', this)" class="cat-tab px-4 py-2 bg-white text-slate-600 text-xs font-bold rounded-full whitespace-nowrap border border-slate-200 shadow-sm transition-colors hover:border-primary">Legal & Forms</button>
+        <!-- CATEGORY TABS -->
+        <div class="flex gap-2 p-4 overflow-x-auto no-scrollbar sticky top-[210px] bg-brand-surface z-30 pb-2 transition-colors duration-300" style="background-color: var(--brand-surface);">
+            <button onclick="filterCategory('all', this)" class="cat-tab active px-4 py-2 text-xs font-bold rounded-full whitespace-nowrap border">All Assets</button>
+            <button onclick="filterCategory('public', this)" class="cat-tab px-4 py-2 text-xs font-bold rounded-full whitespace-nowrap border">Public Info</button>
+            <button onclick="filterCategory('internal', this)" class="cat-tab px-4 py-2 text-xs font-bold rounded-full whitespace-nowrap border">Internal Ops</button>
+            <button onclick="filterCategory('legal', this)" class="cat-tab px-4 py-2 text-xs font-bold rounded-full whitespace-nowrap border">Legal & Forms</button>
         </div>
-        <main id="resource-grid" class="px-4 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"></main>
+
+        <!-- RESOURCE GRID -->
+        <main id="resource-grid" class="px-4 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <!-- JS will inject cards here -->
+        </main>
     </div>
 
     <!-- VIEW 2: CONTACTS (Hidden by default) -->
     <div id="view-contacts" class="hidden">
-        <main id="contact-grid" class="p-4 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"></main>
+        <!-- CONTACT GRID -->
+        <main id="contact-grid" class="p-4 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <!-- JS will inject cards here -->
+        </main>
     </div>
 
     <!-- FAB -->
@@ -176,7 +234,6 @@
     <div id="upload-modal" class="fixed inset-0 z-[60] bg-slate-900/90 backdrop-blur-sm hidden items-center justify-center p-6">
         <div class="bg-white w-full max-w-md rounded-3xl p-6 relative modal-enter">
             <div class="flex items-center justify-between mb-6"><h2 class="text-lg font-bold text-slate-800">Add New Resource</h2><button onclick="closeModal('upload-modal')" class="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition"><i data-lucide="x" class="w-4 h-4 text-slate-600"></i></button></div>
-            <!-- (Existing fields...) -->
              <div class="space-y-4">
                 <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Resource Title</label><input type="text" id="new-title" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent"></div>
                 <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Destination URL</label><input type="url" id="new-url" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent"></div>
@@ -204,13 +261,15 @@
 
         // --- MOCK DATA ---
         let resources = [
-            { id: 1, title: "Water Shutoff Survey", category: "internal", url: "https://dentonfire.github.io/Water-Shutoff/water_shutoff.html", desc: "Log water meter or sprinkler system shutoffs.", icon: "droplet", color: "text-blue-500", bg: "bg-blue-50" },
-            { id: 7, title: "Water Shutoff Command", category: "internal", url: "https://dentonfire.github.io/Water-Shutoff/water_shutoff_command.html", desc: "Admin dashboard to view active water shutoff reports.", icon: "map-pin", color: "text-purple-500", bg: "bg-purple-50" },
+            { id: 1, title: "Water Shutoff Survey", category: "internal", url: "https://dentonfire.github.io/Water-Shutoff/", desc: "Log water meter or sprinkler system shutoffs.", icon: "droplet", color: "text-blue-500", bg: "bg-blue-50" },
+            { id: 7, title: "Water Shutoff Command", category: "internal", url: "https://dentonfire.github.io/Water-Shutoff/", desc: "Admin dashboard to view active water shutoff reports.", icon: "map-pin", color: "text-purple-500", bg: "bg-purple-50" },
             { id: 2, title: "Knox Box Guidelines", category: "public", url: "https://dentonfire.github.io/Knox-Box/index.html", desc: "Official ordering, installation, and gate requirements.", icon: "box", color: "text-orange-600", bg: "bg-orange-50" },
-            { id: 3, title: "Fire Watch Protocols", category: "public", url: "https://dentonfire.github.io/Fire-Watch/fire_watch_guidelines.html", desc: "Procedures and printable forms for establishing a fire watch.", icon: "eye", color: "text-red-600", bg: "bg-red-50" },
+            { id: 3, title: "Fire Watch Protocols", category: "public", url: "https://dentonfire.github.io/Fire-Watch/", desc: "Procedures and printable forms for establishing a fire watch.", icon: "eye", color: "text-red-600", bg: "bg-red-50" },
             { id: 4, title: "After the Fire Guide", category: "public", url: "https://dentonfire.github.io/After-the-Fire/after_the_fire.html", desc: "Comprehensive recovery guide for residents.", icon: "home", color: "text-slate-600", bg: "bg-slate-100" },
-            { id: 5, title: "Adult Liability Release", category: "legal", url: "https://dentonfire.github.io/DFD_Adult_Liability_Release/adult_liability_release.html", desc: "Digital waiver form with signature pad.", icon: "file-signature", color: "text-yellow-600", bg: "bg-yellow-50" },
-            { id: 6, title: "Ride-Along Agreement", category: "legal", url: "https://dentonfire.github.io/DFD_Ride_Along_Agreement_HIPAA/ride_along_agreement.html", desc: "HIPAA observer agreement and liability waiver.", icon: "ambulance", color: "text-red-500", bg: "bg-red-50" }
+            { id: 5, title: "Adult Liability Release", category: "legal", url: "https://dentonfire.github.io/DFD_Adult_Liability_Release/", desc: "Digital waiver form with signature pad.", icon: "file-signature", color: "text-yellow-600", bg: "bg-yellow-50" },
+            { id: 6, title: "Ride-Along Agreement", category: "legal", url: "https://dentonfire.github.io/DFD_Ride_Along_Agreement_HIPAA/", desc: "HIPAA observer agreement and liability waiver.", icon: "ambulance", color: "text-red-500", bg: "bg-red-50" },
+            { id: 8, title: "Ready to Serve", category: "public", url: "https://lp.constantcontactpages.com/sl/NKeQbQ1/dentonfire", desc: "Recruiting newsletter signup form.", icon: "mail", color: "text-blue-600", bg: "bg-blue-50" },
+            { id: 9, title: "The Frontline Report", category: "public", url: "https://lp.constantcontactpages.com/sl/69SofgB", desc: "Community Risk Reduction (CRR) newsletter signup.", icon: "newspaper", color: "text-slate-600", bg: "bg-slate-100" }
         ];
 
         let contacts = [
@@ -238,8 +297,8 @@
             if (view === 'resources') {
                 resView.classList.remove('hidden');
                 conView.classList.add('hidden');
-                tabRes.className = "flex-1 pb-3 text-sm font-bold text-white border-b-2 border-accent transition-colors";
-                tabCon.className = "flex-1 pb-3 text-sm font-bold text-white/50 border-b-2 border-transparent hover:text-white transition-colors";
+                tabRes.className = "view-tab active";
+                tabCon.className = "view-tab";
                 searchInput.placeholder = "Search protocols, forms...";
                 // Admin check for Resource FAB
                 if (currentUser.role !== 'admin') fab.style.display = 'none';
@@ -247,8 +306,8 @@
             } else {
                 resView.classList.add('hidden');
                 conView.classList.remove('hidden');
-                tabRes.className = "flex-1 pb-3 text-sm font-bold text-white/50 border-b-2 border-transparent hover:text-white transition-colors";
-                tabCon.className = "flex-1 pb-3 text-sm font-bold text-white border-b-2 border-accent transition-colors";
+                tabRes.className = "view-tab";
+                tabCon.className = "view-tab active";
                 searchInput.placeholder = "Search personnel...";
                 fab.style.display = 'flex'; // FAB always on for contacts
             }
@@ -315,8 +374,8 @@
         }
 
         function filterCategory(cat, btn) {
-            document.querySelectorAll('.cat-tab').forEach(el => { el.classList.remove('bg-[#1e293b]', 'text-white', 'border-[#1e293b]'); el.classList.add('bg-white', 'text-slate-600', 'border-slate-200'); });
-            btn.classList.remove('bg-white', 'text-slate-600', 'border-slate-200'); btn.classList.add('bg-[#1e293b]', 'text-white', 'border-[#1e293b]');
+            document.querySelectorAll('.cat-tab').forEach(el => { el.classList.remove('active'); });
+            btn.classList.add('active'); 
             if (cat === 'all') renderResources(resources);
             else renderResources(resources.filter(item => item.category === cat));
         }
