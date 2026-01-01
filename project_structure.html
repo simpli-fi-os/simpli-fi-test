@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI ID | Master Console v2.7</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Dark Mode Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .tree-line {
+            border-left: 1px dashed #334155;
+            margin-left: 0.5rem;
+            padding-left: 1rem;
+        }
+        
+        .tree-item { 
+            cursor: pointer; 
+            transition: all 0.15s ease;
+            border-radius: 4px;
+        }
+        .tree-item:hover { background: rgba(59, 130, 246, 0.1); }
+        .tree-item.active { background: rgba(251, 191, 36, 0.1); color: #fbbf24; }
+        
+        pre code {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body class="bg-[#0f172a] text-slate-300 h-screen flex flex-col overflow-hidden font-sans">
+
+    <!-- TOP BAR -->
+    <header class="h-14 border-b border-slate-700 bg-[#0f172a] flex items-center justify-between px-4 shrink-0 z-20">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-[#fbbf24] text-[#0f172a] rounded flex items-center justify-center font-bold font-mono shadow-[0_0_15px_rgba(251,191,36,0.2)]">ID</div>
+            <div>
+                <h1 class="font-bold text-sm text-white tracking-tight leading-tight">Simpli-FI Master Console</h1>
+                <p class="text-[10px] text-slate-400 font-mono">Series A Protocol // <span class="text-emerald-400">COMPLETE</span></p>
+            </div>
+        </div>
+        <button onclick="copyCurrentFile()" class="bg-slate-800 hover:bg-slate-700 text-xs text-white px-3 py-1.5 rounded border border-slate-600 flex items-center gap-2 transition">
+            <i data-lucide="copy" class="w-3 h-3"></i> Copy Code
+        </button>
+    </header>
+
+    <!-- MAIN WORKSPACE -->
+    <div class="flex-1 flex overflow-hidden">
+        
+        <!-- SIDEBAR (FILE TREE) -->
+        <aside class="w-72 bg-[#1e293b]/50 border-r border-slate-700 flex flex-col">
+            <div class="p-3 border-b border-slate-700/50">
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Project Root</span>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-2 text-sm select-none">
+                
+                <!-- 1. AIRLOCK (BACKEND) -->
+                <div class="mb-2">
+                    <div class="flex items-center gap-2 px-2 py-1 text-slate-100 font-bold"><i data-lucide="folder" class="w-4 h-4 text-blue-400"></i> airlock/</div>
+                    <div class="tree-line">
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('airlock_package', this)"><i data-lucide="file-json" class="w-3 h-3 text-emerald-400"></i> package.json</div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('airlock_lock', this)"><i data-lucide="lock" class="w-3 h-3 text-slate-500"></i> package-lock.json <span class="text-[8px] bg-slate-700 text-slate-300 px-1 rounded ml-auto">KEEP</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('airlock_index', this)"><i data-lucide="file-code" class="w-3 h-3 text-yellow-500"></i> index.js</div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('airlock_docker', this)"><i data-lucide="container" class="w-3 h-3 text-blue-300"></i> Dockerfile</div>
+                    </div>
+                </div>
+
+                <!-- 2. FUNCTIONS (BACKGROUND TASKS) -->
+                <div class="mb-2">
+                    <div class="flex items-center gap-2 px-2 py-1 text-slate-100 font-bold"><i data-lucide="folder" class="w-4 h-4 text-purple-400"></i> functions/</div>
+                    <div class="tree-line">
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('functions_package', this)"><i data-lucide="file-json" class="w-3 h-3 text-slate-400"></i> package.json</div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('functions_lock', this)"><i data-lucide="lock" class="w-3 h-3 text-slate-500"></i> package-lock.json <span class="text-[8px] bg-slate-700 text-slate-300 px-1 rounded ml-auto">KEEP</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('functions_index', this)"><i data-lucide="file-code" class="w-3 h-3 text-yellow-500"></i> index.js <span class="text-[8px] bg-purple-500/20 text-purple-300 px-1 rounded ml-auto">CLEANED</span></div>
+                    </div>
+                </div>
+
+                <!-- 3. SECURITY -->
+                <div class="mb-2">
+                    <div class="flex items-center gap-2 px-2 py-1 text-slate-100 font-bold"><i data-lucide="shield-alert" class="w-4 h-4 text-emerald-400"></i> Security</div>
+                    <div class="tree-line">
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('firestore_rules', this)"><i data-lucide="database" class="w-3 h-3 text-emerald-400"></i> firestore.rules <span class="text-[8px] bg-emerald-500/20 text-emerald-300 px-1 rounded ml-auto">FIXED</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('storage_rules', this)"><i data-lucide="hard-drive" class="w-3 h-3 text-emerald-400"></i> storage.rules</div>
+                    </div>
+                </div>
+
+                <!-- 4. PUBLIC (FRONTEND) -->
+                <div class="mb-2">
+                    <div class="flex items-center gap-2 px-2 py-1 text-slate-100 font-bold"><i data-lucide="folder" class="w-4 h-4 text-blue-400"></i> public/</div>
+                    <div class="tree-line">
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('public_index', this)"><i data-lucide="layout" class="w-3 h-3 text-orange-400"></i> index.html</div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('public_card', this)"><i data-lucide="smartphone" class="w-3 h-3 text-orange-400"></i> card.html</div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('public_intake', this)"><i data-lucide="file-input" class="w-3 h-3 text-orange-400"></i> intake_form.html</div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('public_admin', this)"><i data-lucide="shield" class="w-3 h-3 text-orange-400"></i> admin_dashboard.html</div>
+                    </div>
+                </div>
+
+                <!-- 5. ROOT FILES -->
+                <div class="mt-2">
+                    <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('firebaserc', this)"><i data-lucide="target" class="w-3 h-3 text-slate-400"></i> .firebaserc <span class="text-[8px] bg-slate-700 text-slate-300 px-1 rounded ml-auto">KEEP</span></div>
+                    <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('firebase_json', this)"><i data-lucide="settings" class="w-3 h-3 text-slate-400"></i> firebase.json</div>
+                    <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('gitignore', this)"><i data-lucide="eye-off" class="w-3 h-3 text-slate-500"></i> .gitignore</div>
+                </div>
+
+            </div>
+        </aside>
+
+        <!-- EDITOR PANE -->
+        <main class="flex-1 flex flex-col bg-[#0f172a] relative">
+            <div class="absolute inset-0 overflow-auto">
+                <div class="p-6 min-h-full">
+                    <pre><code id="code-view" class="block text-slate-300">/* Select a file from the sidebar to inspect the source. */</code></pre>
+                </div>
+            </div>
+            <!-- Floating Label -->
+            <div id="file-label" class="absolute bottom-4 right-6 bg-[#fbbf24] text-[#0f172a] text-xs font-bold px-3 py-1 rounded shadow-lg opacity-0 transition-opacity pointer-events-none">
+                index.js
+            </div>
+        </main>
+
+    </div>
+
+    <!-- DATA STORE -->
+    <script>
+        const FILES = {
+            // --- ROOT CONFIG ---
+            firebaserc: `{
+  "projects": {
+    "default": "simpli-fi-id"
+  }
+}`,
+            firebase_json: `{
+  "hosting": {
+    "public": "public",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      { "source": "/card/**", "destination": "/card.html" },
+      { "source": "**", "destination": "/index.html" }
+    ]
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "functions": {
+    "source": "functions"
+  }
+}`,
+            gitignore: `# Node
+node_modules/
+npm-debug.log
+
+# Env
+.env
+.env.local
+
+# Mac
+.DS_Store
+
+# Simpli-FI Specific
+/artifacts/`,
+
+            // --- FUNCTIONS ---
+            functions_package: `{
+  "name": "simpli-fi-functions",
+  "description": "Background triggers for Simpli-FI OS",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^11.8.0",
+    "firebase-functions": "^4.3.1",
+    "@notionhq/client": "^2.2.3"
+  },
+  "private": true
+}`,
+            functions_lock: `// AUTO-GENERATED LOCKFILE
+// Contains exact versions for @notionhq/client, firebase-admin, etc.
+// DO NOT EDIT.`,
+            
+            functions_index: `/**
+ * SIMPLI-FI BACKGROUND TASKS (Cloud Functions)
+ * Note: Redirect logic has moved to 'airlock/index.js' (Cloud Run) for performance.
+ * This file is ONLY for async triggers (Notion Sync, Email Alerts).
+ */
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const { Client } = require('@notionhq/client');
+
+admin.initializeApp();
+
+// Initialize Notion Client securely
+// Set keys via: firebase functions:config:set notion.key="..." notion.db_id="..."
+const notionKey = functions.config().notion ? functions.config().notion.key : null;
+const notionDbId = functions.config().notion ? functions.config().notion.db_id : null;
+
+let notion;
+if (notionKey) {
+    notion = new Client({ auth: notionKey });
+}
+
+exports.syncToNotion = functions.firestore
+    .document('users/{userId}')
+    .onCreate(async (snap, context) => {
+        if (!notion) {
+            console.warn("Notion Sync Skipped: No API Key configured.");
+            return null;
+        }
+
+        const userData = snap.data();
+        const userId = context.params.userId;
+
+        console.log(\`Syncing User \${userId} to Notion...\`);
+
+        if (!userData.full_name) {
+            console.warn(\`Skipped \${userId}: Missing full_name\`);
+            return null;
+        }
+
+        // Safe Date Parsing
+        let startDate = new Date().toISOString();
+        if (userData.created_at && typeof userData.created_at.toDate === 'function') {
+            startDate = userData.created_at.toDate().toISOString();
+        }
+
+        // Normalization
+        const tierValue = (userData.tier || "free").toLowerCase(); 
+
+        try {
+            await notion.pages.create({
+                parent: { database_id: notionDbId },
+                properties: {
+                    "Name": { title: [{ text: { content: userData.full_name || "Unknown" } }] },
+                    "Email": { email: userData.email || "" },
+                    "Phone": { phone_number: userData.phone || "" },
+                    "Status": { select: { name: "New Lead" } },
+                    "Tier": { select: { name: tierValue } },
+                    "Card URL": { url: \`https://id.simpli-fi-os.com/\${userId}\` },
+                    "Start Date": { date: { start: startDate } }
+                }
+            });
+            console.log(\`✅ Synced \${userId} successfully.\`);
+            return null;
+        } catch (error) {
+            console.error("❌ Notion Sync Failed:", error.message);
+            // Don't throw error to avoid infinite retry loop on bad data
+            return null;
+        }
+    });`,
+
+            // --- AIRLOCK ---
+            airlock_package: `{
+  "name": "simpli-fi-airlock",
+  "version": "1.0.0",
+  "description": "High-velocity redirect service for Simpli-FI ID",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "@google-cloud/firestore": "^7.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}`,
+            airlock_lock: `// AUTO-GENERATED LOCKFILE
+// Contains exact versions for express, @google-cloud/firestore, etc.
+// DO NOT EDIT.`,
+            
+            airlock_index: `/**
+ * SIMPLI-FI AIRLOCK v2.0
+ * Goal: <100ms Redirect Latency
+ */
+const express = require('express');
+const { Firestore } = require('@google-cloud/firestore');
+const app = express();
+
+// Warm Start Optimization: Init DB outside handler
+const firestore = new Firestore();
+const publicCards = firestore.collection('public_cards');
+
+app.get('/:id', async (req, res) => {
+    const start = Date.now();
+    const id = req.params.id;
+
+    try {
+        // 1. FAST LOOKUP
+        // TODO (Post-$5k MRR): Replace with Redis cache
+        const doc = await publicCards.doc(id).get();
+
+        if (!doc.exists) {
+            return res.status(404).send('Card not found');
+        }
+
+        const data = doc.data();
+        const dest = data.redirect_url || \`https://id.simpli-fi-os.com/card/\${id}\`;
+
+        // 2. ASYNC LOGGING (Fire & Forget)
+        // We do not await this. Latency is king.
+        logScan(id, req);
+
+        // 3. THE REDIRECT
+        res.set('X-Airlock-Latency', \`\${Date.now() - start}ms\`);
+        res.redirect(302, dest);
+
+    } catch (e) {
+        console.error(e);
+        res.redirect('https://simpli-fi-os.com/error');
+    }
+});
+
+function logScan(id, req) {
+    // Pushes to Pub/Sub or Firestore async
+    firestore.collection('events').add({
+        type: 'scan',
+        card_id: id,
+        ip: req.ip, // Needs hashing for GDPR
+        ua: req.get('User-Agent'),
+        ts: Firestore.FieldValue.serverTimestamp()
+    }).catch(console.error);
+}
+
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => console.log(\`Airlock active on port \${PORT}\`));`,
+
+            airlock_docker: `# SERIES A STANDARD CONTAINER
+# Minimized for Cloud Run Cold Starts
+
+# 1. Build Stage
+FROM node:18-alpine as builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+# 2. Production Stage (Distroless for security)
+FROM gcr.io/distroless/nodejs18-debian11
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY . .
+
+# Performance Tuning
+ENV NODE_ENV=production
+# Google Cloud Run injects PORT, usually 8080
+CMD ["index.js"]`,
+
+            // --- 1. THE GLASS WALL (SECURITY) ---
+            firestore_rules: `rules_version = '2';
+// THIS IS FOR THE DATABASE
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- HELPER FUNCTIONS ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Strict Tenant Isolation
+    function isOrgMember(orgId) {
+      return isSignedIn() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.org_id == orgId;
+    }
+
+    // --- COLLECTIONS ---
+
+    // 1. Users (Private Profile Data)
+    // Only the user themselves can read/write their own PII.
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // 2. Public Cards (Denormalized Data)
+    // World readable (needed for QR scans). 
+    // Only the owner can write.
+    match /public_cards/{cardId} {
+      allow read: if true;
+      allow write: if isSignedIn() && 
+                   request.auth.uid == resource.data.owner_uid;
+    }
+
+    // 3. Organizations (Enterprise Layer)
+    // Strict isolation.
+    match /organizations/{orgId} {
+      allow read: if isOrgMember(orgId);
+      match /assets/{assetId} {
+        allow read: if isOrgMember(orgId);
+        allow write: if isOrgMember(orgId) && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      }
+    }
+
+    // 4. Events (Analytics)
+    // Append-only for public (scans). No deletes allowed.
+    match /events/{eventId} {
+      allow create: if true; 
+      allow read, update, delete: if false; 
+    }
+  }
+}`,
+
+            storage_rules: `rules_version = '2';
+// THIS IS FOR FILE UPLOADS
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // 1. User Avatars (Public Read, Owner Write)
+    match /users/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 2. Enterprise Assets (Org Member Read, Admin Write)
+    match /organizations/{orgId}/{allPaths=**} {
+      // Must be authenticated to read sensitive pdfs/decks
+      allow read: if request.auth != null; 
+      // TODO: Add custom claim check for org membership here in production
+      allow write: if request.auth != null;
+    }
+
+    // 3. Default Deny (The Safety Net)
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}`,
+
+            // --- 3. CI/CD PIPELINE ---
+            github_deploy: `name: Deploy to Production
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  # 1. Deploy Frontend (Firebase Hosting)
+  deploy_web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '\${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '\${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          channelId: live
+          projectId: simpli-fi-id
+
+  # 2. Deploy Airlock (Cloud Run)
+  deploy_airlock:
+    runs-on: ubuntu-latest
+    needs: deploy_web
+    steps:
+      - uses: actions/checkout@v3
+      - uses: google-github-actions/auth@v1
+        with:
+          credentials_json: '\${{ secrets.GCP_SA_KEY }}'
+      
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v1
+        with:
+          service: airlock-redirect
+          source: ./airlock
+          region: us-central1
+          flags: '--min-instances=1 --allow-unauthenticated'`,
+
+            // --- 4. FRONTEND ASSETS ---
+            public_index: `<!-- INDEX.HTML (Landing Page) -->
+<!-- See uploaded file for full content -->
+<!-- ... Content truncated for view ... -->`,
+            public_card: `<!-- CARD.HTML (Digital ID) -->
+<!-- See uploaded file for full content -->`,
+            public_intake: `<!-- INTAKE_FORM.HTML -->
+<!-- See uploaded file for full content -->`,
+            public_admin: `<!-- ADMIN_DASHBOARD.HTML -->
+<!-- See uploaded file for full content -->`
+        };
+
+        function load(key, el) {
+            // Update Code View
+            document.getElementById('code-view').textContent = FILES[key] || '// File content not found.';
+            
+            // Update Label
+            const label = document.getElementById('file-label');
+            label.textContent = el.innerText.trim();
+            label.classList.remove('opacity-0');
+            
+            // Update Active State
+            document.querySelectorAll('.tree-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function copyCurrentFile() {
+            const code = document.getElementById('code-view').textContent;
+            
+            // Safe copy method
+            const textarea = document.createElement('textarea');
+            textarea.value = code;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            // Trigger Toast
+            const toast = document.getElementById('toast');
+            toast.classList.remove('opacity-0', 'translate-y-2');
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+            }, 2500);
+        }
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
