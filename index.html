@@ -97,139 +97,10 @@
             transform: translateY(-12px);
             z-index: 10;
         }
-
-        /* Medieval Trumpet Animations */
-        .trumpet-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 90;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .trumpet-container.active {
-            opacity: 1;
-        }
-
-        .trumpet-wrapper {
-            position: absolute;
-            top: 25%;
-            width: 400px;
-            /* Transition for sliding in */
-            transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1); 
-        }
-
-        /* Start off-screen */
-        .trumpet-left {
-            left: -400px; 
-            transform: rotate(-10deg);
-        }
-        .trumpet-right {
-            right: -400px; 
-            transform: rotate(10deg) scaleX(-1);
-        }
-
-        /* Slide in fully to reveal the body */
-        /* Increased translation to 450px so the tube (x=0) clears the edge */
-        .trumpet-container.active .trumpet-left {
-            transform: translateX(450px) rotate(-5deg); 
-        }
-        .trumpet-container.active .trumpet-right {
-            transform: translateX(-450px) rotate(5deg) scaleX(-1);
-        }
-        
-        /* Banner sway animation */
-        .trumpet-banner {
-            transform-origin: 120px 75px;
-            animation: sway 2.5s ease-in-out infinite alternate;
-        }
-        @keyframes sway {
-            from { transform: rotate(-3deg); }
-            to { transform: rotate(3deg); }
-        }
-
     </style>
 </head>
 <body class="bg-offwhite text-navy font-sans antialiased min-h-screen flex flex-col relative selection:bg-gold selection:text-navy">
     
-    <!-- Visual Trumpet Elements (Realistic Medieval Style) -->
-    <div id="trumpet-overlay" class="trumpet-container">
-        <!-- Reusable SVG Definition -->
-        <svg style="display: none;">
-            <defs>
-                <linearGradient id="brassGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style="stop-color:#b45309;stop-opacity:1" />
-                    <stop offset="30%" style="stop-color:#fbbf24;stop-opacity:1" />
-                    <stop offset="50%" style="stop-color:#fffbeb;stop-opacity:1" />
-                    <stop offset="70%" style="stop-color:#fbbf24;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#b45309;stop-opacity:1" />
-                </linearGradient>
-                <linearGradient id="bellGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style="stop-color:#b45309;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#fbbf24;stop-opacity:1" />
-                </linearGradient>
-                <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
-                    <feOffset dx="2" dy="4" result="offsetblur"/>
-                    <feComponentTransfer>
-                        <feFuncA type="linear" slope="0.3"/>
-                    </feComponentTransfer>
-                    <feMerge> 
-                        <feMergeNode in="offsetblur"/>
-                        <feMergeNode in="SourceGraphic"/> 
-                    </feMerge>
-                </filter>
-            </defs>
-        </svg>
-
-        <!-- Left Trumpet -->
-        <div class="trumpet-wrapper trumpet-left">
-            <svg viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg" filter="url(#shadow)">
-                <!-- Banner (Royal Blue & Gold) -->
-                <g class="trumpet-banner">
-                    <path d="M120 85 L120 180 L160 160 L200 180 L200 85" fill="#4338ca" stroke="#312e81" stroke-width="1"/>
-                    <path d="M130 100 L190 100 M130 110 L190 110" stroke="#fbbf24" stroke-width="2" opacity="0.6"/>
-                    <circle cx="160" cy="135" r="15" stroke="#fbbf24" stroke-width="2" fill="none"/>
-                    <path d="M160 120 L160 150 M145 135 L175 135" stroke="#fbbf24" stroke-width="2"/>
-                </g>
-                <!-- Main Tube -->
-                <rect x="0" y="75" width="320" height="12" fill="url(#brassGradient)"/>
-                <!-- Mouthpiece/Knop details -->
-                <rect x="80" y="72" width="10" height="18" rx="2" fill="url(#brassGradient)"/>
-                <rect x="220" y="72" width="10" height="18" rx="2" fill="url(#brassGradient)"/>
-                <!-- Bell Flare -->
-                <path d="M320 81 L380 40 C390 40 395 50 390 81 L320 81 Z" fill="url(#bellGradient)"/>
-                <path d="M320 81 L380 122 C390 122 395 112 390 81 L320 81 Z" fill="url(#bellGradient)"/>
-                <!-- Bell Rim -->
-                <ellipse cx="380" cy="81" rx="5" ry="41" fill="#78350f" opacity="0.3"/>
-            </svg>
-        </div>
-        <!-- Right Trumpet -->
-        <div class="trumpet-wrapper trumpet-right">
-             <svg viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg" filter="url(#shadow)">
-                <!-- Banner -->
-                <g class="trumpet-banner">
-                    <path d="M120 85 L120 180 L160 160 L200 180 L200 85" fill="#4338ca" stroke="#312e81" stroke-width="1"/>
-                    <path d="M130 100 L190 100 M130 110 L190 110" stroke="#fbbf24" stroke-width="2" opacity="0.6"/>
-                    <circle cx="160" cy="135" r="15" stroke="#fbbf24" stroke-width="2" fill="none"/>
-                    <path d="M160 120 L160 150 M145 135 L175 135" stroke="#fbbf24" stroke-width="2"/>
-                </g>
-                <!-- Main Tube -->
-                <rect x="0" y="75" width="320" height="12" fill="url(#brassGradient)"/>
-                <!-- Knops -->
-                <rect x="80" y="72" width="10" height="18" rx="2" fill="url(#brassGradient)"/>
-                <rect x="220" y="72" width="10" height="18" rx="2" fill="url(#brassGradient)"/>
-                <!-- Bell Flare -->
-                <path d="M320 81 L380 40 C390 40 395 50 390 81 L320 81 Z" fill="url(#bellGradient)"/>
-                <path d="M320 81 L380 122 C390 122 395 112 390 81 L320 81 Z" fill="url(#bellGradient)"/>
-                <ellipse cx="380" cy="81" rx="5" ry="41" fill="#78350f" opacity="0.3"/>
-            </svg>
-        </div>
-    </div>
-
     <!-- Background Elements -->
     <div class="fixed inset-0 grid-bg z-[-2]"></div>
     <div class="fixed inset-0 mesh-overlay z-[-1]"></div>
@@ -244,7 +115,7 @@
             <div class="flex items-center gap-4">
                 <a href="#pricing" class="hidden md:block text-sm font-medium text-gray-600 hover:text-navy transition">Pricing</a>
                 <a href="#preview" class="hidden md:block text-sm font-medium text-gray-600 hover:text-navy transition">Examples</a>
-                <a href="https://generator.simpli-fi-os.com/" class="ml-2 px-5 py-2.5 bg-navy text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-teal transition shadow-lg hover:shadow-teal/20 transform hover:-translate-y-0.5">
+                <a href="https://simpli-fi-os.github.io/simpli-fi-test/intake_form.html" class="ml-2 px-5 py-2.5 bg-navy text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-teal transition shadow-lg hover:shadow-teal/20 transform hover:-translate-y-0.5">
                     Claim Your ID
                 </a>
             </div>
@@ -311,7 +182,7 @@
                     <li class="flex items-start gap-2 text-gray-400"><i data-lucide="minus" class="w-3.5 h-3.5 mt-0.5"></i> <span>Ad-Supported Footer</span></li>
                     <li class="flex items-start gap-2 text-gray-400"><i data-lucide="x" class="w-3.5 h-3.5 text-red-300 mt-0.5"></i> <span>No "Save Contact"</span></li>
                 </ul>
-                <a href="https://generator.simpli-fi-os.com/" class="mt-6 w-full py-2.5 bg-white text-coral text-xs font-bold rounded-lg border border-coral hover:bg-coral hover:text-white transition text-center">
+                <a href="https://simpli-fi-os.github.io/simpli-fi-test/intake_form.html" class="mt-6 w-full py-2.5 bg-white text-coral text-xs font-bold rounded-lg border border-coral hover:bg-coral hover:text-white transition text-center">
                     Start Free
                 </a>
             </div>
@@ -330,7 +201,7 @@
                     <li class="flex items-start gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-gold mt-0.5"></i> <span>1 Free Update / Year</span></li>
                     <li class="flex items-start gap-2 text-gray-500"><i data-lucide="minus" class="w-3.5 h-3.5 mt-0.5"></i> <span>Standard Hosting</span></li>
                 </ul>
-                <a href="https://generator.simpli-fi-os.com/" class="mt-6 w-full py-2.5 bg-gold hover:bg-amber-400 text-navy text-xs font-bold rounded-lg transition text-center shadow-lg">
+                <a href="https://simpli-fi-os.github.io/simpli-fi-test/intake_form.html" class="mt-6 w-full py-2.5 bg-gold hover:bg-amber-400 text-navy text-xs font-bold rounded-lg transition text-center shadow-lg">
                     Get Professional
                 </a>
             </div>
@@ -349,7 +220,7 @@
                     <li class="flex items-start gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-white mt-0.5"></i> <span>Verified Gold Badge</span></li>
                     <li class="flex items-start gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-white mt-0.5"></i> <span>Priority Support</span></li>
                 </ul>
-                <a href="https://generator.simpli-fi-os.com/" class="mt-6 w-full py-2.5 bg-white hover:bg-teal-50 text-teal text-xs font-bold rounded-lg transition text-center shadow-lg">
+                <a href="https://simpli-fi-os.github.io/simpli-fi-test/intake_form.html" class="mt-6 w-full py-2.5 bg-white hover:bg-teal-50 text-teal text-xs font-bold rounded-lg transition text-center shadow-lg">
                     Go Founder
                 </a>
             </div>
@@ -430,8 +301,8 @@
                             <td class="p-4 border-b border-gray-100 text-center bg-teal/5"><i data-lucide="check" class="w-4 h-4 text-teal mx-auto"></i></td>
                             <td class="p-4 border-b border-gray-100 text-center bg-violet-50/10"><i data-lucide="check" class="w-4 h-4 text-violet-700 mx-auto"></i></td>
                         </tr>
-                         <!-- Feature 4 -->
-                         <tr class="hover:bg-gray-50/50 transition-colors">
+                          <!-- Feature 4 -->
+                          <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="p-4 border-b border-gray-100 font-medium text-navy">Profile Updates</td>
                             <td class="p-4 border-b border-gray-100 text-center">Locked</td>
                             <td class="p-4 border-b border-gray-100 text-center bg-navy/5">1 per Year</td>
@@ -446,8 +317,8 @@
                             <td class="p-4 border-b border-gray-100 text-center bg-teal/5"><i data-lucide="check" class="w-4 h-4 text-teal mx-auto"></i></td>
                             <td class="p-4 border-b border-gray-100 text-center bg-violet-50/10"><i data-lucide="check" class="w-4 h-4 text-violet-700 mx-auto"></i></td>
                         </tr>
-                         <!-- Feature 6 -->
-                         <tr class="hover:bg-gray-50/50 transition-colors">
+                          <!-- Feature 6 -->
+                          <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="p-4 border-b border-gray-100 font-medium text-navy">Admin Dashboard</td>
                             <td class="p-4 border-b border-gray-100 text-center"><i data-lucide="minus" class="w-4 h-4 text-gray-300 mx-auto"></i></td>
                             <td class="p-4 border-b border-gray-100 text-center bg-navy/5"><i data-lucide="minus" class="w-4 h-4 text-gray-300 mx-auto"></i></td>
@@ -560,7 +431,7 @@
                         Click below to open the secure intake portal and claim your Simpli-FI ID. Setup takes less than 5 minutes.
                     </p>
                     
-                    <a href="https://generator.simpli-fi-os.com/" class="inline-flex items-center gap-3 px-8 py-4 bg-navy text-white font-bold rounded-xl shadow-xl hover:bg-teal hover:-translate-y-1 transition-all duration-300 group">
+                    <a href="https://simpli-fi-os.github.io/simpli-fi-test/intake_form.html" class="inline-flex items-center gap-3 px-8 py-4 bg-navy text-white font-bold rounded-xl shadow-xl hover:bg-teal hover:-translate-y-1 transition-all duration-300 group">
                         <span>Launch Secure Intake Form</span>
                         <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
                     </a>
