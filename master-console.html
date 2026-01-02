@@ -1,0 +1,2874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI ID | Master Console v3.7</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .tree-line {
+            border-left: 1px dashed #334155;
+            margin-left: 0.5rem;
+            padding-left: 1rem;
+        }
+        .tree-item {
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border-radius: 4px;
+        }
+        .tree-item:hover { background: rgba(59, 130, 246, 0.1); }
+        .tree-item.active { background: rgba(251, 191, 36, 0.1); color: #fbbf24; }
+        pre code {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body class="bg-[#0f172a] text-slate-300 h-screen flex flex-col overflow-hidden font-sans">
+    <!-- TOP BAR -->
+    <header class="h-14 border-b border-slate-700 bg-[#0f172a] flex items-center justify-between px-4 shrink-0 z-20">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-[#fbbf24] text-[#0f172a] rounded flex items-center justify-center font-bold font-mono shadow-[0_0_15px_rgba(251,191,36,0.2)]">ID</div>
+            <div>
+                <h1 class="font-bold text-sm text-white tracking-tight leading-tight">Simpli-FI Master Console</h1>
+                <p class="text-[10px] text-slate-400 font-mono">Series A Protocol // <span class="text-emerald-400">GOLDEN</span></p>
+            </div>
+        </div>
+        <button onclick="copyCurrentFile()" class="bg-slate-800 hover:bg-slate-700 text-xs text-white px-3 py-1.5 rounded border border-slate-600 flex items-center gap-2 transition">
+            <i data-lucide="copy" class="w-3 h-3"></i> Copy Code
+        </button>
+    </header>
+    <!-- MAIN WORKSPACE -->
+    <div class="flex-1 flex overflow-hidden">
+       
+        <!-- SIDEBAR (FILE TREE) -->
+        <aside class="w-72 bg-[#1e293b]/50 border-r border-slate-700 flex flex-col">
+            <div class="p-3 border-b border-slate-700/50">
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Project Root</span>
+            </div>
+           
+            <div class="flex-1 overflow-y-auto p-2 text-sm select-none">
+               
+                <!-- 0. DOCUMENTATION -->
+                <div class="mb-2">
+                    <div class="flex items-center gap-2 px-2 py-1 text-slate-100 font-bold"><i data-lucide="book" class="w-4 h-4 text-purple-400"></i> docs/</div>
+                    <div class="tree-line">
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('doc_mvp', this)"><i data-lucide="file-text" class="w-3 h-3 text-purple-300"></i> mvp_launch_checklist.md <span class="text-[8px] bg-red-500/20 text-red-300 px-1 rounded ml-auto">CRITICAL</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('doc_series_a', this)"><i data-lucide="file-text" class="w-3 h-3 text-purple-300"></i> series_a_roadmap.md <span class="text-[8px] bg-slate-700 text-slate-300 px-1 rounded ml-auto">FUTURE</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('doc_project_brief', this)"><i data-lucide="file-text" class="w-3 h-3 text-purple-300"></i> project_brief.md <span class="text-[8px] bg-blue-500/20 text-blue-300 px-1 rounded ml-auto">OVERVIEW</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('doc_feature_matrix', this)"><i data-lucide="file-text" class="w-3 h-3 text-purple-300"></i> feature_matrix.md <span class="text-[8px] bg-yellow-500/20 text-yellow-300 px-1 rounded ml-auto">TIERS</span></div>
+                    </div>
+                </div>
+
+                <!-- 1. AIRLOCK -->
+                <div class="mb-2">
+                    <div class="flex items-center gap-2 px-2 py-1 text-slate-100 font-bold"><i data-lucide="folder" class="w-4 h-4 text-blue-400"></i> airlock/</div>
+                    <div class="tree-line">
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('airlock_package', this)"><i data-lucide="file-json" class="w-3 h-3 text-emerald-400"></i> package.json <span class="text-[8px] bg-emerald-500/20 text-emerald-300 px-1 rounded ml-auto">MVP</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('airlock_lock', this)"><i data-lucide="lock" class="w-3 h-3 text-slate-500"></i> package-lock.json <span class="text-[8px] bg-slate-700 text-slate-300 px-1 rounded ml-auto">KEEP</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('airlock_index', this)"><i data-lucide="file-code" class="w-3 h-3 text-yellow-500"></i> index.js <span class="text-[8px] bg-cyan-500/20 text-cyan-300 px-1 rounded ml-auto">FAST</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('airlock_docker', this)"><i data-lucide="container" class="w-3 h-3 text-blue-300"></i> Dockerfile <span class="text-[8px] bg-emerald-500/20 text-emerald-300 px-1 rounded ml-auto">PROD</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('airlock_dockerignore', this)"><i data-lucide="ban" class="w-3 h-3 text-red-400"></i> .dockerignore <span class="text-[8px] bg-red-500/20 text-red-300 px-1 rounded ml-auto">SECURE</span></div>
+                        <div class="mt-2 flex items-center gap-2 px-2 py-1 text-slate-300"><i data-lucide="folder-open" class="w-3 h-3 text-blue-300"></i> routes/</div>
+                        <div class="tree-line">
+                            <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('airlock_routes_claim', this)"><i data-lucide="route" class="w-3 h-3 text-cyan-400"></i> claim.js <span class="text-[8px] bg-purple-500/20 text-purple-300 px-1 rounded ml-auto">TRACKING</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. FUNCTIONS -->
+                <div class="mb-2">
+                    <div class="flex items-center gap-2 px-2 py-1 text-slate-100 font-bold"><i data-lucide="folder" class="w-4 h-4 text-purple-400"></i> functions/</div>
+                    <div class="tree-line">
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('functions_package', this)"><i data-lucide="file-json" class="w-3 h-3 text-slate-400"></i> package.json <span class="text-[8px] bg-purple-500/20 text-purple-300 px-1 rounded ml-auto">CF</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('functions_lock', this)"><i data-lucide="lock" class="w-3 h-3 text-slate-500"></i> package-lock.json <span class="text-[8px] bg-slate-700 text-slate-300 px-1 rounded ml-auto">LOCKED</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('functions_index', this)"><i data-lucide="file-code" class="w-3 h-3 text-yellow-500"></i> index.js <span class="text-[8px] bg-emerald-500/20 text-emerald-300 px-1 rounded ml-auto">SYNC</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('functions_email', this)"><i data-lucide="mail" class="w-3 h-3 text-emerald-400"></i> sendWelcomeEmail.js <span class="text-[8px] bg-teal-500/20 text-teal-300 px-1 rounded ml-auto">EMAIL</span></div>
+                    </div>
+                </div>
+
+                <!-- 3. SRC -->
+                <div class="mb-2">
+                    <div class="flex items-center gap-2 px-2 py-1 text-slate-100 font-bold"><i data-lucide="folder" class="w-4 h-4 text-orange-400"></i> src/</div>
+                    <div class="tree-line">
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('src_utils', this)"><i data-lucide="wrench" class="w-3 h-3 text-orange-300"></i> utils.js <span class="text-[8px] bg-orange-500/20 text-orange-300 px-1 rounded ml-auto">TOOLS</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('src_confetti', this)"><i data-lucide="party-popper" class="w-3 h-3 text-yellow-400"></i> confettiManager.js <span class="text-[8px] bg-yellow-500/20 text-yellow-300 px-1 rounded ml-auto">PARTY</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('src_vcard', this)"><i data-lucide="contact" class="w-3 h-3 text-teal-400"></i> vcardGenerator.js <span class="text-[8px] bg-teal-500/20 text-teal-300 px-1 rounded ml-auto">CONTACT</span></div>
+                    </div>
+                </div>
+
+                <!-- 4. SCRIPTS -->
+                <div class="mb-2">
+                    <div class="flex items-center gap-2 px-2 py-1 text-slate-100 font-bold"><i data-lucide="folder" class="w-4 h-4 text-indigo-400"></i> scripts/</div>
+                    <div class="tree-line">
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('scripts_deploy', this)"><i data-lucide="rocket" class="w-3 h-3 text-indigo-300"></i> deploy-hosting.sh <span class="text-[8px] bg-indigo-500/20 text-indigo-300 px-1 rounded ml-auto">LIVE</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('scripts_env', this)"><i data-lucide="settings" class="w-3 h-3 text-indigo-300"></i> setup-env.js <span class="text-[8px] bg-indigo-500/20 text-indigo-300 px-1 rounded ml-auto">INIT</span></div>
+                    </div>
+                </div>
+
+                <!-- 5. SECURITY -->
+                <div class="mb-2">
+                    <div class="flex items-center gap-2 px-2 py-1 text-slate-100 font-bold"><i data-lucide="shield-alert" class="w-4 h-4 text-emerald-400"></i> Security</div>
+                    <div class="tree-line">
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('firestore_rules', this)"><i data-lucide="database" class="w-3 h-3 text-emerald-400"></i> firestore.rules <span class="text-[8px] bg-emerald-500/20 text-emerald-300 px-1 rounded ml-auto">READY</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('storage_rules', this)"><i data-lucide="hard-drive" class="w-3 h-3 text-emerald-400"></i> storage.rules <span class="text-[8px] bg-emerald-500/20 text-emerald-300 px-1 rounded ml-auto">SECURE</span></div>
+                    </div>
+                </div>
+
+                <!-- 6. PUBLIC -->
+                <div class="mb-2">
+                    <div class="flex items-center gap-2 px-2 py-1 text-slate-100 font-bold"><i data-lucide="folder" class="w-4 h-4 text-blue-400"></i> public/</div>
+                    <div class="tree-line">
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('public_index', this)"><i data-lucide="layout" class="w-3 h-3 text-orange-400"></i> index.html <span class="text-[8px] bg-orange-500/20 text-orange-300 px-1 rounded ml-auto">LIVE</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('public_card', this)"><i data-lucide="smartphone" class="w-3 h-3 text-orange-400"></i> card.html <span class="text-[8px] bg-orange-500/20 text-orange-300 px-1 rounded ml-auto">LIVE</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('public_intake', this)"><i data-lucide="file-input" class="w-3 h-3 text-orange-400"></i> intake_form.html <span class="text-[8px] bg-orange-500/20 text-orange-300 px-1 rounded ml-auto">ELITE</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('public_setup', this)"><i data-lucide="settings" class="w-3 h-3 text-orange-400"></i> enterprise_setup.html <span class="text-[8px] bg-orange-500/20 text-orange-300 px-1 rounded ml-auto">LOADED</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('public_admin', this)"><i data-lucide="shield" class="w-3 h-3 text-orange-400"></i> admin_dashboard.html <span class="text-[8px] bg-orange-500/20 text-orange-300 px-1 rounded ml-auto">LOADED</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('public_catalog', this)"><i data-lucide="library" class="w-3 h-3 text-orange-400"></i> resource_catalog.html <span class="text-[8px] bg-orange-500/20 text-orange-300 px-1 rounded ml-auto">LIVE</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('public_dfd', this)"><i data-lucide="file-text" class="w-3 h-3 text-slate-400"></i> dfd_catalog.html <span class="text-[8px] bg-slate-700 text-slate-300 px-1 rounded ml-auto">REF</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('public_ops', this)"><i data-lucide="activity" class="w-3 h-3 text-orange-400"></i> ops_center.html <span class="text-[8px] bg-orange-500/20 text-orange-300 px-1 rounded ml-auto">LIVE</span></div>
+                    </div>
+                </div>
+
+                <!-- 7. ROOT FILES -->
+                <div class="mt-2">
+                    <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('readme', this)"><i data-lucide="file-text" class="w-3 h-3 text-blue-300"></i> README.md <span class="text-[8px] bg-blue-500/20 text-blue-300 px-1 rounded ml-auto">UPDATED</span></div>
+                    <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('firebaserc', this)"><i data-lucide="target" class="w-3 h-3 text-slate-400"></i> .firebaserc <span class="text-[8px] bg-slate-700 text-slate-300 px-1 rounded ml-auto">CONFIG</span></div>
+                    <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('firebase_json', this)"><i data-lucide="settings" class="w-3 h-3 text-slate-400"></i> firebase.json <span class="text-[8px] bg-slate-700 text-slate-300 px-1 rounded ml-auto">ROUTES</span></div>
+                    <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('gitignore', this)"><i data-lucide="eye-off" class="w-3 h-3 text-slate-500"></i> .gitignore <span class="text-[8px] bg-slate-700 text-slate-300 px-1 rounded ml-auto">SAFE</span></div>
+                    <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('env_example', this)"><i data-lucide="key" class="w-3 h-3 text-amber-400"></i> .env.example <span class="text-[8px] bg-amber-500/20 text-amber-300 px-1 rounded ml-auto">TEMPLATE</span></div>
+                    <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('tailwind_config', this)"><i data-lucide="palette" class="w-3 h-3 text-pink-400"></i> tailwind.config.js <span class="text-[8px] bg-pink-500/20 text-pink-300 px-1 rounded ml-auto">BRAND</span></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- EDITOR PANE -->
+        <main class="flex-1 flex flex-col bg-[#0f172a] relative">
+            <div class="absolute inset-0 overflow-auto">
+                <div class="p-6 min-h-full">
+                    <pre><code id="code-view" class="block text-slate-300">/* Select a file from the sidebar to inspect the source. */</code></pre>
+                </div>
+            </div>
+            <div id="file-label" class="absolute bottom-4 right-6 bg-[#fbbf24] text-[#0f172a] text-xs font-bold px-3 py-1 rounded shadow-lg opacity-0 transition-opacity pointer-events-none">
+                index.js
+            </div>
+        </main>
+    </div>
+
+    <!-- DATA STORE -->
+    <script>
+        const FILES = {
+            // README
+            readme: `# Simpli-FI ID | Master Deployment Manual v3.7  
+**Mission:** Replace dead links with trackable, beautiful digital identities.  
+**Status:** MVP Complete • Launch Ready • January 01, 2026
+
+## Overview
+Simpli-FI ID is a tiered digital identity platform that turns every business card, resource share, and connection into measurable intelligence.
+
+- **Public Landing**: \`index.html\` → Drives acquisition
+- **Intake Engine**: \`intake_form.html\` → Fully automated onboarding + payment
+- **Digital Card**: \`card.html?u={slug}\` → The live product
+- **Resource Catalog**: \`resource_catalog.html\` → Team asset library
+- **Enterprise Setup**: \`enterprise_setup.html\` → Client provisioning
+- **Admin Dashboard**: \`admin_dashboard.html\` → Client command center
+- **Ops Center**: \`ops_center.html\` → Internal god-mode analytics
+
+## Core Architecture
+
+### 1. Frontend (Firebase Hosting)
+All static assets live in \`/public\`. Clean URLs via \`firebase.json\` rewrites.
+
+| Path | File | Purpose |
+|------|------|--------|
+| \`/\` | index.html | Public landing & pricing |
+| \`/claim\` | intake_form.html | Onboarding + payment |
+| \`/{userId}\` | card.html | Dynamic identity card |
+| \`/catalog\` | resource_catalog.html | Team resource library |
+| \`/enterprise\` | enterprise_setup.html | Client provisioning |
+| \`/admin\` | admin_dashboard.html | Client analytics |
+| \`/ops\` | ops_center.html | Internal ops monitoring |
+
+### 2. Backend
+- **Airlock**: \`/r/{resourceId}\` → Cloud Run (low-latency redirect + analytics)
+- **Background Tasks**: Cloud Functions (\`functions/\`)
+  - \`syncToNotion\` → New user → Notion CRM
+  - \`sendWelcomeEmail\` → New user → SendGrid
+- **Storage**: Profile photos, logos, resources
+
+### 3. Database Schema (Firestore)
+\`\`\`js
+users/{userId}           → Profile, tier, stats, org_id
+public_cards/{userId}    → Denormalized public data (fast reads)
+organizations/{orgId}    → Branding, settings
+resources/{resourceId}   → Title, URL, category, org_id
+events/{eventId}         → scan, share, download logs
+\`\`\`
+
+### 4. Security
+- **Firestore Rules**: \`firestore.rules\` (owner + service account access)
+- **Storage Rules**: \`storage.rules\` (public reads, restricted writes)
+- **CSP Headers**: Enforced in all HTML files
+
+## Quick Start (One-Time Setup)
+
+\`\`\`bash
+# 1. Clone & Enter
+git clone https://github.com/simpli-fi-os/simpli-fi-id.git
+cd simpli-fi-id
+
+# 2. Install Firebase CLI
+npm install -g firebase-tools
+
+# 3. Login & Init
+firebase login
+firebase init
+# Select: Hosting, Firestore, Functions, Storage
+# Hosting: public = "public"
+# Functions: JavaScript, eslint yes
+
+# 4. Setup Secrets
+node scripts/setup-env.js
+# Fill .env with Firebase config, Stripe, SendGrid, Notion keys
+
+# 5. Deploy Everything
+firebase deploy
+\`\`\`
+
+## Local Development
+\`\`\`bash
+# Emulators
+firebase emulators:start
+
+# Airlock local
+cd airlock && npm run dev
+\`\`\`
+
+## Tier System
+| Tier | Price | Key Features |
+|------|-------|--------------|
+| Ambassador | Free | Basic card, ad footer |
+| Professional | $19 one-time | Save Contact, no ads, custom colors |
+| Founder | $49 + $5/mo | Custom domain, gold badge, commerce, intelligence |
+| Enterprise | Custom | Admin dashboard, bulk provisioning, brand lock |
+
+## Key Files
+- \`firebase.json\` → Hosting rewrites + Cloud Run routing
+- \`firestore.rules\` → Security
+- \`storage.rules\` → File upload limits
+- \`functions/\` → Background automation
+- \`airlock/\` → High-velocity redirect engine (Cloud Run)
+- \`src/\` → Shared utilities (vCard, confetti, utils)
+
+## Secrets (.env.example)
+\`\`\`env
+FIREBASE_PROJECT_ID=simpli-fi-id
+FIREBASE_WEB_API_KEY=...
+STRIPE_PUBLISHABLE_KEY=pk_...
+STRIPE_SECRET_KEY=sk_...
+SENDGRID_API_KEY=SG....
+NOTION_API_KEY=secret_...
+\`\`\`
+
+## Maintenance
+- **Add Resource**: Admin → Catalog → Upload
+- **New Client**: Enterprise Setup → Deploy → Emails sent automatically
+- **Analytics**: Ops Center + Client Admin Dashboard
+
+**Simpli-FI ID is live. The revolution begins now.**
+`,
+
+            // .firebaserc
+            firebaserc: `{
+  "projects": {
+    "default": "simpli-fi-id"
+  }
+}`,
+
+            // firebase.json
+            firebase_json: `{
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/r/{resourceId**}",
+        "run": {
+          "serviceId": "airlock",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "cleanUrls": true,
+    "trailingSlash": false
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "runtime": "nodejs20",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ]
+    }
+  ],
+  "storage": {
+    "rules": "storage.rules"
+  }
+}`,
+
+            // .gitignore
+            gitignore: `# Dependency directories
+node_modules/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Environment variables (Sensitive!)
+.env
+.env.local
+.env.*.local
+
+# Firebase specific
+firebase-debug.log
+.firebase/
+
+# IDE files
+.vscode/
+.idea/`,
+
+            // .env.example
+            env_example: `# .env.example
+# Copy this file to .env and fill in your actual values
+# NEVER commit .env to version control!
+
+# Firebase Project Configuration
+FIREBASE_PROJECT_ID=simpli-fi-id
+FIREBASE_WEB_API_KEY=your_web_api_key_here
+FIREBASE_AUTH_DOMAIN=simpli-fi-id.firebaseapp.com
+FIREBASE_DATABASE_URL=https://simpli-fi-id.firebaseio.com
+FIREBASE_STORAGE_BUCKET=simpli-fi-id.appspot.com
+FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+FIREBASE_APP_ID=your_app_id
+
+# Stripe Keys
+STRIPE_PUBLISHABLE_KEY=pk_test_XXXXXXXXXXXXXXXXXXXXXXXX
+STRIPE_SECRET_KEY=sk_test_XXXXXXXXXXXXXXXXXXXXXXXX
+STRIPE_WEBHOOK_SECRET=whsec_XXXXXXXXXXXXXXXXXXXXXXXX
+
+# SendGrid
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxxxxx
+SENDGRID_TEMPLATE_ID=d-xxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Notion Integration
+NOTION_API_KEY=secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Airlock (local)
+AIRLOCK_URL=http://localhost:8080
+
+# Analytics
+GOOGLE_ANALYTICS_ID=GA-MEASUREMENT-ID`,
+
+            // tailwind.config.js
+            tailwind_config: `/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./public/**/*.{html,js}",
+    "./src/**/*.{js}"
+  ],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        gold: {
+          50: '#fffbeb',
+          100: '#fef3c7',
+          200: '#fde68a',
+          300: '#fcd34d',
+          400: '#fbbf24',
+          500: '#f59e0b',
+          600: '#d97706',
+          700: '#b45309',
+          800: '#92400e',
+          900: '#78350f',
+        },
+        teal: {
+          400: '#2dd4bf',
+          500: '#14b8a6',
+          600: '#0d9488',
+        },
+        stealth: {
+          800: '#1e293b',
+          900: '#0f172a',
+        },
+        founder: '#fbbf24',
+        professional: '#2dd4bf',
+        ambassador: '#94a3b8',
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Satoshi', 'Inter', 'sans-serif'],
+      },
+      borderRadius: {
+        'card': '1.5rem',
+      },
+      boxShadow: {
+        'card': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        'card-hover': '0 25px 50px -12px rgba(251, 191, 36, 0.25)',
+      },
+      backgroundImage: {
+        'founder-gradient': 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+        'professional-gradient': 'linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%)',
+      }
+    },
+  },
+  plugins: [],
+}`,
+
+            // firestore.rules
+            firestore_rules: `rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOrgMember(orgId) {
+      return isSignedIn() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.org_id == orgId;
+    }
+
+    function isServiceAccount() {
+      return request.auth.token.firebase.sign_in_provider == 'firebase' &&
+             request.auth.token.email.endsWith('@simpli-fi-id.iam.gserviceaccount.com');
+    }
+
+    // Users
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow create, read: if isServiceAccount();
+    }
+
+    // Public Cards
+    match /public_cards/{cardId} {
+      allow read: if true;
+      allow create, update: if isSignedIn() && request.auth.uid == request.resource.data.owner_uid;
+      allow update: if isSignedIn() && resource.data.owner_uid == request.auth.uid;
+    }
+
+    // Organizations
+    match /organizations/{orgId} {
+      allow read: if isOrgMember(orgId);
+      match /assets/{assetId} {
+        allow read: if isOrgMember(orgId);
+        allow write: if isOrgMember(orgId) &&
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      }
+    }
+
+    // Events
+    match /events/{eventId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+  }
+}`,
+
+            // storage.rules
+            storage_rules: `rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // User Profile Photos / Logos
+    match /users/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+
+    // Organization Assets
+    match /orgs/{orgId}/assets/{allPaths=**} {
+      allow read: if isSignedIn() &&
+                   get(/databases/$(request.resource.bucket)/documents/users/$(request.auth.uid)).data.org_id == orgId;
+
+      allow write, delete: if isSignedIn() &&
+                           get(/databases/$(request.resource.bucket)/documents/users/$(request.auth.uid)).data.org_id == orgId &&
+                           get(/databases/$(request.resource.bucket)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Public Resources
+    match /public_resources/{allPaths=**} {
+      allow read: if true;
+      allow write, delete: if request.auth != null && 
+                           request.auth.token.email.endsWith('@simpli-fi-id.iam.gserviceaccount.com');
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}`,
+
+            // airlock/package.json
+            airlock_package: `{
+  "name": "airlock",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "@google-cloud/firestore": "^7.1.0"
+  },
+  "engines": {
+    "node": "18"
+  }
+}`,
+
+            // airlock/Dockerfile
+            airlock_docker: `# SERIES A STANDARD CONTAINER
+FROM node:18-alpine as builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+FROM gcr.io/distroless/nodejs18-debian11
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY . .
+
+ENV NODE_ENV=production
+CMD ["index.js"]`,
+
+            // airlock/.dockerignore
+            airlock_dockerignore: `# AIRLOCK DOCKER IGNORE
+node_modules
+npm-debug.log
+.env
+.DS_Store
+Dockerfile
+.dockerignore`,
+
+            // airlock/index.js
+            airlock_index: `/**
+ * SIMPLI-FI AIRLOCK v2.0
+ * Goal: <100ms Redirect Latency
+ */
+const express = require('express');
+const { Firestore } = require('@google-cloud/firestore');
+const app = express();
+
+// Warm Start Optimization
+const firestore = new Firestore();
+const publicCards = firestore.collection('public_cards');
+
+app.get('/:id', async (req, res) => {
+    const start = Date.now();
+    const id = req.params.id;
+
+    try {
+        const doc = await publicCards.doc(id).get();
+
+        if (!doc.exists) {
+            return res.status(404).send('Card not found');
+        }
+
+        const data = doc.data();
+        const dest = data.redirect_url || \`https://id.simpli-fi-os.com/card/\${id}\`;
+
+        logScan(id, req);
+
+        res.set('X-Airlock-Latency', \`\${Date.now() - start}ms\`);
+        res.redirect(302, dest);
+
+    } catch (e) {
+        console.error(e);
+        res.redirect('https://simpli-fi-os.com/error');
+    }
+});
+
+function logScan(id, req) {
+    firestore.collection('events').add({
+        type: 'scan',
+        card_id: id,
+        ip: req.ip,
+        ua: req.get('User-Agent'),
+        ts: Firestore.FieldValue.serverTimestamp()
+    }).catch(console.error);
+}
+
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => console.log(\`Airlock active on port \${PORT}\`));`,
+
+            // airlock/routes/claim.js
+            airlock_routes_claim: `/**
+ * airlock/routes/claim.js
+ * High-velocity resource claim endpoint
+ */
+
+const express = require('express');
+const { Firestore } = require('@google-cloud/firestore');
+
+const router = express.Router();
+const firestore = new Firestore();
+
+const resources = firestore.collection('resources');
+const users = firestore.collection('users');
+const events = firestore.collection('events');
+
+router.get('/:resourceId', async (req, res) => {
+    const start = Date.now();
+    const { resourceId } = req.params;
+    const referrerId = req.query.ref;
+
+    try {
+        const resourceDoc = await resources.doc(resourceId).get();
+
+        if (!resourceDoc.exists) {
+            return res.status(404).send('Resource not found');
+        }
+
+        const resourceData = resourceDoc.data();
+        const destinationUrl = resourceData.url;
+
+        if (referrerId) {
+            const userDoc = await users.doc(referrerId).get();
+            if (userDoc.exists) {
+                incrementScoreAndLog(referrerId, resourceId, req);
+            }
+        }
+
+        res.set('X-Airlock-Latency', \`\${Date.now() - start}ms\`);
+        res.redirect(302, destinationUrl);
+
+    } catch (error) {
+        console.error('Claim route error:', error);
+        res.redirect('https://simpli-fi-os.com/error');
+    }
+});
+
+async function incrementScoreAndLog(userId, resourceId, req) {
+    const batch = firestore.batch();
+
+    const userRef = users.doc(userId);
+    batch.update(userRef, {
+        score: Firestore.FieldValue.increment(1),
+        last_active: Firestore.FieldValue.serverTimestamp()
+    });
+
+    const eventRef = events.doc();
+    batch.set(eventRef, {
+        type: 'resource_scan',
+        user_id: userId,
+        resource_id: resourceId,
+        ip: req.ip,
+        user_agent: req.get('User-Agent'),
+        timestamp: Firestore.FieldValue.serverTimestamp()
+    });
+
+    batch.commit().catch(err => console.error('Batch commit failed:', err));
+}
+
+module.exports = router;`,
+
+            // functions/package.json
+            functions_package: `{
+  "name": "functions",
+  "description": "Cloud Functions for Simpli-FI OS",
+  "scripts": {
+    "lint": "eslint",
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "@notionhq/client": "^2.2.13",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0"
+  },
+  "private": true
+}`,
+
+            // functions/index.js
+            functions_index: `/**
+ * SIMPLI-FI BACKGROUND TASKS (Cloud Functions)
+ */
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const { Client } = require('@notionhq/client');
+
+admin.initializeApp();
+
+const notionKey = functions.config().notion?.key;
+const notionDbId = functions.config().notion?.db_id;
+
+let notion;
+if (notionKey) {
+    notion = new Client({ auth: notionKey });
+}
+
+exports.syncToNotion = functions.firestore
+    .document('users/{userId}')
+    .onCreate(async (snap, context) => {
+        if (!notion) {
+            console.warn("Notion Sync Skipped: No API Key configured.");
+            return null;
+        }
+
+        const userData = snap.data();
+        const userId = context.params.userId;
+
+        if (!userData.full_name) {
+            console.warn(\`Skipped \${userId}: Missing full_name\`);
+            return null;
+        }
+
+        let startDate = new Date().toISOString();
+        if (userData.created_at && typeof userData.created_at.toDate === 'function') {
+            startDate = userData.created_at.toDate().toISOString();
+        }
+
+        const tierValue = (userData.tier || "free").toLowerCase(); 
+
+        try {
+            await notion.pages.create({
+                parent: { database_id: notionDbId },
+                properties: {
+                    "Name": { title: [{ text: { content: userData.full_name || "Unknown" } }] },
+                    "Email": { email: userData.email || "" },
+                    "Phone": { phone_number: userData.phone || "" },
+                    "Status": { select: { name: "New Lead" } },
+                    "Tier": { select: { name: tierValue } },
+                    "Card URL": { url: \`https://id.simpli-fi-os.com/\${userId}\` },
+                    "Start Date": { date: { start: startDate } }
+                }
+            });
+            console.log(\`Synced \${userId} successfully.\`);
+            return null;
+        } catch (error) {
+            console.error("Notion Sync Failed:", error.message);
+            return null;
+        }
+    });`,
+
+            // functions/sendWelcomeEmail.js
+            functions_email: `/**
+ * functions/sendWelcomeEmail.js
+ * Transactional welcome email + vCard attachment
+ */
+
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const sgMail = require('@sendgrid/mail');
+
+const SENDGRID_KEY = functions.config().sendgrid?.key;
+const TEMPLATE_ID = functions.config().sendgrid?.template_id;
+
+if (SENDGRID_KEY) {
+    sgMail.setApiKey(SENDGRID_KEY);
+}
+
+exports.sendWelcomeEmail = functions.firestore
+    .document('users/{userId}')
+    .onCreate(async (snap, context) => {
+        if (!SENDGRID_KEY || !TEMPLATE_ID) {
+            console.warn('Welcome Email Skipped: SendGrid not configured.');
+            return null;
+        }
+
+        const userData = snap.data();
+        const userId = context.params.userId;
+
+        if (!userData.email) {
+            console.warn(\`No email for user \${userId}\`);
+            return null;
+        }
+
+        const cardUrl = \`https://id.simpli-fi-os.com/\${userId}\`;
+
+        const msg = {
+            to: userData.email,
+            from: 'welcome@simpli-fi-os.com',
+            templateId: TEMPLATE_ID,
+            dynamicTemplateData: {
+                full_name: userData.full_name || 'there',
+                card_url: cardUrl,
+                tier: (userData.tier || 'Ambassador').charAt(0).toUpperCase() + (userData.tier || 'ambassador').slice(1),
+                login_url: 'https://dashboard.simpli-fi-os.com'
+            }
+        };
+
+        try {
+            await sgMail.send(msg);
+            console.log(\`Welcome email sent to \${userData.email}\`);
+            return null;
+        } catch (error) {
+            console.error('SendGrid Error:', error.response ? error.response.body : error);
+            return null;
+        }
+    });`,
+
+            // src/utils.js
+            src_utils: `/**
+ * src/utils.js
+ * Shared frontend utilities for Simpli-FI ID
+ */
+
+export const Utils = {
+
+  formatPhone: (phone) => {
+    if (!phone) return '';
+    const digits = phone.replace(/\\D/g, '');
+    if (digits.length === 10) {
+      return \`(\${digits.slice(0,3)}) \${digits.slice(3,6)}-\${digits.slice(6)}\`;
+    }
+    if (digits.length === 11 && digits[0] === '1') {
+      return \`(\${digits.slice(1,4)}) \${digits.slice(4,7)}-\${digits.slice(7)}\`;
+    }
+    return phone;
+  },
+
+  isValidEmail: (email) => {
+    if (!email) return false;
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/;
+    return re.test(email.trim());
+  },
+
+  hasFeature: (tier, feature) => {
+    const features = {
+      ambassador: [],
+      professional: ['save_contact', 'custom_colors', 'payment_link', 'booking_link'],
+      founder: ['save_contact', 'custom_domain', 'resource_catalog', 'verified_badge', 'unlimited_updates'],
+      enterprise: ['all']
+    };
+    tier = (tier || 'ambassador').toLowerCase();
+    if (features[tier].includes('all')) return true;
+    return features[tier].includes(feature);
+  },
+
+  generateVCard: (profile) => {
+    if (!profile) return '';
+    const lines = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      \`N:\${profile.last_name || ''};\${profile.first_name || ''};;;\`,
+      \`FN:\${profile.full_name || 'Simpli-FI User'}\`,
+      profile.email ? \`EMAIL:\${profile.email}\` : '',
+      profile.phone ? \`TEL:\${profile.phone}\` : '',
+      profile.website ? \`URL:\${profile.website}\` : '',
+      profile.title ? \`TITLE:\${profile.title}\` : '',
+      profile.company ? \`ORG:\${profile.company}\` : '',
+      'END:VCARD'
+    ];
+    return lines.filter(line => line).join('\\n');
+  },
+
+  sanitizeUrl: (url) => {
+    if (!url) return '';
+    if (!/^https?:\\/\\//i.test(url)) {
+      return 'https://' + url;
+    }
+    return url;
+  },
+
+  celebrate: (tier = 'professional') => {
+    console.log(\`🎉 Celebrating \${tier} tier activation!\`);
+  }
+};`,
+
+            // src/confettiManager.js
+            src_confetti: `/**
+ * src/confettiManager.js
+ * Tier-specific celebration effects using canvas-confetti
+ */
+
+import confetti from 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js';
+
+const ConfettiManager = {
+  isMobile: () => window.innerWidth < 768,
+  baseCount: () => ConfettiManager.isMobile() ? 50 : 100,
+
+  ambassador: () => {
+    confetti({
+      particleCount: ConfettiManager.baseCount() / 2,
+      spread: 60,
+      origin: { y: 0.6 },
+      colors: ['#fbbf24', '#ffffff'],
+      ticks: 200
+    });
+  },
+
+  professional: () => {
+    confetti({
+      particleCount: ConfettiManager.baseCount(),
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#fbbf24', '#1e293b', '#ffffff']
+    });
+  },
+
+  founder: () => {
+    const duration = 1500;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 8,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#fbbf24', '#0d9488']
+      });
+      confetti({
+        particleCount: 8,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#fbbf24', '#ffffff']
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    frame();
+  },
+
+  enterprise: () => {
+    const count = ConfettiManager.baseCount() * 3;
+    const defaults = {
+      origin: { y: 0.6 },
+      colors: ['#fbbf24', '#f59e0b', '#ffffff', '#1e293b', '#e11d48']
+    };
+
+    function fire(particleRatio, opts) {
+      confetti({
+        ...defaults,
+        ...opts,
+        particleCount: Math.floor(count * particleRatio)
+      });
+    }
+
+    fire(0.25, { spread: 26, startVelocity: 55 });
+    fire(0.2,  { spread: 60 });
+    fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+    fire(0.1,  { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+    fire(0.1,  { spread: 120, startVelocity: 45 });
+  },
+
+  celebrate: (tier = 'professional') => {
+    const normalizedTier = (tier || 'professional').toLowerCase();
+
+    switch (normalizedTier) {
+      case 'ambassador':
+        ConfettiManager.ambassador();
+        break;
+      case 'professional':
+        ConfettiManager.professional();
+        break;
+      case 'founder':
+        ConfettiManager.founder();
+        break;
+      case 'enterprise':
+        ConfettiManager.enterprise();
+        break;
+      default:
+        ConfettiManager.professional();
+    }
+  }
+};
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = ConfettiManager;
+} else {
+  window.ConfettiManager = ConfettiManager;
+}`,
+
+            // src/vcardGenerator.js
+            src_vcard: `/**
+ * src/vcardGenerator.js
+ * Generates and downloads vCard (.vcf) for Professional+ tiers
+ */
+
+import { Utils } from './utils.js';
+
+const VCardGenerator = {
+
+  downloadVCard: (profile, tier = 'ambassador') => {
+    if (!Utils.hasFeature(tier, 'save_contact')) {
+      console.warn('vCard download blocked: Insufficient tier');
+      return;
+    }
+
+    if (!profile || !profile.full_name) {
+      console.warn('Cannot generate vCard: Missing profile data');
+      return;
+    }
+
+    const vcard = VCardGenerator.buildVCard(profile);
+    VCardGenerator.triggerDownload(vcard, profile);
+  },
+
+  buildVCard: (profile) => {
+    const lines = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      \`N:\${profile.last_name || ''};\${profile.first_name || ''};;;\`,
+      \`FN:\${profile.full_name || 'Simpli-FI User'}\`
+    ];
+
+    if (profile.email) lines.push(\`EMAIL;TYPE=INTERNET:\${profile.email}\`);
+    if (profile.phone) lines.push(\`TEL;TYPE=CELL:\${profile.phone}\`);
+    if (profile.work_phone) lines.push(\`TEL;TYPE=WORK:\${profile.work_phone}\`);
+    if (profile.website) lines.push(\`URL:\${Utils.sanitizeUrl(profile.website)}\`);
+    if (profile.title) lines.push(\`TITLE:\${profile.title}\`);
+    if (profile.company) lines.push(\`ORG:\${profile.company}\`);
+
+    if (profile.address) {
+      lines.push(\`ADR;TYPE=WORK:;;\${profile.address.street || ''};\${profile.address.city || ''};\${profile.address.state || ''};\${profile.address.zip || ''};\${profile.address.country || ''}\`);
+    }
+
+    if (profile.linkedin) lines.push(\`item1.URL:\${Utils.sanitizeUrl(profile.linkedin)}\`);
+    if (profile.twitter) lines.push(\`item2.URL:\${Utils.sanitizeUrl(profile.twitter)}\`);
+
+    if (profile.tagline) lines.push(\`NOTE:\${profile.tagline}\`);
+
+    lines.push('END:VCARD');
+
+    return lines.join('\\n');
+  },
+
+  triggerDownload: (vcardContent, profile) => {
+    const filename = \`\${(profile.full_name || 'Simpli-FI_User').replace(/\\s+/g, '_')}.vcf\`;
+
+    const blob = new Blob([vcardContent], { type: 'text/vcard;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    if (typeof ConfettiManager !== 'undefined') {
+      ConfettiManager.celebrate(profile.tier || 'professional');
+    }
+  }
+};
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = VCardGenerator;
+} else {
+  window.VCardGenerator = VCardGenerator;
+}`,
+
+            // scripts/deploy-hosting.sh
+            scripts_deploy: `#!/usr/bin/env bash
+# scripts/deploy-hosting.sh
+set -euo pipefail
+
+PROJECT_ID="simpli-fi-id"
+PUBLIC_DIR="public"
+
+command -v firebase >/dev/null 2>&1 || {
+    echo "Firebase CLI not found. Install with: npm install -g firebase-tools"
+    exit 1
+}
+
+if [[ ! -d "$PUBLIC_DIR" ]]; then
+    echo "Error: Directory '$PUBLIC_DIR' not found"
+    exit 1
+fi
+
+if [[ ! -f "firebase.json" ]]; then
+    echo "Error: firebase.json not found"
+    exit 1
+fi
+
+firebase login:list | grep -q "Logged in as" || firebase login
+firebase use "$PROJECT_ID"
+
+echo "Deploying to Firebase Hosting..."
+firebase deploy --only hosting
+
+echo "Deployment completed successfully!"`,
+
+            // scripts/setup-env.js
+            scripts_env: `/**
+ * scripts/setup-env.js
+ * Creates .env from .env.example
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+const ENV_EXAMPLE = '.env.example';
+const ENV_LOCAL = '.env';
+const ROOT_DIR = path.resolve(__dirname, '..');
+
+const examplePath = path.join(ROOT_DIR, ENV_EXAMPLE);
+const envPath = path.join(ROOT_DIR, ENV_LOCAL);
+
+console.log('🔧 Simpli-FI Environment Setup\\n');
+
+if (!fs.existsSync(examplePath)) {
+    console.error(\`❌ Error: \${ENV_EXAMPLE} not found.\`);
+    process.exit(1);
+}
+
+if (fs.existsSync(envPath)) {
+    console.log(\`⚠️  \${ENV_LOCAL} already exists. Delete it first to recreate.\`);
+    process.exit(0);
+}
+
+fs.copyFileSync(examplePath, envPath);
+
+console.log(\`✅ Created \${ENV_LOCAL} from \${ENV_EXAMPLE}\\n\`);
+console.log('📝 Next: Edit .env with your keys\\n');
+console.log('🔒 NEVER commit .env to Git!\\n');
+console.log('🚀 Ready for development!');`,
+
+            // public/index.html
+            public_index: `<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI ID | Your Digital Command Center</title>
+    <meta name="description" content="Claim your Simpli-FI ID — the professional digital identity that replaces dead links with trackable, beautiful connections.">
+   
+    <link rel="icon" href="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/main/ID.png">
+   
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+   
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+   
+    <script type="module" src="../src/confettiManager.js"></script>
+   
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        navy: '#1e293b',
+                        gold: { 400: '#fbbf24', 500: '#f59e0b' },
+                        teal: { 500: '#0d9488', 600: '#059669' },
+                        coral: '#E27D60',
+                        offwhite: '#F8FAFC',
+                        founder: '#fbbf24',
+                        professional: '#0d9488',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 1s ease-out forwards',
+                        'slide-up': 'slideUp 0.8s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+   
+    <style>
+        .grid-bg {
+            background-color: #F8FAFC;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+        .mesh-overlay {
+            background-image:
+                radial-gradient(at 0% 0%, rgba(13, 148, 136, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(251, 191, 36, 0.08) 0px, transparent 50%);
+        }
+        .tier-card {
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease-out;
+            cursor: pointer;
+        }
+        .tier-card:hover { transform: translateY(-16px) scale(1.02); z-index: 10; }
+    </style>
+</head>
+<body class="bg-offwhite text-navy font-sans antialiased min-h-screen flex flex-col relative selection:bg-founder selection:text-navy">
+   
+    <div class="fixed inset-0 grid-bg z-[-2]"></div>
+    <div class="fixed inset-0 mesh-overlay z-[-1]"></div>
+   
+    <nav class="w-full py-6 sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+            <a href="#" class="flex items-center gap-3 group">
+                <img src="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/main/ID.png" class="w-10 h-10 rounded-xl shadow-md group-hover:scale-110 transition duration-300" alt="Simpli-FI Logo">
+                <span class="font-bold text-navy text-xl tracking-tight">Simpli-FI <span class="text-founder">ID</span></span>
+            </a>
+            <div class="flex items-center gap-8">
+                <a href="#pricing" class="hidden md:block text-sm font-medium text-gray-600 hover:text-navy transition">Pricing</a>
+                <a href="#preview" class="hidden md:block text-sm font-medium text-gray-600 hover:text-navy transition">Preview</a>
+                <a href="/intake_form.html" class="px-6 py-3 bg-navy text-white text-sm font-bold uppercase tracking-wider rounded-xl hover:bg-teal transition shadow-xl hover:shadow-teal/30 transform hover:-translate-y-1">
+                    Claim Your ID
+                </a>
+            </div>
+        </div>
+    </nav>
+   
+    <header class="pt-32 pb-32 text-center px-6 relative overflow-hidden">
+        <div class="max-w-5xl mx-auto animate-slide-up">
+            <h1 class="text-6xl md:text-8xl font-serif text-navy mb-10 tracking-tight leading-[1.1]">
+                Your Digital <br><span class="italic text-teal-600">Command Center.</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
+                Stop handing out dead links. The Simpli-FI ID is a live, trackable portal to your business, your calendar, and your current mission — for individuals and entire teams.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-8 justify-center max-w-4xl mx-auto bg-white/70 backdrop-blur-lg p-10 rounded-3xl shadow-2xl border border-white/50">
+                <div class="flex-1 text-left">
+                    <div class="flex items-center gap-3 mb-4">
+                        <i data-lucide="x-circle" class="w-6 h-6 text-coral"></i>
+                        <h3 class="text-sm font-bold text-navy uppercase tracking-widest">The Old Way</h3>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        Paper cards get lost. Linktrees feel generic. You have no idea who actually engaged with your content.
+                    </p>
+                </div>
+                <div class="hidden sm:block w-px bg-gray-300"></div>
+                <div class="flex-1 text-left">
+                    <div class="flex items-center gap-3 mb-4">
+                        <i data-lucide="check-circle" class="w-6 h-6 text-teal-600"></i>
+                        <h3 class="text-sm font-bold text-navy uppercase tracking-widest">The Simpli-FI Way</h3>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        A tiered, branded digital identity that turns every handshake into measurable, actionable intelligence.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </header>
+   
+    <!-- PRICING -->
+    <section id="pricing" class="max-w-7xl mx-auto px-6 mb-32">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-serif text-navy mb-6">Choose Your Command Level</h2>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto">From solo professionals to enterprise teams — there's a tier built for your mission.</p>
+            <p class="text-xs text-gray-400 mt-4 italic">Hover or tap cards for a celebration!</p>
+        </div>
+       
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch">
+            <div id="ambassador-card" class="tier-card bg-white p-8 rounded-3xl border border-coral/30 shadow-lg hover:shadow-xl flex flex-col group h-full">
+                <div class="mb-6">
+                    <span class="text-xs font-bold bg-coral/10 text-coral px-3 py-1.5 rounded-full uppercase tracking-widest">Ambassador</span>
+                </div>
+                <div class="flex items-baseline gap-2 mb-4">
+                    <span class="text-4xl font-bold text-navy">Free</span>
+                </div>
+                <p class="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-6">Great for networking beginners.</p>
+                <ul class="space-y-4 text-sm text-gray-600 flex-grow">
+                    <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5 text-coral"></i> Mobile-Optimized ID</li>
+                    <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5 text-coral"></i> Standard Hosting</li>
+                    <li class="flex items-center gap-3 text-gray-400"><i data-lucide="minus" class="w-5 h-5"></i> Ad Footer</li>
+                </ul>
+                <a href="/intake_form.html" class="mt-8 w-full py-4 bg-white text-coral font-bold rounded-2xl border-2 border-coral hover:bg-coral hover:text-white transition text-center">
+                    Start Free
+                </a>
+            </div>
+           
+            <div id="professional-card" class="tier-card bg-navy p-8 rounded-3xl shadow-2xl flex flex-col relative overflow-hidden group h-full">
+                <div class="absolute top-4 right-4 bg-founder text-navy text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest">Most Popular</div>
+                <div class="mb-6">
+                    <span class="text-xs font-bold bg-white/20 text-white px-3 py-1.5 rounded-full uppercase tracking-widest">Professional</span>
+                </div>
+                <div class="flex items-baseline gap-2 mb-4">
+                    <span class="text-4xl font-bold text-white">$19</span>
+                    <span class="text-sm text-gray-300">one-time</span>
+                </div>
+                <p class="text-sm text-gray-300 mb-8 border-b border-white/10 pb-6">Clean, ad-free, and functional.</p>
+                <ul class="space-y-4 text-sm text-gray-300 flex-grow">
+                    <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5 text-founder"></i> <span class="text-white font-medium">Save to Contacts</span></li>
+                    <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5 text-founder"></i> No Ads</li>
+                    <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5 text-founder"></i> Custom Colors</li>
+                </ul>
+                <a href="/intake_form.html" class="mt-8 w-full py-4 bg-founder text-navy font-bold rounded-2xl hover:bg-gold-500 transition text-center shadow-xl">
+                    Get Professional
+                </a>
+            </div>
+           
+            <div id="founder-card" class="tier-card bg-gradient-to-br from-teal-600 to-teal-700 p-8 rounded-3xl shadow-2xl flex flex-col group h-full">
+                <div class="mb-6">
+                    <span class="text-xs font-bold bg-white/20 text-white px-3 py-1.5 rounded-full uppercase tracking-widest">Founder</span>
+                </div>
+                <div class="flex items-baseline gap-2 mb-4">
+                    <span class="text-4xl font-bold text-white">$49</span>
+                    <span class="text-sm text-teal-100">+ $5/mo</span>
+                </div>
+                <p class="text-sm text-teal-50 mb-8 border-b border-white/10 pb-6">Maximum control and prestige.</p>
+                <ul class="space-y-4 text-sm text-teal-50 flex-grow">
+                    <li class="flex items-center gap-3"><i data-lucide="star" class="w-5 h-5 text-founder"></i> <span class="text-white font-bold">Custom Domain</span></li>
+                    <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5 text-white"></i> Verified Gold Badge</li>
+                    <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5 text-white"></i> Unlimited Updates</li>
+                </ul>
+                <a href="/intake_form.html" class="mt-8 w-full py-4 bg-white text-teal-700 font-bold rounded-2xl hover:bg-teal-50 transition text-center shadow-xl">
+                    Go Founder
+                </a>
+            </div>
+           
+            <div id="enterprise-card" class="tier-card bg-gradient-to-br from-violet-900 to-indigo-900 p-8 rounded-3xl shadow-2xl flex flex-col group h-full relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
+                <div class="mb-6">
+                    <span class="text-xs font-bold bg-founder text-navy px-3 py-1.5 rounded-full uppercase tracking-widest">Enterprise</span>
+                </div>
+                <div class="flex items-baseline gap-2 mb-4">
+                    <span class="text-4xl font-bold text-white">Custom</span>
+                </div>
+                <p class="text-sm text-violet-200 mb-8 border-b border-white/10 pb-6">For teams and agencies.</p>
+                <ul class="space-y-4 text-sm text-violet-100 flex-grow">
+                    <li class="flex items-center gap-3"><i data-lucide="building-2" class="w-5 h-5 text-founder"></i> <span class="text-white font-bold">Central Admin</span></li>
+                    <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5 text-founder"></i> Bulk Provisioning</li>
+                    <li class="flex items-center gap-3"><i data-lucide="check" class="w-5 h-5 text-founder"></i> Brand Enforcement</li>
+                </ul>
+                <a href="/enterprise_setup.html" class="mt-8 w-full py-4 bg-transparent border-2 border-founder text-founder font-bold rounded-2xl hover:bg-founder hover:text-navy transition text-center shadow-xl">
+                    Contact Sales
+                </a>
+            </div>
+        </div>
+    </section>
+   
+    <!-- PREVIEW -->
+    <section id="preview" class="max-w-7xl mx-auto px-6 mb-32">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-serif text-navy mb-6">See It Live</h2>
+            <p class="text-gray-600 text-lg">Real Simpli-FI IDs deployed by early users.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
+            <div class="rounded-3xl shadow-2xl overflow-hidden border-8 border-navy/10 hover:scale-105 transition duration-500">
+                <img src="https://files.constantcontact.com/3720c3fd901/040f4544-8335-483d-80b4-b42f8d718fba.png" alt="Hunter's Founder Card" class="w-full">
+            </div>
+            <div class="rounded-3xl shadow-2xl overflow-hidden border-8 border-navy/10 hover:scale-105 transition duration-500 md:-mt-12">
+                <img src="https://files.constantcontact.com/3720c3fd901/42685625-3892-4ec3-9b96-7c607b0f4086.png" alt="Lindsey's Professional Card" class="w-full">
+            </div>
+            <div class="rounded-3xl shadow-2xl overflow-hidden border-8 border-navy/10 hover:scale-105 transition duration-500">
+                <img src="https://files.constantcontact.com/3720c3fd901/ac004f7a-83a8-40ca-b26e-828958065be2.png" alt="Colby's Ambassador Card" class="w-full">
+            </div>
+        </div>
+    </section>
+   
+    <!-- CTA -->
+    <section class="pb-32 px-6">
+        <div class="max-w-4xl mx-auto text-center bg-gradient-to-br from-navy to-slate-900 rounded-3xl shadow-2xl p-16 relative overflow-hidden">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.2)_0%,transparent_70%)]"></div>
+            <h2 class="text-5xl font-serif text-white mb-8 relative z-10">Ready to Deploy?</h2>
+            <p class="text-xl text-gray-300 mb-12 max-w-2xl mx-auto relative z-10">
+                Join hundreds of professionals already using Simpli-FI ID to turn connections into measurable outcomes.
+            </p>
+            <a href="/intake_form.html" class="inline-flex items-center gap-4 px-10 py-5 bg-founder text-navy font-bold text-xl rounded-2xl shadow-2xl hover:shadow-founder/50 hover:scale-105 transition relative z-10">
+                Claim Your ID Now
+                <i data-lucide="arrow-right" class="w-7 h-7"></i>
+            </a>
+        </div>
+    </section>
+   
+    <footer class="bg-navy py-12 border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6 text-gray-400 text-sm">
+            <div class="flex items-center gap-3">
+                <img src="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/main/ID.png" class="w-8 h-8 rounded opacity-60" alt="Logo">
+                <span>SYSTEM_ID: SFI-V2.1 // <span class="text-founder animate-pulse">ONLINE</span></span>
+            </div>
+            <div class="flex gap-8">
+                <a href="https://simpli-fi-os.com" class="hover:text-white transition">Mothership</a>
+                <a href="#" class="hover:text-white transition">Support</a>
+                <a href="#" class="hover:text-white transition">Privacy</a>
+            </div>
+        </div>
+    </footer>
+   
+    <script>
+        lucide.createIcons();
+       
+        document.getElementById('ambassador-card')?.addEventListener('mouseenter', () => ConfettiManager.celebrate('ambassador'));
+        document.getElementById('professional-card')?.addEventListener('mouseenter', () => ConfettiManager.celebrate('professional'));
+        document.getElementById('founder-card')?.addEventListener('mouseenter', () => ConfettiManager.celebrate('founder'));
+        document.getElementById('enterprise-card')?.addEventListener('mouseenter', () => ConfettiManager.celebrate('enterprise'));
+    </script>
+</body>
+</html>`,
+
+            // public/card.html
+            public_card: `<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+   
+    <meta property="og:title" content="Simpli-FI ID" id="og-title">
+    <meta property="og:description" content="Connect with me." id="og-desc">
+    <meta property="og:image" content="" id="og-image">
+    <meta property="og:type" content="profile">
+   
+    <link rel="icon" href="" id="dynamic-favicon">
+    <link rel="apple-touch-icon" href="" id="dynamic-apple-icon">
+    <title>Simpli-FI ID | Loading...</title>
+   
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+   
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+   
+    <script type="module" src="../src/utils.js"></script>
+    <script type="module" src="../src/vcardGenerator.js"></script>
+    <script type="module" src="../src/confettiManager.js"></script>
+   
+    <style>
+        body { background-color: #FBF9F7; overflow: hidden; }
+        .physics-element { position: absolute; pointer-events: none; z-index: 0; opacity: 0.9; }
+       
+        #loader { @apply fixed inset-0 bg-slate-900 flex items-center justify-center z-50 transition-opacity duration-500; }
+        #error-screen { @apply fixed inset-0 bg-slate-900 z-60 flex flex-col items-center justify-center p-8 text-center hidden; }
+       
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .ad-banner-enter { animation: slideUp 0.6s ease-out forwards; }
+    </style>
+</head>
+<body class="fixed inset-0">
+    <div id="physics-layer" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
+   
+    <div id="loader">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-founder"></div>
+    </div>
+   
+    <div id="error-screen">
+        <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
+            <i data-lucide="alert-triangle" class="w-10 h-10 text-red-500"></i>
+        </div>
+        <h2 class="text-white font-bold text-2xl mb-3">Connection Failed</h2>
+        <p id="error-message" class="text-slate-400 mb-8 max-w-xs">Unable to load identity. Please try again.</p>
+        <button onclick="window.location.reload()" class="px-8 py-3 bg-white text-slate-900 font-bold rounded-2xl hover:bg-founder hover:text-slate-900 transition">
+            Retry
+        </button>
+    </div>
+   
+    <div id="scroll-container" class="w-full h-full overflow-y-auto relative z-10 flex justify-center p-4 pb-32">
+        <main id="card-body" class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 relative flex flex-col my-auto transition-all duration-700 opacity-0 transform translate-y-8">
+           
+            <div class="h-40 relative overflow-hidden bg-slate-900" id="header-bg">
+                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(white_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                <div class="absolute top-6 left-6 flex items-center gap-4 z-10">
+                    <div id="org-logo" class="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center text-white font-bold text-2xl">S</div>
+                    <span id="org-name" class="text-white font-bold text-lg">Simpli-FI</span>
+                </div>
+                <button class="absolute top-6 right-6 z-20 bg-white/20 backdrop-blur p-3 rounded-xl hover:bg-white/30 transition">
+                    <i data-lucide="qr-code" class="w-5 h-5 text-white"></i>
+                </button>
+            </div>
+           
+            <div class="relative px-8 -mt-20 text-center">
+                <div class="inline-block relative">
+                    <div class="w-40 h-40 rounded-full border-8 border-white shadow-2xl overflow-hidden bg-slate-100">
+                        <img id="avatar" src="" class="w-full h-full object-cover" alt="Profile">
+                    </div>
+                    <div id="badge" class="hidden absolute bottom-2 right-2 bg-founder text-slate-900 p-2 rounded-full border-4 border-white shadow-lg">
+                        <i data-lucide="shield-check" class="w-5 h-5 stroke-[3]"></i>
+                    </div>
+                </div>
+                <h1 id="user-name" class="mt-6 text-4xl font-bold text-slate-900">Loading...</h1>
+                <p id="user-title" class="mt-2 text-sm font-bold uppercase tracking-wider text-founder">Title</p>
+            </div>
+           
+            <div id="actions-grid" class="grid grid-cols-4 gap-4 px-8 my-8"></div>
+           
+            <div class="px-8 mb-8">
+                <div class="bg-slate-50 border-l-4 border-founder p-6 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-3">
+                        <i data-lucide="target" class="w-5 h-5 text-slate-900"></i>
+                        <span class="text-xs font-bold uppercase tracking-widest text-slate-600">Current Mission</span>
+                    </div>
+                    <p id="mission-text" class="text-slate-800 font-medium italic text-lg leading-relaxed">
+                        Building meaningful connections.
+                    </p>
+                </div>
+            </div>
+           
+            <div class="px-8 mb-8">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-founder mb-3">About</h3>
+                <p id="bio-text" class="text-slate-600 leading-relaxed"></p>
+            </div>
+           
+            <div id="contact-details" class="px-8 mb-12 space-y-3"></div>
+           
+            <div class="mt-auto py-8 text-center border-t border-slate-100 bg-slate-50">
+                <a href="https://simpli-fi-os.com" target="_blank" class="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 transition text-xs font-bold uppercase tracking-widest">
+                    Powered by Simpli-FI OS
+                    <i data-lucide="external-link" class="w-3 h-3"></i>
+                </a>
+            </div>
+        </main>
+    </div>
+   
+    <div id="ad-banner" class="hidden fixed bottom-6 left-6 right-6 z-50 max-w-lg mx-auto">
+        <div class="bg-slate-900/95 backdrop-blur-xl text-white p-6 rounded-3xl shadow-2xl border border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-6 transform translate-y-full">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-founder rounded-2xl flex items-center justify-center text-slate-900 font-bold text-2xl">S</div>
+                <div>
+                    <p class="text-xs uppercase tracking-widest text-slate-400">Powered by</p>
+                    <p class="font-bold text-lg">Simpli-FI OS</p>
+                </div>
+            </div>
+            <button onclick="handleAdClick()" class="px-8 py-4 bg-founder text-slate-900 font-bold rounded-2xl hover:scale-105 transition shadow-lg flex items-center gap-3">
+                <span>Upgrade to Pro</span>
+                <i data-lucide="zap" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </div>
+   
+    <script type="module">
+        import { Utils } from '../src/utils.js';
+        import { VCardGenerator } from '../src/vcardGenerator.js';
+        import { ConfettiManager } from '../src/confettiManager.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAnlmGZNwoPS-vBnK1AlHvNsB73q0UAkCU",
+            authDomain: "simpli-fi-id.firebaseapp.com",
+            projectId: "simpli-fi-id",
+            storageBucket: "simpli-fi-id.firebasestorage.app",
+            messagingSenderId: "97006103916",
+            appId: "1:97006103916:web:631c876a6eb263caf81749"
+        };
+
+        let db, userData = null;
+
+        async function init() {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                await firebase.auth().signInAnonymously();
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const userId = urlParams.get('u') || 'demo_user';
+
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (!userDoc.exists) {
+                    userData = getDemoData();
+                } else {
+                    userData = userDoc.data();
+                    userData.id = userId;
+                }
+
+                await applyBranding(userData);
+                renderCard(userData);
+                lucide.createIcons();
+                initPhysics(userData.tier);
+
+                document.getElementById('loader').classList.add('opacity-0');
+                setTimeout(() => {
+                    document.getElementById('loader').remove();
+                    document.getElementById('card-body').classList.remove('opacity-0', 'translate-y-8');
+                }, 600);
+
+            } catch (err) {
+                console.error(err);
+                showError("Failed to load profile. Please try again.");
+            }
+        }
+
+        function getDemoData() {
+            return {
+                full_name: "Alex Rivera",
+                title: "Founder & CEO",
+                tier: "founder",
+                avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
+                bio: "Building the future of digital identity and resource distribution.",
+                mission: "Empowering professionals with seamless, trackable connections.",
+                phone: "+1 (555) 123-4567",
+                email: "alex@company.com",
+                social_links: { website: "https://company.com" }
+            };
+        }
+
+        async function applyBranding(data) {
+            let brand = { primary: '#1e293b', accent: '#fbbf24' };
+            if (data.org_id) {
+                const orgSnap = await db.collection('organizations').doc(data.org_id).get();
+                if (orgSnap.exists) {
+                    const orgData = orgSnap.data();
+                    brand = orgData.branding || brand;
+                }
+            }
+            document.documentElement.style.setProperty('--brand-primary', brand.primary);
+            document.documentElement.style.setProperty('--brand-accent', brand.accent || data.custom_accent || '#fbbf24');
+
+            document.getElementById('og-title').content = \`\${data.full_name} | Simpli-FI ID\`;
+            document.getElementById('og-desc').content = data.bio || "Connect with me.";
+            document.getElementById('og-image').content = data.avatar_url || "https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/main/ID.png";
+            document.getElementById('dynamic-favicon').href = data.avatar_url || "/favicon.ico";
+            document.getElementById('dynamic-apple-icon').href = data.avatar_url || "/apple-touch-icon.png";
+        }
+
+        function renderCard(data) {
+            document.getElementById('user-name').textContent = data.full_name;
+            document.getElementById('user-title').textContent = data.title || '';
+            document.getElementById('bio-text').textContent = data.bio || '';
+            document.getElementById('mission-text').textContent = data.mission || 'Building connections.';
+            document.getElementById('avatar').src = data.avatar_url;
+
+            if (data.tier && data.tier !== 'ambassador') {
+                document.getElementById('badge').classList.remove('hidden');
+            } else {
+                setTimeout(showAdBanner, 2000);
+            }
+
+            renderActions(data);
+            renderContactDetails(data);
+        }
+
+        function renderActions(data) {
+            const grid = document.getElementById('actions-grid');
+            const actions = [
+                { icon: 'phone', label: 'Call', href: \`tel:\${data.phone}\`, show: !!data.phone },
+                { icon: 'mail', label: 'Email', href: \`mailto:\${data.email}\`, show: !!data.email },
+                { icon: 'globe', label: 'Website', href: data.social_links?.website, show: !!data.social_links?.website },
+                { icon: 'contact', label: 'Save Contact', action: () => saveContact(data), show: Utils.hasFeature(data.tier, 'save_contact') }
+            ];
+
+            actions.forEach(act => {
+                if (!act.show) return;
+                const el = act.href
+                    ? \`<a href="\${act.href}" class="group text-center">
+                         <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-2 group-hover:bg-founder transition">
+                           <i data-lucide="\${act.icon}" class="w-6 h-6 text-slate-600 group-hover:text-white"></i>
+                         </div>
+                         <span class="text-xs text-slate-600">\${act.label}</span>
+                       </a>\`
+                    : \`<button onclick="\${act.action.name}()" class="group text-center">
+                         <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-2 group-hover:bg-founder transition">
+                           <i data-lucide="\${act.icon}" class="w-6 h-6 text-slate-600 group-hover:text-white"></i>
+                         </div>
+                         <span class="text-xs text-slate-600">\${act.label}</span>
+                       </button>\`;
+                grid.innerHTML += el;
+            });
+        }
+
+        function renderContactDetails(data) {
+            const container = document.getElementById('contact-details');
+            const items = [
+                { icon: 'mail', text: data.email, href: \`mailto:\${data.email}\` },
+                { icon: 'phone', text: data.phone, href: \`tel:\${data.phone}\` },
+                { icon: 'globe', text: data.social_links?.website?.replace('https://', ''), href: data.social_links?.website }
+            ];
+            items.forEach(item => {
+                if (!item.text) return;
+                container.innerHTML += \`
+                    <div class="flex items-center p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                        <i data-lucide="\${item.icon}" class="w-5 h-5 text-slate-600"></i>
+                        <a href="\${item.href}" class="ml-4 text-sm text-slate-700 flex-1 truncate">\${item.text}</a>
+                    </div>\`;
+            });
+        }
+
+        function saveContact(profile) {
+            VCardGenerator.downloadVCard(profile, profile.tier);
+        }
+
+        function showAdBanner() {
+            const banner = document.getElementById('ad-banner');
+            banner.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                banner.querySelector('div').classList.add('ad-banner-enter');
+            });
+        }
+
+        function handleAdClick() {
+            logEvent('ad_upgrade_click');
+            window.open('https://simpli-fi-os.com/upgrade', '_blank');
+        }
+
+        function logEvent(type) {
+            if (db && userData) {
+                db.collection('events').add({
+                    type,
+                    user_id: userData.id,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(() => {});
+            }
+        }
+
+        function initPhysics(tier) {
+            const container = document.getElementById('scroll-container');
+            const layer = document.getElementById('physics-layer');
+            let startY = 0;
+
+            container.addEventListener('touchstart', e => {
+                if (container.scrollTop <= 0) startY = e.touches[0].pageY;
+            });
+
+            container.addEventListener('touchmove', e => {
+                const delta = e.touches[0].pageY - startY;
+                if (delta > 50 && Math.random() < 0.3) {
+                    const el = document.createElement('div');
+                    el.className = 'physics-element text-4xl';
+                    el.style.left = Math.random() * 100 + 'vw';
+                    el.innerText = tier === 'founder' ? '💰' : '✨';
+                    layer.appendChild(el);
+                    el.animate([
+                        { transform: 'translateY(-100px)', opacity: 1 },
+                        { transform: \`\${innerHeight + 100}px translateY(0)\`, opacity: 0 }
+                    ], { duration: 2000 }).onfinish = () => el.remove();
+                }
+            });
+        }
+
+        function showError(msg) {
+            document.getElementById('loader').remove();
+            const err = document.getElementById('error-screen');
+            err.classList.remove('hidden');
+            document.getElementById('error-message').textContent = msg;
+            lucide.createIcons();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>`,
+
+            // public/intake_form.html
+            public_intake: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI ID | Claim Your Identity</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/main/ID.png">
+   
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+   
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-storage-compat.js"></script>
+   
+    <script type="module" src="../src/utils.js"></script>
+    <script type="module" src="../src/vcardGenerator.js"></script>
+    <script type="module" src="../src/confettiManager.js"></script>
+   
+    <script src="https://js.stripe.com/v3/"></script>
+   
+    <style>
+        body { background-color: #F3F4F6; font-family: 'Inter', sans-serif; }
+        .slide-in { animation: slideIn 0.5s ease-out forwards; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+       
+        .toggle-checkbox:checked { right: 0; border-color: #1e293b; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #1e293b; }
+        .field-disabled { opacity: 0.4; pointer-events: none; filter: grayscale(1); }
+        .section-disabled { opacity: 0.6; pointer-events: none; filter: grayscale(1); }
+       
+        .velvet-rope { position: relative; opacity: 0.7; user-select: none; transition: all 0.3s; }
+        .velvet-rope.unlocked { opacity: 1; user-select: auto; pointer-events: auto; }
+        .velvet-rope::after {
+            content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.4);
+            backdrop-filter: blur(1px); z-index: 10; border-radius: 0.75rem;
+            transition: opacity 0.3s;
+        }
+        .velvet-rope.unlocked::after { opacity: 0; pointer-events: none; }
+       
+        .lock-badge {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 20;
+            background: #1e293b; color: #fbbf24; padding: 6px 12px; border-radius: 9999px;
+            font-size: 10px; font-weight: bold; display: flex; align-items: center; gap: 6px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); white-space: nowrap;
+            transition: opacity 0.3s;
+        }
+        .velvet-rope.unlocked .lock-badge { opacity: 0; pointer-events: none; }
+       
+        .preview-card-container { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .preview-card-container.expanded { height: 100%; border-radius: 0; }
+       
+        input[type="color"] {
+            -webkit-appearance: none; border: none; width: 32px; height: 32px; padding: 0; overflow: hidden; border-radius: 50%; cursor: pointer;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row font-sans">
+    <!-- SUCCESS MODAL -->
+    <div id="success-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-500 to-yellow-400"></div>
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
+                <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl font-serif text-slate-800 font-bold mb-2">Identity Launched!</h2>
+            <p class="text-slate-500 text-sm mb-6">Your Simpli-FI ID has been successfully created.</p>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 text-left">
+                <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Your Card URL</p>
+                <div class="flex items-center gap-2">
+                    <input type="text" id="final-url" readonly class="w-full bg-transparent text-sm font-mono text-slate-700 focus:outline-none" value="">
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="copyFinalURL()" class="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition flex items-center justify-center gap-2"><i data-lucide="copy" class="w-4 h-4"></i> Copy</button>
+                <button onclick="openFinalURL()" class="flex-1 py-3 bg-[#1e293b] text-white font-bold rounded-xl hover:bg-slate-800 transition flex items-center justify-center gap-2">Open <i data-lucide="external-link" class="w-4 h-4"></i></button>
+            </div>
+            <button onclick="closeModal()" class="mt-6 text-xs text-slate-400 hover:text-slate-600">Close</button>
+        </div>
+    </div>
+    <!-- LEFT: FORM -->
+    <div class="w-full md:w-1/2 bg-white flex flex-col h-screen overflow-y-auto relative">
+       
+        <div class="p-8 border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur z-30">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-[#1e293b] text-[#fbbf24] rounded-lg flex items-center justify-center font-serif text-xl leading-none tracking-[0.25em] pl-1" style="font-family: 'Playfair Display', serif;">ID</div>
+                    <span class="font-serif text-[#1e293b] font-bold tracking-tight text-lg">Simpli-FI <span class="font-light text-[#fbbf24]">Intake</span></span>
+                </div>
+            </div>
+            <div class="bg-slate-100 p-1 rounded-xl flex gap-1 mb-4">
+                <button onclick="setTier('ambassador')" id="btn-tier-ambassador" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-500 hover:bg-white/50">Ambassador</button>
+                <button onclick="setTier('professional')" id="btn-tier-professional" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all bg-white text-slate-800 ring-1 ring-slate-200">Professional</button>
+                <button onclick="setTier('founder')" id="btn-tier-founder" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-500 hover:bg-white/50">Founder</button>
+            </div>
+            <div class="flex items-center gap-2 text-[10px] text-slate-400 uppercase tracking-wider font-medium">
+                <span id="tier-badge" class="w-2 h-2 rounded-full bg-[#fbbf24]"></span>
+                <span id="tier-desc">Professional Identity</span>
+            </div>
+        </div>
+       
+        <div class="flex-1 p-8 space-y-8">
+            <!-- Essentials -->
+            <section class="space-y-4 slide-in" style="animation-delay: 0.1s">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Identity Essentials</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-medium text-slate-600 mb-1">First Name</label><input type="text" id="input-fname" placeholder="Hunter" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()"></div>
+                    <div><label class="block text-xs font-medium text-slate-600 mb-1">Last Name</label><input type="text" id="input-lname" placeholder="Lott" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-medium text-slate-600 mb-1">Professional Title</label><input type="text" id="input-title" placeholder="Founder & CEO" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()"></div>
+                    <div><label class="block text-xs font-medium text-slate-600 mb-1">Company / Employer</label><input type="text" id="input-company" placeholder="Simpli-FI OS" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()"></div>
+                </div>
+               
+                <div id="feature-tagline" class="velvet-rope">
+                    <div class="lock-badge" style="background: #fbbf24; color: #1e293b;"><i data-lucide="crown" class="w-3 h-3"></i> Founder</div>
+                    <div><label class="block text-xs font-medium text-slate-600 mb-1">Tag Line / Motto</label><input disabled type="text" id="input-tagline" placeholder="Building the future, one connection at a time." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()"></div>
+                </div>
+               
+                <div><label class="block text-xs font-medium text-slate-600 mb-1">Role & Responsibilities</label><input type="text" id="input-role" placeholder="Leading strategic vision..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()"></div>
+            </section>
+           
+            <!-- Visual Brand -->
+            <section class="space-y-4 slide-in" style="animation-delay: 0.2s">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="image" class="w-4 h-4"></i> Visual Brand</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden border border-slate-200 shrink-0">
+                            <img id="thumb-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block w-full cursor-pointer group">
+                                <div class="flex items-center justify-center w-full p-2 border-2 border-dashed border-slate-200 rounded-xl group-hover:border-[#1e293b] transition bg-white">
+                                    <span class="text-[10px] text-slate-500 font-medium group-hover:text-[#1e293b]">Upload Headshot</span>
+                                </div>
+                                <input type="file" id="input-photo" accept="image/*" class="hidden" onchange="handleImage(this, 'preview-avatar')">
+                            </label>
+                        </div>
+                    </div>
+                   
+                    <div id="feature-logo-upload" class="velvet-rope flex items-center gap-4">
+                        <div class="lock-badge"><i data-lucide="lock" class="w-3 h-3"></i> Pro</div>
+                        <div class="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden border border-slate-200 shrink-0 flex items-center justify-center opacity-50">
+                            <i data-lucide="image" class="w-5 h-5 text-slate-300"></i>
+                        </div>
+                        <div class="flex-1 opacity-50">
+                            <label class="block w-full cursor-not-allowed">
+                                <div class="flex items-center justify-center w-full p-2 border-2 border-dashed border-slate-200 rounded-xl bg-white">
+                                    <span class="text-[10px] text-slate-500 font-medium">Upload Logo</span>
+                                </div>
+                                <input disabled type="file" id="input-logo" accept="image/*" class="hidden" onchange="handleLogo(this)">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+               
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-2">Color Palette</label>
+                    <div class="grid grid-cols-3 gap-2 mb-2">
+                        <button onclick="setTheme('finance')" class="p-3 rounded-xl border border-slate-200 hover:border-[#fbbf24] hover:bg-[#fbbf24]/5 transition flex items-center justify-center gap-2 text-sm font-medium bg-white text-xs"><span class="w-3 h-3 rounded-full bg-[#1e293b]"></span> Finance</button>
+                        <button onclick="setTheme('creative')" class="p-3 rounded-xl border border-slate-200 hover:border-[#fbbf24] hover:bg-[#fbbf24]/5 transition flex items-center justify-center gap-2 text-sm font-medium bg-white text-xs"><span class="w-3 h-3 rounded-full bg-[#214F4B]"></span> Creative</button>
+                        <button onclick="setTheme('stealth')" class="p-3 rounded-xl border border-slate-200 hover:border-[#fbbf24] hover:bg-[#fbbf24]/5 transition flex items-center justify-center gap-2 text-sm font-medium bg-white text-xs"><span class="w-3 h-3 rounded-full bg-[#000000]"></span> Stealth</button>
+                    </div>
+                   
+                    <div id="feature-custom-hex" class="velvet-rope p-3 rounded-xl border border-slate-200 flex items-center justify-between bg-white">
+                        <div class="flex items-center gap-3 w-full">
+                            <input type="color" id="color-picker" disabled class="cursor-pointer hover:scale-110 transition" value="#1e293b" onchange="updateCustomColor(this.value)">
+                            <input type="text" id="hex-input" placeholder="#CustomHex" disabled class="text-xs font-mono text-slate-600 bg-transparent focus:outline-none w-full uppercase" onchange="updateCustomColor(this.value)">
+                        </div>
+                        <div class="lock-badge"><i data-lucide="lock" class="w-3 h-3"></i> Pro</div>
+                    </div>
+                </div>
+            </section>
+           
+            <!-- Mission -->
+            <section class="space-y-4 slide-in" style="animation-delay: 0.3s">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="target" class="w-4 h-4"></i> The Mission</h3>
+                <textarea id="input-mission" rows="3" placeholder="I'm looking to connect with..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition resize-none" oninput="updatePreview()"></textarea>
+            </section>
+           
+            <!-- Contact Details -->
+            <section class="space-y-4 slide-in" style="animation-delay: 0.4s">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="link" class="w-4 h-4"></i> Contact Details</h3>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-4">
+                        <div class="relative mt-2 shrink-0">
+                            <input type="checkbox" id="toggle-email" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300 left-0 transition-all duration-300" onclick="toggleField('email')" checked/>
+                            <label for="toggle-email" class="toggle-label block overflow-hidden h-5 rounded-full bg-[#1e293b] cursor-pointer"></label>
+                        </div>
+                        <div id="field-email" class="w-full relative">
+                            <i data-lucide="mail" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i>
+                            <input type="email" id="input-email" placeholder="Email Address" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] text-sm" oninput="updatePreview()">
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="relative mt-2 shrink-0">
+                            <input type="checkbox" id="toggle-phone" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300 left-0 transition-all duration-300" onclick="toggleField('phone')" checked/>
+                            <label for="toggle-phone" class="toggle-label block overflow-hidden h-5 rounded-full bg-[#1e293b] cursor-pointer"></label>
+                        </div>
+                        <div id="field-phone" class="w-full relative">
+                            <i data-lucide="phone" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i>
+                            <input type="tel" id="input-phone" placeholder="Phone Number" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] text-sm" oninput="updatePreview()">
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="relative mt-2 shrink-0">
+                            <input type="checkbox" id="toggle-website" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300 left-0 transition-all duration-300" onclick="toggleField('website')" />
+                            <label for="toggle-website" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
+                        </div>
+                        <div id="field-website" class="w-full relative field-disabled">
+                            <i data-lucide="globe" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i>
+                            <input type="url" id="input-website" placeholder="Website URL" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] text-sm" oninput="updatePreview()">
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="relative mt-2 shrink-0">
+                            <input type="checkbox" id="toggle-location" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300 left-0 transition-all duration-300" onclick="toggleField('location')" />
+                            <label for="toggle-location" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
+                        </div>
+                        <div id="field-location" class="w-full relative field-disabled">
+                            <i data-lucide="map-pin" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i>
+                            <input type="text" id="input-location" placeholder="City, State or Address" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] text-sm" oninput="updatePreview()">
+                        </div>
+                    </div>
+                </div>
+            </section>
+           
+            <!-- Social Media -->
+            <section class="space-y-4 slide-in" style="animation-delay: 0.5s">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="share-2" class="w-4 h-4"></i> Social Media</h3>
+                <div class="flex gap-2 mb-3">
+                    <div class="relative w-1/3 shrink-0">
+                        <select id="input-social-platform" onchange="updateSocialIcon()" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 appearance-none focus:outline-none focus:border-[#1e293b] transition">
+                            <option value="linkedin">LinkedIn</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="twitter">X (Twitter)</option>
+                            <option value="youtube">YouTube</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-3 top-3.5 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                    </div>
+                    <div class="relative w-2/3">
+                        <input type="url" id="input-social-url" placeholder="Paste URL here..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()">
+                        <div class="absolute right-3 top-3.5 text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded">Free</div>
+                    </div>
+                </div>
+                <div id="feature-more-links" class="velvet-rope relative">
+                    <div class="lock-badge"><i data-lucide="lock" class="w-3 h-3"></i> Pro</div>
+                    <div class="relative">
+                        <i data-lucide="plus" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i>
+                        <input disabled type="text" placeholder="Add another link..." class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                    </div>
+                </div>
+            </section>
+           
+            <!-- Commerce -->
+            <section class="space-y-4 slide-in" style="animation-delay: 0.6s">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="dollar-sign" class="w-4 h-4"></i> Commerce</h3>
+                <div id="feature-commerce" class="velvet-rope">
+                    <div class="lock-badge" style="background: #fbbf24; color: #1e293b;"><i data-lucide="crown" class="w-3 h-3"></i> Founder</div>
+                    <div class="space-y-2 opacity-50">
+                        <label class="block text-xs font-medium text-slate-600">Payment Link</label>
+                        <div class="relative">
+                            <i data-lucide="credit-card" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i>
+                            <input disabled type="url" id="input-payment" placeholder="Stripe / Venmo / CashApp Link" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm" oninput="updatePreview()">
+                        </div>
+                        <p class="text-[10px] text-slate-400">Easily charge clients or share bills.</p>
+                    </div>
+                </div>
+            </section>
+           
+            <!-- Intelligence -->
+            <section class="space-y-4 slide-in" style="animation-delay: 0.7s">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="bar-chart-2" class="w-4 h-4"></i> Intelligence Suite</h3>
+                <div id="feature-intelligence" class="velvet-rope p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3 bg-white">
+                    <div class="lock-badge" style="background: #fbbf24; color: #1e293b;"><i data-lucide="crown" class="w-3 h-3"></i> Founder</div>
+                    <div class="flex items-center justify-between opacity-50"><span class="text-xs font-medium text-slate-600">Sync Leads to Salesforce/HubSpot</span><div class="w-8 h-4 bg-slate-200 rounded-full"></div></div>
+                    <div class="flex items-center justify-between opacity-50"><span class="text-xs font-medium text-slate-600">Real-time Visitor Analytics</span><div class="w-8 h-4 bg-slate-200 rounded-full"></div></div>
+                </div>
+            </section>
+           
+            <!-- Payment -->
+            <section id="payment-section" class="space-y-4 slide-in" style="animation-delay: 0.8s;">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="credit-card" class="w-4 h-4"></i> Secure Payment</h3>
+                <div class="p-6 bg-slate-50 rounded-xl border border-slate-200">
+                    <p class="text-sm font-bold text-slate-800 mb-4">Upgrade to <span id="payment-tier">Professional</span> Tier</p>
+                    <p class="text-2xl font-bold text-[#1e293b] mb-6" id="payment-amount">$19 <span class="text-xs font-medium text-slate-500">one-time</span></p>
+                    <div id="stripe-element" class="bg-white p-4 rounded-xl border border-slate-200 mb-4"></div>
+                    <button onclick="processPayment()" id="pay-button" class="w-full py-4 bg-[#1e293b] text-white font-bold rounded-2xl shadow-xl hover:bg-slate-800 transition flex items-center justify-center gap-2">
+                        <span>Complete Purchase</span>
+                        <i data-lucide="lock" class="w-5 h-5"></i>
+                    </button>
+                    <p class="text-[10px] text-slate-400 text-center mt-4">Powered by Stripe. 100% Secure.</p>
+                </div>
+            </section>
+           
+            <div class="h-12"></div>
+        </div>
+        <div class="p-6 border-t border-gray-100 bg-white sticky bottom-0 z-20">
+            <button onclick="submitForm()" id="btn-submit" class="w-full py-4 bg-[#1e293b] text-white font-bold rounded-2xl shadow-xl hover:bg-slate-800 transition flex items-center justify-center gap-2 group">
+                <span>Launch Identity</span>
+                <i data-lucide="rocket" class="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform"></i>
+            </button>
+        </div>
+    </div>
+   
+    <!-- RIGHT: PREVIEW -->
+    <div class="hidden md:flex w-1/2 bg-slate-100 items-center justify-center p-12 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-5 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:20px_20px]"></div>
+       
+        <div class="relative w-full max-w-[380px] h-[750px] bg-white rounded-[40px] shadow-2xl border-8 border-slate-900 overflow-hidden ring-1 ring-white/20 preview-card-container" id="preview-container">
+            <div class="w-full h-full overflow-y-auto preview-scroll bg-[#FBF9F7] relative">
+                <div class="h-32 bg-[#1e293b] relative overflow-hidden transition-colors duration-500" id="preview-header">
+                    <div class="absolute top-6 right-6 z-20 bg-white/20 backdrop-blur p-1.5 rounded-lg cursor-pointer hover:bg-white/30 transition"><i data-lucide="qr-code" class="w-4 h-4 text-white"></i></div>
+                    <div class="absolute top-6 left-6 z-10 flex items-center gap-2" id="preview-logo-area">
+                        <div id="default-logo-container" class="flex items-center gap-2"><div class="w-8 h-8 bg-white/10 backdrop-blur rounded flex items-center justify-center text-white font-bold font-serif leading-none">ID</div><span class="text-white font-serif text-xs font-bold opacity-80">Simpli-FI</span></div>
+                        <div id="custom-logo-container" class="hidden items-center gap-2"><div class="w-8 h-8 bg-white/10 backdrop-blur rounded flex items-center justify-center overflow-hidden"><img id="preview-custom-logo" src="" class="w-full h-full object-contain"></div><span id="preview-company" class="text-white font-serif text-xs font-bold opacity-80 truncate max-w-[150px]"></span></div>
+                    </div>
+                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#fbbf24_1px,transparent_1px)] [background-size:10px_10px]"></div>
+                </div>
+                <div class="relative px-6 -mt-16 text-center"><div class="inline-block relative"><div class="w-28 h-28 rounded-full border-4 border-white shadow-lg overflow-hidden bg-slate-200"><img id="preview-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="w-full h-full object-cover"></div></div><div class="mt-3"><h2 id="preview-name" class="font-serif text-2xl font-bold text-[#1e293b]">Your Name</h2><p id="preview-title" class="text-[#fbbf24] font-bold text-[10px] tracking-widest uppercase mt-1">Professional Title</p><p id="preview-tagline" class="text-slate-500 text-[10px] mt-1 font-medium hidden">"Building the future..."</p><p id="preview-role" class="text-slate-400 text-[10px] mt-1 font-medium italic"></p></div></div>
+               
+                <div class="px-6 mt-6 flex justify-center gap-3" id="quick-actions-row">
+                    <div id="quick-phone" class="hidden flex flex-col items-center gap-1"><div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600 shadow-sm"><i data-lucide="phone" class="w-4 h-4"></i></div><span class="text-[9px] font-bold text-slate-400">Call</span></div>
+                    <div id="quick-email" class="hidden flex flex-col items-center gap-1"><div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600 shadow-sm"><i data-lucide="mail" class="w-4 h-4"></i></div><span class="text-[9px] font-bold text-slate-400">Email</span></div>
+                    <div id="quick-save" class="hidden flex flex-col items-center gap-1"><div class="w-10 h-10 rounded-xl bg-[#fbbf24]/10 border border-[#fbbf24]/20 flex items-center justify-center text-[#fbbf24] shadow-sm"><i data-lucide="contact" class="w-4 h-4"></i></div><span class="text-[9px] font-bold text-[#fbbf24]">Save</span></div>
+                    <div id="quick-pay" class="hidden flex flex-col items-center gap-1"><div class="w-10 h-10 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center text-green-600 shadow-sm"><i data-lucide="dollar-sign" class="w-4 h-4"></i></div><span class="text-[9px] font-bold text-slate-400">Pay</span></div>
+                </div>
+                <div id="preview-mission-block" class="px-4 mt-6 hidden"><div class="bg-white p-4 rounded-xl border-l-4 border-[#1e293b] shadow-sm"><div class="flex items-center gap-2 mb-1"><i data-lucide="target" class="w-3 h-3 text-[#1e293b]"></i><span class="text-[8px] font-bold uppercase tracking-widest text-[#1e293b]">Mission</span></div><p id="preview-mission" class="text-slate-600 text-xs italic"></p></div></div>
+                <div class="px-4 mt-4 space-y-2">
+                    <div id="preview-email-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100"><i data-lucide="mail" class="w-3 h-3 text-[#1e293b]"></i><span id="preview-email" class="ml-3 text-[10px] text-slate-600 truncate"></span></div>
+                    <div id="preview-phone-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100"><i data-lucide="phone" class="w-3 h-3 text-[#1e293b]"></i><span id="preview-phone" class="ml-3 text-[10px] text-slate-600 truncate"></span></div>
+                    <div id="preview-website-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100"><i data-lucide="globe" class="w-3 h-3 text-[#1e293b]"></i><span id="preview-website" class="ml-3 text-[10px] text-slate-600 truncate"></span></div>
+                    <div id="preview-location-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100"><i data-lucide="map-pin" class="w-3 h-3 text-[#1e293b]"></i><span id="preview-location" class="ml-3 text-[10px] text-slate-600 truncate"></span></div>
+                </div>
+               
+                <div class="mt-8 px-4 pb-8">
+                    <div id="preview-branding-ad" class="bg-slate-900 p-3 rounded-xl flex items-center justify-between shadow-lg">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 bg-[#fbbf24] rounded flex items-center justify-center text-[10px] font-bold font-serif leading-none">ID</div>
+                            <div class="flex flex-col"><span class="text-[8px] text-slate-400 uppercase">Powered By</span><span class="text-[10px] font-bold text-white">Simpli-FI OS</span></div>
+                        </div>
+                        <span class="text-[10px] bg-white text-slate-900 px-3 py-1 rounded font-bold">Get Yours</span>
+                    </div>
+                    <div id="preview-branding-pro" class="hidden text-center">
+                        <p class="text-[8px] text-slate-400 uppercase tracking-widest font-bold">Powered by Simpli-FI</p>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute top-0 left-0 -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-xl z-50 left-1/2"></div>
+        </div>
+        <div class="absolute bottom-8 text-slate-400 text-xs font-mono">Live Preview</div>
+    </div>
+   
+    <script type="module">
+        import { Utils } from '../src/utils.js';
+        import { VCardGenerator } from '../src/vcardGenerator.js';
+        import { ConfettiManager } from '../src/confettiManager.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAnlmGZNwoPS-vBnK1AlHvNsB73q0UAkCU",
+            authDomain: "simpli-fi-id.firebaseapp.com",
+            projectId: "simpli-fi-id",
+            storageBucket: "simpli-fi-id.firebasestorage.app",
+            messagingSenderId: "97006103916",
+            appId: "1:97006103916:web:631c876a6eb263caf81749"
+        };
+
+        let db, userData = null;
+
+        async function init() {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                await firebase.auth().signInAnonymously();
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const userId = urlParams.get('u') || 'demo_user';
+
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (!userDoc.exists) {
+                    userData = getDemoData();
+                } else {
+                    userData = userDoc.data();
+                    userData.id = userId;
+                }
+
+                await applyBranding(userData);
+                renderCard(userData);
+                lucide.createIcons();
+                initPhysics(userData.tier);
+
+                document.getElementById('loader').classList.add('opacity-0');
+                setTimeout(() => {
+                    document.getElementById('loader').remove();
+                    document.getElementById('card-body').classList.remove('opacity-0', 'translate-y-8');
+                }, 600);
+
+            } catch (err) {
+                console.error(err);
+                showError("Failed to load profile. Please try again.");
+            }
+        }
+
+        function getDemoData() {
+            return {
+                full_name: "Alex Rivera",
+                title: "Founder & CEO",
+                tier: "founder",
+                avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
+                bio: "Building the future of digital identity and resource distribution.",
+                mission: "Empowering professionals with seamless, trackable connections.",
+                phone: "+1 (555) 123-4567",
+                email: "alex@company.com",
+                social_links: { website: "https://company.com" }
+            };
+        }
+
+        async function applyBranding(data) {
+            let brand = { primary: '#1e293b', accent: '#fbbf24' };
+            if (data.org_id) {
+                const orgSnap = await db.collection('organizations').doc(data.org_id).get();
+                if (orgSnap.exists) {
+                    const orgData = orgSnap.data();
+                    brand = orgData.branding || brand;
+                }
+            }
+            document.documentElement.style.setProperty('--brand-primary', brand.primary);
+            document.documentElement.style.setProperty('--brand-accent', brand.accent || data.custom_accent || '#fbbf24');
+
+            document.getElementById('og-title').content = \`\${data.full_name} | Simpli-FI ID\`;
+            document.getElementById('og-desc').content = data.bio || "Connect with me.";
+            document.getElementById('og-image').content = data.avatar_url || "https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/main/ID.png";
+            document.getElementById('dynamic-favicon').href = data.avatar_url || "/favicon.ico";
+            document.getElementById('dynamic-apple-icon').href = data.avatar_url || "/apple-touch-icon.png";
+        }
+
+        function renderCard(data) {
+            document.getElementById('user-name').textContent = data.full_name;
+            document.getElementById('user-title').textContent = data.title || '';
+            document.getElementById('bio-text').textContent = data.bio || '';
+            document.getElementById('mission-text').textContent = data.mission || 'Building connections.';
+            document.getElementById('avatar').src = data.avatar_url;
+
+            if (data.tier && data.tier !== 'ambassador') {
+                document.getElementById('badge').classList.remove('hidden');
+            } else {
+                setTimeout(showAdBanner, 2000);
+            }
+
+            renderActions(data);
+            renderContactDetails(data);
+        }
+
+        function renderActions(data) {
+            const grid = document.getElementById('actions-grid');
+            const actions = [
+                { icon: 'phone', label: 'Call', href: \`tel:\${data.phone}\`, show: !!data.phone },
+                { icon: 'mail', label: 'Email', href: \`mailto:\${data.email}\`, show: !!data.email },
+                { icon: 'globe', label: 'Website', href: data.social_links?.website, show: !!data.social_links?.website },
+                { icon: 'contact', label: 'Save Contact', action: () => saveContact(data), show: Utils.hasFeature(data.tier, 'save_contact') }
+            ];
+
+            actions.forEach(act => {
+                if (!act.show) return;
+                const el = act.href
+                    ? \`<a href="\${act.href}" class="group text-center">
+                         <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-2 group-hover:bg-founder transition">
+                           <i data-lucide="\${act.icon}" class="w-6 h-6 text-slate-600 group-hover:text-white"></i>
+                         </div>
+                         <span class="text-xs text-slate-600">\${act.label}</span>
+                       </a>\`
+                    : \`<button onclick="\${act.action.name}()" class="group text-center">
+                         <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-2 group-hover:bg-founder transition">
+                           <i data-lucide="\${act.icon}" class="w-6 h-6 text-slate-600 group-hover:text-white"></i>
+                         </div>
+                         <span class="text-xs text-slate-600">\${act.label}</span>
+                       </button>\`;
+                grid.innerHTML += el;
+            });
+        }
+
+        function renderContactDetails(data) {
+            const container = document.getElementById('contact-details');
+            const items = [
+                { icon: 'mail', text: data.email, href: \`mailto:\${data.email}\` },
+                { icon: 'phone', text: data.phone, href: \`tel:\${data.phone}\` },
+                { icon: 'globe', text: data.social_links?.website?.replace('https://', ''), href: data.social_links?.website }
+            ];
+            items.forEach(item => {
+                if (!item.text) return;
+                container.innerHTML += \`
+                    <div class="flex items-center p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                        <i data-lucide="\${item.icon}" class="w-5 h-5 text-slate-600"></i>
+                        <a href="\${item.href}" class="ml-4 text-sm text-slate-700 flex-1 truncate">\${item.text}</a>
+                    </div>\`;
+            });
+        }
+
+        function saveContact(profile) {
+            VCardGenerator.downloadVCard(profile, profile.tier);
+        }
+
+        function showAdBanner() {
+            const banner = document.getElementById('ad-banner');
+            banner.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                banner.querySelector('div').classList.add('ad-banner-enter');
+            });
+        }
+
+        function handleAdClick() {
+            logEvent('ad_upgrade_click');
+            window.open('https://simpli-fi-os.com/upgrade', '_blank');
+        }
+
+        function logEvent(type) {
+            if (db && userData) {
+                db.collection('events').add({
+                    type,
+                    user_id: userData.id,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(() => {});
+            }
+        }
+
+        function initPhysics(tier) {
+            const container = document.getElementById('scroll-container');
+            const layer = document.getElementById('physics-layer');
+            let startY = 0;
+
+            container.addEventListener('touchstart', e => {
+                if (container.scrollTop <= 0) startY = e.touches[0].pageY;
+            });
+
+            container.addEventListener('touchmove', e => {
+                const delta = e.touches[0].pageY - startY;
+                if (delta > 50 && Math.random() < 0.3) {
+                    const el = document.createElement('div');
+                    el.className = 'physics-element text-4xl';
+                    el.style.left = Math.random() * 100 + 'vw';
+                    el.innerText = tier === 'founder' ? '💰' : '✨';
+                    layer.appendChild(el);
+                    el.animate([
+                        { transform: 'translateY(-100px)', opacity: 1 },
+                        { transform: \`\${innerHeight + 100}px translateY(0)\`, opacity: 0 }
+                    ], { duration: 2000 }).onfinish = () => el.remove();
+                }
+            });
+        }
+
+        function showError(msg) {
+            document.getElementById('loader').remove();
+            const err = document.getElementById('error-screen');
+            err.classList.remove('hidden');
+            document.getElementById('error-message').textContent = msg;
+            lucide.createIcons();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>`,
+
+            // public/enterprise_setup.html
+            public_setup: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI OS | Enterprise Setup</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/main/ID.png">
+   
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script type="module" src="../src/confettiManager.js"></script>
+   
+    <style>
+        body { background-color: #F3F4F6; }
+        .slide-in { animation: slideIn 0.6s ease-out forwards; opacity: 0; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+       
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+       
+        .preview-slide {
+            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+            width: 100%;
+            inset: 0;
+        }
+        .preview-hidden-left { transform: translateX(-120%) scale(0.9); opacity: 0; }
+        .preview-hidden-right { transform: translateX(120%) scale(0.9); opacity: 0; }
+        .preview-active { transform: translateX(0) scale(1); opacity: 1; z-index: 10; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col lg:flex-row font-sans">
+    <!-- LEFT: CONFIGURATOR -->
+    <div class="w-full lg:w-1/2 bg-white h-auto lg:h-screen overflow-y-auto p-8 lg:p-12 custom-scrollbar">
+        <div class="max-w-xl mx-auto">
+            <div class="mb-10">
+                <span class="text-[10px] font-bold bg-slate-900 text-founder px-4 py-1.5 rounded-full uppercase tracking-wider">Enterprise Onboarding</span>
+                <h1 class="text-4xl font-bold text-slate-900 mt-6 leading-tight">Initialize Your<br>Command Center</h1>
+                <p class="text-slate-500 mt-4 text-base">Configure branding, resources, and team — deploy in minutes.</p>
+            </div>
+           
+            <form id="setup-form" class="space-y-12">
+                <!-- STEP 1: BRANDING -->
+                <section class="slide-in" style="animation-delay: 0.1s">
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-4 mb-6">
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold">1</div>
+                            Organization Branding
+                        </h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Company Name</label>
+                            <input type="text" id="org-name-input" placeholder="Acme Corp" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-lg font-medium focus:outline-none focus:ring-2 focus:ring-founder focus:border-founder transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Primary Color</label>
+                            <div class="flex gap-2">
+                                <input type="color" id="primary-color" value="#1e293b" class="h-12 w-20 rounded-l-xl cursor-pointer">
+                                <input type="text" id="primary-hex" value="#1e293b" class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-r-xl font-mono focus:outline-none focus:ring-2 focus:ring-founder transition">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-3">Organization Logo</label>
+                        <div class="flex items-center gap-6">
+                            <label class="flex-1 cursor-pointer">
+                                <div id="logo-upload-area" class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center hover:border-founder hover:bg-founder/5 transition">
+                                    <i data-lucide="upload-cloud" class="w-10 h-10 text-slate-400 mx-auto mb-3"></i>
+                                    <p class="text-sm font-medium text-slate-600">Click to upload logo</p>
+                                    <p class="text-xs text-slate-400 mt-1">PNG, JPG up to 5MB</p>
+                                </div>
+                                <input type="file" id="logo-upload" accept="image/*" class="hidden">
+                            </label>
+                            <div id="logo-preview" class="w-24 h-24 rounded-2xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden hidden">
+                                <img id="logo-img" class="w-full h-full object-contain">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+               
+                <!-- STEP 2: RESOURCES -->
+                <section class="slide-in" style="animation-delay: 0.3s">
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-4 mb-6">
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold">2</div>
+                            Resource Catalog
+                        </h2>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-6">Add key assets your team will distribute.</p>
+                    <div id="resources-list" class="space-y-3 mb-6">
+                        <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                            <div class="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center text-red-600">
+                                <i data-lucide="file-text" class="w-6 h-6"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-slate-900">Q4_Pricing_Guide.pdf</p>
+                                <p class="text-xs text-slate-500">Sales Enablement • 2.4 MB</p>
+                            </div>
+                            <button type="button" class="text-slate-400 hover:text-red-600 transition">
+                                <i data-lucide="trash-2" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <label class="block cursor-pointer">
+                        <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center hover:border-founder hover:bg-founder/5 transition group">
+                            <i data-lucide="plus" class="w-10 h-10 text-slate-400 group-hover:text-founder mx-auto mb-3 transition"></i>
+                            <p class="font-medium text-slate-600 group-hover:text-slate-900">Add Resource</p>
+                        </div>
+                        <input type="file" multiple class="hidden">
+                    </label>
+                </section>
+               
+                <!-- STEP 3: TEAM ROSTER -->
+                <section class="slide-in" style="animation-delay: 0.5s">
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-4 mb-6">
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold">3</div>
+                            Team Roster
+                        </h2>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-6">Import your team via CSV to auto-generate IDs.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <a href="/template-roster.csv" download class="py-4 border border-slate-300 rounded-2xl text-center font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition flex items-center justify-center gap-3">
+                            <i data-lucide="download" class="w-5 h-5"></i>
+                            Download Template
+                        </a>
+                        <label class="py-4 bg-slate-900 text-white rounded-2xl text-center font-bold hover:bg-slate-800 transition cursor-pointer flex items-center justify-center gap-3">
+                            <i data-lucide="upload" class="w-5 h-5"></i>
+                            Upload CSV
+                            <input type="file" accept=".csv" class="hidden">
+                        </label>
+                    </div>
+                </section>
+               
+                <!-- DEPLOY -->
+                <div class="pt-8">
+                    <button type="button" onclick="deploySystem()" class="w-full py-5 bg-founder text-slate-900 font-bold text-xl rounded-2xl shadow-2xl hover:shadow-founder/50 hover:-translate-y-1 transition flex items-center justify-center gap-4 group">
+                        <i data-lucide="rocket" class="w-8 h-8 group-hover:rotate-12 transition-transform"></i>
+                        Deploy Command Center
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+   
+    <!-- RIGHT: LIVE PREVIEW -->
+    <div class="hidden lg:flex w-1/2 bg-gradient-to-br from-slate-900 to-slate-800 relative overflow-hidden items-center justify-center">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.15)_0%,transparent_70%)] pointer-events-none"></div>
+       
+        <div class="text-center mb-12 z-10">
+            <h2 id="preview-title" class="text-3xl font-bold text-white mb-3">Admin Dashboard</h2>
+            <p id="preview-desc" class="text-slate-400 text-lg">Real-time team performance intelligence</p>
+        </div>
+       
+        <div class="relative w-full max-w-md h-96 mx-auto px-8">
+            <div id="preview-dashboard" class="preview-slide preview-active bg-slate-950 rounded-3xl shadow-2xl p-6 border border-slate-800">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-4">
+                        <div id="preview-logo" class="w-12 h-12 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center text-white font-bold text-2xl">A</div>
+                        <div>
+                            <h3 id="preview-org-name" class="text-white font-bold text-xl">Acme Corp</h3>
+                            <p class="text-xs text-slate-400">Enterprise Command</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="bg-slate-800/50 backdrop-blur rounded-2xl p-4 border border-slate-700">
+                        <p class="text-xs text-slate-400 uppercase font-bold mb-1">Total Scans</p>
+                        <p class="text-3xl font-bold text-white">3,842</p>
+                        <p class="text-xs text-emerald-400 mt-1">↑ 18% this week</p>
+                    </div>
+                    <div class="bg-slate-800/50 backdrop-blur rounded-2xl p-4 border border-slate-700">
+                        <p class="text-xs text-slate-400 uppercase font-bold mb-1">Active Agents</p>
+                        <p class="text-3xl font-bold text-white">48</p>
+                        <p class="text-xs text-slate-400 mt-1">of 50 licensed</p>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-4 p-4 bg-slate-800/30 rounded-2xl border border-slate-700">
+                        <div class="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                            <i data-lucide="zap" class="w-5 h-5"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-white font-medium">Sarah Jenkins shared Pricing Guide</p>
+                            <p class="text-xs text-slate-400">2 minutes ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+           
+            <div id="preview-catalog" class="preview-slide preview-hidden-right bg-white rounded-[3rem] shadow-2xl overflow-hidden border-8 border-slate-900 p-6 flex flex-col">
+                <div class="flex justify-between items-center mb-6">
+                    <i data-lucide="menu" class="w-6 h-6 text-slate-800"></i>
+                    <h3 class="font-bold text-slate-900">Resources</h3>
+                    <div class="w-10 h-10 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-lg">AL</div>
+                </div>
+                <div class="flex-1 space-y-4 overflow-y-auto">
+                    <div class="bg-slate-100 p-4 rounded-2xl border border-slate-200">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600">
+                                <i data-lucide="file-text" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-900">Q4 Pricing Guide</p>
+                                <p class="text-xs text-slate-500">PDF • 2.4 MB</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-100 p-4 rounded-2xl border border-slate-200">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+                                <i data-lucide="video" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-900">Product Demo</p>
+                                <p class="text-xs text-slate-500">MP4 • 45 sec</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+       
+        <div class="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-8 z-20">
+            <button onclick="switchPreview(0)" class="p-3 rounded-full bg-white/10 backdrop-blur text-white hover:bg-white/20 transition">
+                <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
+            </button>
+            <button onclick="switchPreview(1)" class="p-3 rounded-full bg-white/10 backdrop-blur text-white hover:bg-white/20 transition">
+                <i data-lucide="library" class="w-6 h-6"></i>
+            </button>
+        </div>
+    </div>
+   
+    <script>
+        lucide.createIcons();
+       
+        let currentPreview = 0;
+        const dashboardView = document.getElementById('preview-dashboard');
+        const catalogView = document.getElementById('preview-catalog');
+        const previewTitle = document.getElementById('preview-title');
+        const previewDesc = document.getElementById('preview-desc');
+        const orgNameInput = document.getElementById('org-name-input');
+        const primaryColor = document.getElementById('primary-color');
+        const primaryHex = document.getElementById('primary-hex');
+        const logoUpload = document.getElementById('logo-upload');
+        const logoPreview = document.getElementById('logo-preview');
+        const logoImg = document.getElementById('logo-img');
+        const previewLogo = document.getElementById('preview-logo');
+        const previewOrgName = document.getElementById('preview-org-name');
+       
+        orgNameInput?.addEventListener('input', (e) => {
+            const name = e.target.value || 'Acme Corp';
+            previewOrgName.textContent = name;
+        });
+       
+        primaryColor?.addEventListener('input', (e) => {
+            const color = e.target.value;
+            primaryHex.value = color;
+            document.documentElement.style.setProperty('--brand-primary', color);
+        });
+       
+        primaryHex?.addEventListener('input', (e) => {
+            let val = e.target.value;
+            if (!val.startsWith('#')) val = '#' + val;
+            if (/^#[0-9A-F]{6}$/i.test(val)) {
+                primaryColor.value = val;
+                document.documentElement.style.setProperty('--brand-primary', val);
+            }
+        });
+       
+        logoUpload?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    logoImg.src = ev.target.result;
+                    previewLogo.innerHTML = \`<img src="\${ev.target.result}" class="w-full h-full object-contain rounded-2xl">\`;
+                    logoPreview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+       
+        function switchPreview(index) {
+            if (currentPreview === index) return;
+            currentPreview = index;
+           
+            if (index === 0) {
+                dashboardView.classList.remove('preview-hidden-left', 'preview-hidden-right');
+                dashboardView.classList.add('preview-active');
+                catalogView.classList.remove('preview-active');
+                catalogView.classList.add('preview-hidden-right');
+                previewTitle.textContent = "Admin Dashboard";
+                previewDesc.textContent = "Real-time team performance intelligence";
+            } else {
+                dashboardView.classList.remove('preview-active');
+                dashboardView.classList.add('preview-hidden-left');
+                catalogView.classList.remove('preview-hidden-right');
+                catalogView.classList.add('preview-active');
+                previewTitle.textContent = "Team Resource Library";
+                previewDesc.textContent = "What your team carries in their pocket";
+            }
+        }
+       
+        function deploySystem() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = \`
+                <i data-lucide="loader-2" class="w-8 h-8 animate-spin"></i>
+                Deploying System...
+            \`;
+            lucide.createIcons();
+           
+            setTimeout(() => {
+                btn.innerHTML = \`
+                    <i data-lucide="check-circle" class="w-8 h-8"></i>
+                    Successfully Deployed!
+                \`;
+                btn.classList.remove('bg-founder', 'hover:shadow-founder/50');
+                btn.classList.add('bg-emerald-500');
+               
+                ConfettiManager.celebrate('enterprise');
+               
+                setTimeout(() => {
+                    alert("🎉 Enterprise Command Center Deployed!\\n\\n• Branding applied\\n• Resources uploaded\\n• Team emails sent\\n\\nRedirecting to your Admin Dashboard...");
+                }, 1500);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>`,
+
+            // public/admin_dashboard.html
+            public_admin: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI Enterprise | Team Command</title>
+   
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+    <style>
+        body { background-color: #F8FAFC; color: #1e293b; font-family: 'Inter', sans-serif; }
+       
+        :root {
+            --ent-primary: #1e293b;
+            --ent-accent: #fbbf24;
+        }
+        .glass-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border-radius: 1rem;
+        }
+       
+        .leaderboard-row { transition: all 0.2s; }
+        .leaderboard-row:hover { background-color: #f8fafc; transform: scale(1.01); }
+       
+        .rank-1 { background: #fbbf24; color: #1e293b; }
+        .rank-2 { background: #94a3b8; color: white; }
+        .rank-3 { background: #b45309; color: white; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row">
+    <aside class="w-full md:w-64 bg-slate-900 text-white flex flex-col shrink-0 h-screen sticky top-0">
+        <div class="p-6 border-b border-slate-800 flex items-center gap-3">
+            <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center font-bold text-white">E</div>
+            <div>
+                <h1 class="font-bold text-sm tracking-wide">Acme Corp</h1>
+                <p class="text-[10px] text-slate-400 uppercase">Enterprise Plan</p>
+            </div>
+        </div>
+       
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-indigo-600 rounded-xl text-white font-bold text-sm shadow-lg shadow-indigo-900/50">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl font-medium text-sm transition">
+                <i data-lucide="users" class="w-4 h-4"></i> Team Roster
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl font-medium text-sm transition">
+                <i data-lucide="library" class="w-4 h-4"></i> Resource Catalog
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl font-medium text-sm transition">
+                <i data-lucide="settings" class="w-4 h-4"></i> Brand Settings
+            </a>
+        </nav>
+        <div class="p-4 border-t border-slate-800">
+            <button class="flex items-center gap-3 px-4 py-2 text-slate-400 hover:text-white text-xs font-medium w-full">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+            </button>
+        </div>
+    </aside>
+    <main class="flex-1 p-8 overflow-y-auto">
+       
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">Team Performance</h2>
+                <p class="text-sm text-slate-500">Real-time tracking for <span class="font-bold text-indigo-600">Q4 Sales Push</span></p>
+            </div>
+            <button class="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-lg shadow hover:bg-slate-800 transition">
+                <i data-lucide="upload-cloud" class="w-4 h-4"></i> Add Resource
+            </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="glass-card p-6 border-l-4 border-indigo-500">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Scans</span>
+                    <i data-lucide="scan-line" class="w-5 h-5 text-indigo-500"></i>
+                </div>
+                <h3 class="text-3xl font-bold text-slate-800">2,845</h3>
+                <p class="text-xs text-emerald-600 font-bold mt-1 flex items-center gap-1">
+                    <i data-lucide="trending-up" class="w-3 h-3"></i> 15% vs last week
+                </p>
+            </div>
+           
+            <div class="glass-card p-6 border-l-4 border-emerald-500">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Agents</span>
+                    <i data-lucide="zap" class="w-5 h-5 text-emerald-500"></i>
+                </div>
+                <h3 class="text-3xl font-bold text-slate-800">42<span class="text-lg text-slate-400 font-medium">/50</span></h3>
+                <p class="text-xs text-slate-500 mt-1">84% Utilization Rate</p>
+            </div>
+            <div class="glass-card p-6 border-l-4 border-amber-500">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Top Asset</span>
+                    <i data-lucide="file-star" class="w-5 h-5 text-amber-500"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 truncate">2025_Pricing_Guide.pdf</h3>
+                <p class="text-xs text-slate-500 mt-1">1,204 unique interactions</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+           
+            <div class="lg:col-span-2 glass-card p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i> Leaderboard
+                    </h3>
+                    <select class="text-xs border-none bg-slate-100 rounded-md px-2 py-1 font-medium text-slate-600 cursor-pointer">
+                        <option>This Week</option>
+                        <option>This Month</option>
+                        <option>All Time</option>
+                    </select>
+                </div>
+                <div class="space-y-3">
+                    <div class="leaderboard-row flex items-center gap-4 p-3 rounded-xl border border-amber-100 bg-amber-50/50">
+                        <div class="w-8 h-8 rounded-full rank-1 flex items-center justify-center font-bold text-sm shadow-sm">1</div>
+                        <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-bold text-slate-800">Sarah Jenkins</h4>
+                            <p class="text-[10px] text-slate-500">Sales Director • Dallas, TX</p>
+                        </div>
+                        <div class="text-right">
+                            <h4 class="text-lg font-bold text-indigo-600">482</h4>
+                            <p class="text-[10px] text-slate-400 uppercase font-bold">Scans</p>
+                        </div>
+                    </div>
+                    <div class="leaderboard-row flex items-center gap-4 p-3 rounded-xl border border-slate-100 bg-white">
+                        <div class="w-8 h-8 rounded-full rank-2 flex items-center justify-center font-bold text-sm shadow-sm">2</div>
+                        <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Mike" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-bold text-slate-800">Mike Ross</h4>
+                            <p class="text-[10px] text-slate-500">Associate • Austin, TX</p>
+                        </div>
+                        <div class="text-right">
+                            <h4 class="text-lg font-bold text-slate-700">340</h4>
+                            <p class="text-[10px] text-slate-400 uppercase font-bold">Scans</p>
+                        </div>
+                    </div>
+                    <div class="leaderboard-row flex items-center gap-4 p-3 rounded-xl border border-slate-100 bg-white">
+                        <div class="w-8 h-8 rounded-full rank-3 flex items-center justify-center font-bold text-sm shadow-sm">3</div>
+                        <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jess" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-bold text-slate-800">Jessica Pearson</h4>
+                            <p class="text-[10px] text-slate-500">Managing Partner • NYC</p>
+                        </div>
+                        <div class="text-right">
+                            <h4 class="text-lg font-bold text-slate-700">215</h4>
+                            <p class="text-[10px] text-slate-400 uppercase font-bold">Scans</p>
+                        </div>
+                    </div>
+                </div>
+               
+                <div class="mt-4 pt-4 border-t border-slate-100 text-center">
+                    <button class="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition">View Full Roster</button>
+                </div>
+            </div>
+            <div class="glass-card p-6 flex flex-col">
+                <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <i data-lucide="pie-chart" class="w-5 h-5 text-slate-400"></i> Asset Engagement
+                </h3>
+               
+                <div class="relative h-48 w-full flex items-center justify-center mb-6">
+                    <canvas id="resourceChart"></canvas>
+                </div>
+                <div class="space-y-4 flex-1 overflow-y-auto pr-2">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="flex items-center gap-2 font-medium text-slate-600">
+                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span> Pricing Guide
+                        </span>
+                        <span class="font-bold text-slate-800">45%</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="flex items-center gap-2 font-medium text-slate-600">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Intro Video
+                        </span>
+                        <span class="font-bold text
