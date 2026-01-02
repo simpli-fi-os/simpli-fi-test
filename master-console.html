@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simpli-FI ID | Master Console v3.7</title>
+    <title>Simpli-FI ID | Master Console v4.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -12,12 +12,13 @@
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
         .tree-line {
             border-left: 1px dashed #334155;
             margin-left: 0.5rem;
             padding-left: 1rem;
         }
-       
+        
         .tree-item {
             cursor: pointer;
             transition: all 0.15s ease;
@@ -25,7 +26,8 @@
         }
         .tree-item:hover { background: rgba(59, 130, 246, 0.1); }
         .tree-item.active { background: rgba(251, 191, 36, 0.1); color: #fbbf24; }
-       
+        
+        pre { counter-reset: line; }
         pre code {
             font-family: 'JetBrains Mono', 'Fira Code', monospace;
             font-size: 13px;
@@ -34,6 +36,7 @@
     </style>
 </head>
 <body class="bg-[#0f172a] text-slate-300 h-screen flex flex-col overflow-hidden font-sans">
+    
     <!-- TOP BAR -->
     <header class="h-14 border-b border-slate-700 bg-[#0f172a] flex items-center justify-between px-4 shrink-0 z-20">
         <div class="flex items-center gap-3">
@@ -43,21 +46,22 @@
                 <p class="text-[10px] text-slate-400 font-mono">Series A Protocol // <span class="text-emerald-400">GOLDEN</span></p>
             </div>
         </div>
-        <button onclick="copyCurrentFile()" class="bg-slate-800 hover:bg-slate-700 text-xs text-white px-3 py-1.5 rounded border border-slate-600 flex items-center gap-2 transition">
+        <button onclick="copyCurrentFile()" id="copy-btn" class="bg-slate-800 hover:bg-slate-700 text-xs text-white px-3 py-1.5 rounded border border-slate-600 flex items-center gap-2 transition">
             <i data-lucide="copy" class="w-3 h-3"></i> Copy Code
         </button>
     </header>
+
     <!-- MAIN WORKSPACE -->
     <div class="flex-1 flex overflow-hidden">
-       
+        
         <!-- SIDEBAR (FILE TREE) -->
         <aside class="w-72 bg-[#1e293b]/50 border-r border-slate-700 flex flex-col">
             <div class="p-3 border-b border-slate-700/50">
                 <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Project Root</span>
             </div>
-           
+            
             <div class="flex-1 overflow-y-auto p-2 text-sm select-none">
-               
+                
                 <!-- 0. DOCUMENTATION -->
                 <div class="mb-2">
                     <div class="flex items-center gap-2 px-2 py-1 text-slate-100 font-bold"><i data-lucide="book" class="w-4 h-4 text-purple-400"></i> docs/</div>
@@ -66,6 +70,7 @@
                         <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('doc_series_a', this)"><i data-lucide="file-text" class="w-3 h-3 text-purple-300"></i> series_a_roadmap.md <span class="text-[8px] bg-slate-700 text-slate-300 px-1 rounded ml-auto">FUTURE</span></div>
                         <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('doc_project_brief', this)"><i data-lucide="file-text" class="w-3 h-3 text-purple-300"></i> project_brief.md <span class="text-[8px] bg-blue-500/20 text-blue-300 px-1 rounded ml-auto">OVERVIEW</span></div>
                         <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('doc_feature_matrix', this)"><i data-lucide="file-text" class="w-3 h-3 text-purple-300"></i> feature_matrix.md <span class="text-[8px] bg-yellow-500/20 text-yellow-300 px-1 rounded ml-auto">TIERS</span></div>
+                        <div class="tree-item flex items-center gap-2 px-2 py-1" onclick="load('doc_tech_radar', this)"><i data-lucide="radar" class="w-3 h-3 text-emerald-300"></i> tech_radar.md <span class="text-[8px] bg-emerald-500/20 text-emerald-300 px-1 rounded ml-auto">APPROVED</span></div>
                     </div>
                 </div>
 
@@ -172,638 +177,133 @@
 
             doc_project_brief: `# Project Brief: Simpli-FI ID\n\n## Vision\nReplace paper business cards with dynamic, trackable digital identities.\n\n## Key Features\n- Tiered Pricing (Free/Pro/Founder/Enterprise)\n- Automated Onboarding\n- Resource Sharing & Analytics\n- Enterprise Admin\n\n## Tech Stack\n- Frontend: Tailwind + Firebase Hosting\n- Backend: Cloud Functions + Cloud Run\n- DB: Firestore + Storage\n- CRM: Notion Sync\n\n## Goals\n$5k MRR in Q1\n$20M ARR by EOY`,
 
-            doc_feature_matrix: `# Simpli-FI ID: Comprehensive Feature Matrix
+            doc_feature_matrix: `# Simpli-FI ID: Comprehensive Feature Matrix\n\n| Feature | Ambassador (Free) | Professional ($19) | Founder ($49 + $5/mo) | Enterprise (Custom) |\n|---------|-------------------|--------------------|-----------------------|---------------------|\n| Mobile Card | ✅ | ✅ | ✅ | ✅ |\n| Ad-Free | ❌ | ✅ | ✅ | ✅ |\n| Save Contact | ❌ | ✅ | ✅ | ✅ |\n| Custom Colors | ❌ | ✅ | ✅ | ✅ |\n| Custom Domain | ❌ | ❌ | ✅ | ✅ |\n| Gold Badge | ❌ | ❌ | ✅ | ✅ |\n| Unlimited Updates | ❌ | 1/year | ✅ | ✅ |\n| Commerce Link | ❌ | ❌ | ✅ | ✅ |\n| Resource Catalog | ❌ | ❌ | ✅ | ✅ |\n| Admin Dashboard | ❌ | ❌ | Personal | Full Team |\n| Bulk Provisioning | ❌ | ❌ | ❌ | ✅ |\n| Brand Lock | ❌ | ❌ | ❌ | ✅ |\n| Priority Support | Standard | Standard | Email | Dedicated |\n`,
 
-| Feature | Ambassador (Free) | Professional ($19) | Founder ($49 + $5/mo) | Enterprise (Custom) |
-|---------|-------------------|--------------------|-----------------------|---------------------|
-| Mobile Card | ✅ | ✅ | ✅ | ✅ |
-| Ad-Free | ❌ | ✅ | ✅ | ✅ |
-| Save Contact | ❌ | ✅ | ✅ | ✅ |
-| Custom Colors | ❌ | ✅ | ✅ | ✅ |
-| Custom Domain | ❌ | ❌ | ✅ | ✅ |
-| Gold Badge | ❌ | ❌ | ✅ | ✅ |
-| Unlimited Updates | ❌ | 1/year | ✅ | ✅ |
-| Commerce Link | ❌ | ❌ | ✅ | ✅ |
-| Resource Catalog | ❌ | ❌ | ✅ | ✅ |
-| Admin Dashboard | ❌ | ❌ | Personal | Full Team |
-| Bulk Provisioning | ❌ | ❌ | ❌ | ✅ |
-| Brand Lock | ❌ | ❌ | ❌ | ✅ |
-| Priority Support | Standard | Standard | Email | Dedicated |
-`,
+            doc_tech_radar: `# SIMPLI-FI TECH RADAR: PROTOCOLS FOR ELITE PERFORMANCE\nOwner: Agent Bravo (CTO)\n\n## 1. LANGUAGE & RUNTIME PROTOCOLS\n**Tier 1: The "Airlock" (Critical Path)**\n- Requirement: <50ms Cold Start\n- Language: Go (Golang)\n- Framework: Standard Library net/http or Gin\n\n**Tier 2: The Platform (Dashboard & UI)**\n- Language: TypeScript (Strict Mode)\n- Framework: Next.js (App Router)\n\n**Tier 3: Intelligence & Data (AI Agents)**\n- Language: Python 3.11+\n- Environment: Cloud Run Jobs\n\n## 2. SECURITY GATES\n- Authentication: Firebase Auth + MFA\n- Data Sovereignty: Tenant Isolation in Firestore Rules\n- Compliance: Google Checks API for PII scanning\n\n## 3. PERFORMANCE BUDGETS\n- Redirect Service: <100ms (99th Percentile)\n- LCP: < 2.5s\n- CLS: < 0.1\n- FID: < 100ms`,
 
             airlock_package: `{ "name": "airlock", "version": "1.0.0", "main": "index.js", "dependencies": { "express": "^4.18.2", "@google-cloud/firestore": "^7.1.0" }, "engines": { "node": "18" } }`,
 
             airlock_lock: `// Full package-lock.json content (truncated for brevity)\n// Use npm install to generate locally`,
 
-            airlock_index: `/**
- * SIMPLI-FI AIRLOCK v2.0
- * Goal: <100ms Redirect Latency
- */
-const express = require('express');
-const { Firestore } = require('@google-cloud/firestore');
-const app = express();
+            airlock_index: `/**\n * SIMPLI-FI AIRLOCK v2.0\n * Goal: <100ms Redirect Latency\n */\nconst express = require('express');\nconst { Firestore } = require('@google-cloud/firestore');\nconst app = express();\n\n// Warm Start Optimization\nconst firestore = new Firestore();\nconst publicCards = firestore.collection('public_cards');\n\napp.get('/:id', async (req, res) => {\n    const start = Date.now();\n    const id = req.params.id;\n\n    try {\n        const doc = await publicCards.doc(id).get();\n\n        if (!doc.exists) {\n            return res.status(404).send('Card not found');\n        }\n\n        const data = doc.data();\n        const dest = data.redirect_url || \`https://id.simpli-fi-os.com/card/\${id}\`;\n\n        logScan(id, req);\n\n        res.set('X-Airlock-Latency', \`\${Date.now() - start}ms\`);\n        res.redirect(302, dest);\n\n    } catch (e) {\n        console.error(e);\n        res.redirect('https://simpli-fi-os.com/error');\n    }\n});\n\nfunction logScan(id, req) {\n    firestore.collection('events').add({\n        type: 'scan',\n        card_id: id,\n        ip: req.ip,\n        ua: req.get('User-Agent'),\n        ts: Firestore.FieldValue.serverTimestamp()\n    }).catch(console.error);\n}\n\nconst PORT = process.env.PORT || 8080;\napp.listen(PORT, () => console.log(\`Airlock active on port \${PORT}\`));`,
 
-// Warm Start Optimization
-const firestore = new Firestore();
-const publicCards = firestore.collection('public_cards');
+            airlock_docker: `# SERIES A STANDARD CONTAINER\nFROM node:18-alpine as builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\n\nFROM gcr.io/distroless/nodejs18-debian11\nWORKDIR /app\nCOPY --from=builder /app/node_modules ./node_modules\nCOPY . .\n\nENV NODE_ENV=production\nCMD ["index.js"]`,
 
-app.get('/:id', async (req, res) => {
-    const start = Date.now();
-    const id = req.params.id;
+            airlock_dockerignore: `# AIRLOCK DOCKER IGNORE\nnode_modules\nnpm-debug.log\n.env\n.DS_Store\nDockerfile\n.dockerignore`,
 
-    try {
-        const doc = await publicCards.doc(id).get();
-
-        if (!doc.exists) {
-            return res.status(404).send('Card not found');
-        }
-
-        const data = doc.data();
-        const dest = data.redirect_url || \`https://id.simpli-fi-os.com/card/\${id}\`;
-
-        logScan(id, req);
-
-        res.set('X-Airlock-Latency', \`\${Date.now() - start}ms\`);
-        res.redirect(302, dest);
-
-    } catch (e) {
-        console.error(e);
-        res.redirect('https://simpli-fi-os.com/error');
-    }
-});
-
-function logScan(id, req) {
-    firestore.collection('events').add({
-        type: 'scan',
-        card_id: id,
-        ip: req.ip,
-        ua: req.get('User-Agent'),
-        ts: Firestore.FieldValue.serverTimestamp()
-    }).catch(console.error);
-}
-
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(\`Airlock active on port \${PORT}\`));`,
-
-            airlock_docker: `# SERIES A STANDARD CONTAINER
-FROM node:18-alpine as builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-
-FROM gcr.io/distroless/nodejs18-debian11
-WORKDIR /app
-COPY --from=builder /app/node_modules ./node_modules
-COPY . .
-
-ENV NODE_ENV=production
-CMD ["index.js"]`,
-
-            airlock_dockerignore: `# AIRLOCK DOCKER IGNORE
-node_modules
-npm-debug.log
-.env
-.DS_Store
-Dockerfile
-.dockerignore`,
-
-            airlock_routes_claim: `/**
- * airlock/routes/claim.js
- * High-velocity resource claim endpoint
- */
-
-const express = require('express');
-const { Firestore } = require('@google-cloud/firestore');
-
-const router = express.Router();
-const firestore = new Firestore();
-
-const resources = firestore.collection('resources');
-const users = firestore.collection('users');
-const events = firestore.collection('events');
-
-router.get('/:resourceId', async (req, res) => {
-    const start = Date.now();
-    const { resourceId } = req.params;
-    const referrerId = req.query.ref;
-
-    try {
-        const resourceDoc = await resources.doc(resourceId).get();
-
-        if (!resourceDoc.exists) {
-            return res.status(404).send('Resource not found');
-        }
-
-        const resourceData = resourceDoc.data();
-        const destinationUrl = resourceData.url;
-
-        if (referrerId) {
-            const userDoc = await users.doc(referrerId).get();
-            if (userDoc.exists) {
-                incrementScoreAndLog(referrerId, resourceId, req);
-            }
-        }
-
-        res.set('X-Airlock-Latency', \`\${Date.now() - start}ms\`);
-        res.redirect(302, destinationUrl);
-
-    } catch (error) {
-        console.error('Claim route error:', error);
-        res.redirect('https://simpli-fi-os.com/error');
-    }
-});
-
-async function incrementScoreAndLog(userId, resourceId, req) {
-    const batch = firestore.batch();
-
-    const userRef = users.doc(userId);
-    batch.update(userRef, {
-        score: Firestore.FieldValue.increment(1),
-        last_active: Firestore.FieldValue.serverTimestamp()
-    });
-
-    const eventRef = events.doc();
-    batch.set(eventRef, {
-        type: 'resource_scan',
-        user_id: userId,
-        resource_id: resourceId,
-        ip: req.ip,
-        user_agent: req.get('User-Agent'),
-        timestamp: Firestore.FieldValue.serverTimestamp()
-    });
-
-    batch.commit().catch(err => console.error('Batch commit failed:', err));
-}
-
-module.exports = router;`,
+            airlock_routes_claim: `/**\n * airlock/routes/claim.js\n * High-velocity resource claim endpoint\n */\n\nconst express = require('express');\nconst { Firestore } = require('@google-cloud/firestore');\n\nconst router = express.Router();\nconst firestore = new Firestore();\n\nconst resources = firestore.collection('resources');\nconst users = firestore.collection('users');\nconst events = firestore.collection('events');\n\nrouter.get('/:resourceId', async (req, res) => {\n    const start = Date.now();\n    const { resourceId } = req.params;\n    const referrerId = req.query.ref;\n\n    try {\n        const resourceDoc = await resources.doc(resourceId).get();\n\n        if (!resourceDoc.exists) {\n            return res.status(404).send('Resource not found');\n        }\n\n        const resourceData = resourceDoc.data();\n        const destinationUrl = resourceData.url;\n\n        if (referrerId) {\n            const userDoc = await users.doc(referrerId).get();\n            if (userDoc.exists) {\n                incrementScoreAndLog(referrerId, resourceId, req);\n            }\n        }\n\n        res.set('X-Airlock-Latency', \`\${Date.now() - start}ms\`);\n        res.redirect(302, destinationUrl);\n\n    } catch (error) {\n        console.error('Claim route error:', error);\n        res.redirect('https://simpli-fi-os.com/error');\n    }\n});\n\nasync function incrementScoreAndLog(userId, resourceId, req) {\n    const batch = firestore.batch();\n\n    const userRef = users.doc(userId);\n    batch.update(userRef, {\n        score: Firestore.FieldValue.increment(1),\n        last_active: Firestore.FieldValue.serverTimestamp()\n    });\n\n    const eventRef = events.doc();\n    batch.set(eventRef, {\n        type: 'resource_scan',\n        user_id: userId,\n        resource_id: resourceId,\n        ip: req.ip,\n        user_agent: req.get('User-Agent'),\n        timestamp: Firestore.FieldValue.serverTimestamp()\n    });\n\n    batch.commit().catch(err => console.error('Batch commit failed:', err));\n}\n\nmodule.exports = router;`,
 
             functions_package: `{ "name": "functions", "description": "Cloud Functions for Simpli-FI OS", "scripts": { "lint": "eslint", "serve": "firebase emulators:start --only functions", "shell": "firebase functions:shell", "start": "npm run shell", "deploy": "firebase deploy --only functions", "logs": "firebase functions:log" }, "main": "index.js", "dependencies": { "@notionhq/client": "^2.2.13", "firebase-admin": "^13.6.0", "firebase-functions": "^7.0.2" }, "devDependencies": { "eslint": "^8.9.0", "eslint-config-google": "^0.14.0" }, "private": true }`,
 
             functions_lock: `// Full functions package-lock.json\n// Run npm install to generate locally`,
 
-            functions_index: `/**
- * SIMPLI-FI BACKGROUND TASKS (Cloud Functions)
- */
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
-const { Client } = require('@notionhq/client');
+            functions_index: `/**\n * Simpli-FI Backend: Reactive Notion Sync\n * Trigger: Fires automatically when a user is created in Firestore.\n */\nconst functions = require('firebase-functions');\nconst admin = require('firebase-admin');\nconst { Client } = require('@notionhq/client');\n\nadmin.initializeApp();\n\nconst notion = new Client({ auth: functions.config().notion.key });\nconst NOTION_DB_ID = functions.config().notion.db_id;\n\nexports.syncToNotion = functions.firestore\n    .document('users/{userId}')\n    .onCreate(async (snap, context) => {\n        \n        const userData = snap.data();\n        const userId = context.params.userId;\n\n        console.log(\`New User Detected: \${userId}. Starting sync...\`);\n\n        if (!userData.full_name) {\n            console.warn(\`⚠️ Skipped \${userId}: Missing 'full_name'.\`);\n            return null;\n        }\n\n        let startDate;\n        try {\n            if (userData.created_at && typeof userData.created_at.toDate === 'function') {\n                startDate = userData.created_at.toDate().toISOString();\n            } else {\n                startDate = new Date().toISOString();\n            }\n        } catch (e) {\n            startDate = new Date().toISOString();\n        }\n\n        const tierValue = (userData.tier || "free").toLowerCase(); \n\n        try {\n            await notion.pages.create({\n                parent: { database_id: NOTION_DB_ID },\n                properties: {\n                    "Name": { title: [{ text: { content: userData.full_name || "Unknown User" } }] },\n                    "Email": { email: userData.email || "" },\n                    "Phone": { phone_number: userData.phone || "" },\n                    "Status": { select: { name: "New Lead" } },\n                    "Tier": { select: { name: tierValue } },\n                    "Card URL": { url: \`https://id.simpli-fi-os.com/\${userId}\` },\n                    "Start Date": { date: { start: startDate } }\n                }\n            });\n\n            console.log(\`✅ Success: Synced \${userId} to Notion.\`);\n            return null;\n\n        } catch (error) {\n            console.error("❌ Notion Sync Failed:", error.code, error.message);\n            if (error.status === 429) {\n                throw new Error("Notion Rate Limit Hit - Triggering Cloud Retry...");\n            }\n            return null;\n        }\n    });`,
 
-admin.initializeApp();
+            functions_email: `/**\n * functions/sendWelcomeEmail.js\n * Transactional welcome email + vCard attachment\n */\n\nconst functions = require('firebase-functions');\nconst admin = require('firebase-admin');\nconst sgMail = require('@sendgrid/mail');\n\nconst SENDGRID_KEY = functions.config().sendgrid?.key;\nconst TEMPLATE_ID = functions.config().sendgrid?.template_id;\n\nif (SENDGRID_KEY) {\n    sgMail.setApiKey(SENDGRID_KEY);\n}\n\nexports.sendWelcomeEmail = functions.firestore\n    .document('users/{userId}')\n    .onCreate(async (snap, context) => {\n        if (!SENDGRID_KEY || !TEMPLATE_ID) return null;\n\n        const userData = snap.data();\n        const userId = context.params.userId;\n\n        if (!userData.email) return null;\n\n        const cardUrl = \`https://id.simpli-fi-os.com/\${userId}\`;\n\n        const msg = {\n            to: userData.email,\n            from: 'welcome@simpli-fi-os.com',\n            templateId: TEMPLATE_ID,\n            dynamicTemplateData: {\n                full_name: userData.full_name || 'there',\n                card_url: cardUrl,\n                tier: (userData.tier || 'Ambassador').charAt(0).toUpperCase() + (userData.tier || 'ambassador').slice(1),\n                login_url: 'https://dashboard.simpli-fi-os.com'\n            }\n        };\n\n        try {\n            await sgMail.send(msg);\n            return null;\n        } catch (error) {\n            console.error('SendGrid Error:', error);\n            return null;\n        }\n    });`,
 
-const notionKey = functions.config().notion?.key;
-const notionDbId = functions.config().notion?.db_id;
+            src_utils: `/**\n * src/utils.js\n * Shared frontend utilities for Simpli-FI ID\n */\n\nexport const Utils = {\n\n  formatPhone: (phone) => {\n    if (!phone) return '';\n    const digits = phone.replace(/\\D/g, '');\n    if (digits.length === 10) {\n      return \`(\${digits.slice(0,3)}) \${digits.slice(3,6)}-\${digits.slice(6)}\`;\n    }\n    if (digits.length === 11 && digits[0] === '1') {\n      return \`(\${digits.slice(1,4)}) \${digits.slice(4,7)}-\${digits.slice(7)}\`;\n    }\n    return phone;\n  },\n\n  isValidEmail: (email) => {\n    if (!email) return false;\n    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/;\n    return re.test(email.trim());\n  },\n\n  generateVCard: (profile) => {\n    if (!profile) return '';\n    const lines = [\n      'BEGIN:VCARD',\n      'VERSION:3.0',\n      \`N:\${profile.last_name || ''};\${profile.first_name || ''};;;\`,\n      \`FN:\${profile.full_name || 'Simpli-FI User'}\`,\n      profile.email ? \`EMAIL:\${profile.email}\` : '',\n      profile.phone ? \`TEL:\${profile.phone}\` : '',\n      'END:VCARD'\n    ];\n    return lines.filter(line => line).join('\\n');\n  }\n};`,
 
-let notion;
-if (notionKey) {
-    notion = new Client({ auth: notionKey });
-}
+            src_confetti: `/**\n * src/confettiManager.js\n * Tier-specific celebration effects using canvas-confetti\n */\n\nimport confetti from 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js';\n\nconst ConfettiManager = {\n  isMobile: () => window.innerWidth < 768,\n  baseCount: () => ConfettiManager.isMobile() ? 50 : 100,\n\n  ambassador: () => {\n    confetti({\n      particleCount: ConfettiManager.baseCount() / 2,\n      spread: 60,\n      origin: { y: 0.6 },\n      colors: ['#fbbf24', '#ffffff'],\n      ticks: 200\n    });\n  },\n\n  founder: () => {\n    const duration = 1500;\n    const end = Date.now() + duration;\n\n    const frame = () => {\n      confetti({\n        particleCount: 8,\n        angle: 60,\n        spread: 55,\n        origin: { x: 0 },\n        colors: ['#fbbf24', '#0d9488']\n      });\n      confetti({\n        particleCount: 8,\n        angle: 120,\n        spread: 55,\n        origin: { x: 1 },\n        colors: ['#fbbf24', '#ffffff']\n      });\n\n      if (Date.now() < end) {\n        requestAnimationFrame(frame);\n      }\n    };\n    frame();\n  },\n\n  celebrate: (tier = 'professional') => {\n    const normalizedTier = (tier || 'professional').toLowerCase();\n    switch (normalizedTier) {\n      case 'ambassador':\n        ConfettiManager.ambassador();\n        break;\n      case 'founder':\n        ConfettiManager.founder();\n        break;\n      default:\n        ConfettiManager.ambassador();\n    }\n  }\n};\n\nif (typeof module !== 'undefined' && module.exports) {\n  module.exports = ConfettiManager;\n} else {\n  window.ConfettiManager = ConfettiManager;\n}`,
 
-exports.syncToNotion = functions.firestore
-    .document('users/{userId}')
-    .onCreate(async (snap, context) => {
-        if (!notion) {
-            console.warn("Notion Sync Skipped: No API Key configured.");
-            return null;
-        }
+            src_vcard: `/**\n * src/vcardGenerator.js\n * Generates and downloads vCard (.vcf) for Professional+ tiers\n */\n\nimport { Utils } from './utils.js';\n\nconst VCardGenerator = {\n\n  downloadVCard: (profile, tier = 'ambassador') => {\n    if (!profile || !profile.full_name) {\n      console.warn('Cannot generate vCard: Missing profile data');\n      return;\n    }\n\n    const vcard = VCardGenerator.buildVCard(profile);\n    VCardGenerator.triggerDownload(vcard, profile);\n  },\n\n  buildVCard: (profile) => {\n    const lines = [\n      'BEGIN:VCARD',\n      'VERSION:3.0',\n      \`N:\${profile.last_name || ''};\${profile.first_name || ''};;;\`,\n      \`FN:\${profile.full_name || 'Simpli-FI User'}\`\n    ];\n\n    if (profile.email) lines.push(\`EMAIL;TYPE=INTERNET:\${profile.email}\`);\n    if (profile.phone) lines.push(\`TEL;TYPE=CELL:\${profile.phone}\`);\n    if (profile.title) lines.push(\`TITLE:\${profile.title}\`);\n    if (profile.company) lines.push(\`ORG:\${profile.company}\`);\n\n    lines.push('END:VCARD');\n\n    return lines.join('\\n');\n  },\n\n  triggerDownload: (vcardContent, profile) => {\n    const filename = \`\${(profile.full_name || 'Simpli-FI_User').replace(/\\s+/g, '_')}.vcf\`;\n    const blob = new Blob([vcardContent], { type: 'text/vcard;charset=utf-8' });\n    const url = URL.createObjectURL(blob);\n    const a = document.createElement('a');\n    a.href = url;\n    a.download = filename;\n    a.click();\n    URL.revokeObjectURL(url);\n  }\n};\n\nif (typeof module !== 'undefined' && module.exports) {\n  module.exports = VCardGenerator;\n} else {\n  window.VCardGenerator = VCardGenerator;\n}`,
 
-        const userData = snap.data();
-        const userId = context.params.userId;
+            scripts_deploy: `#!/usr/bin/env bash\n# scripts/deploy-hosting.sh\nset -euo pipefail\n\nPROJECT_ID="simpli-fi-id"\nPUBLIC_DIR="public"\n\ncommand -v firebase >/dev/null 2>&1 || {\n    echo "Firebase CLI not found. Install with: npm install -g firebase-tools"\n    exit 1\n}\n\nif [[ ! -d "$PUBLIC_DIR" ]]; then\n    echo "Error: Directory '$PUBLIC_DIR' not found"\n    exit 1\n}\n\nfirebase use "$PROJECT_ID"\n\necho "Deploying to Firebase Hosting..."\nfirebase deploy --only hosting\n\necho "Deployment completed successfully!"`,
 
-        if (!userData.full_name) {
-            console.warn(\`Skipped \${userId}: Missing full_name\`);
-            return null;
-        }
+            scripts_env: `/**\n * scripts/setup-env.js\n * Creates .env from .env.example\n */\n\nconst fs = require('fs');\nconst path = require('path');\n\nconst ENV_EXAMPLE = '.env.example';\nconst ENV_LOCAL = '.env';\nconst ROOT_DIR = path.resolve(__dirname, '..');\n\nconst examplePath = path.join(ROOT_DIR, ENV_EXAMPLE);\nconst envPath = path.join(ROOT_DIR, ENV_LOCAL);\n\nif (!fs.existsSync(examplePath)) {\n    process.exit(1);\n}\n\nfs.copyFileSync(examplePath, envPath);\nconsole.log(\`✅ Created \${ENV_LOCAL} from \${ENV_EXAMPLE}\`);`,
 
-        let startDate = new Date().toISOString();
-        if (userData.created_at && typeof userData.created_at.toDate === 'function') {
-            startDate = userData.created_at.toDate().toISOString();
-        }
+            firestore_rules: `rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function isSignedIn() {\n      return request.auth != null;\n    }\n    \n    // Private User Profiles\n    match /users/{userId} {\n      allow read, write: if isSignedIn() && request.auth.uid == userId;\n      allow create: if true; // Allow intake form\n    }\n\n    // Publicly Accessible Cards (Denormalized)\n    match /public_cards/{cardId} {\n      allow read: if true;\n      allow write: if isSignedIn() && request.auth.uid == request.resource.data.owner_uid;\n    }\n\n    // Organizations\n    match /organizations/{orgId} {\n      allow read: if isSignedIn() && \n        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.org_id == orgId;\n    }\n  }\n}`,
 
-        const tierValue = (userData.tier || "free").toLowerCase(); 
+            storage_rules: `rules_version = '2';\nservice firebase.storage {\n  match /b/{bucket}/o {\n    match /users/{userId}/{allPaths=**} {\n      allow read: if true;\n      allow write: if request.auth != null && request.auth.uid == userId;\n    }\n  }\n}`,
 
-        try {
-            await notion.pages.create({
-                parent: { database_id: notionDbId },
-                properties: {
-                    "Name": { title: [{ text: { content: userData.full_name || "Unknown" } }] },
-                    "Email": { email: userData.email || "" },
-                    "Phone": { phone_number: userData.phone || "" },
-                    "Status": { select: { name: "New Lead" } },
-                    "Tier": { select: { name: tierValue } },
-                    "Card URL": { url: \`https://id.simpli-fi-os.com/\${userId}\` },
-                    "Start Date": { date: { start: startDate } }
-                }
-            });
-            console.log(\`Synced \${userId} successfully.\`);
-            return null;
-        } catch (error) {
-            console.error("Notion Sync Failed:", error.message);
-            return null;
-        }
-    });`,
+            public_index: `<!DOCTYPE html>\n<html lang="en" class="scroll-smooth">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Simpli-FI ID | Your Digital Command Center</title>\n    <script src="https://cdn.tailwindcss.com"><\/script>\n    <script src="https://unpkg.com/lucide@latest"><\/script>\n</head>\n<body class="bg-slate-50 text-slate-900 font-sans">\n    <nav class="w-full py-5 sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">\n        <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">\n            <div class="flex items-center gap-3">\n                <div class="w-8 h-8 bg-slate-900 text-[#fbbf24] rounded flex items-center justify-center font-bold">ID</div>\n                <span class="font-bold text-slate-900">Simpli-FI ID</span>\n            </div>\n            <a href="intake_form.html" class="px-5 py-2.5 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition">Claim Your ID</a>\n        </div>\n    </nav>\n    <header class="pt-20 pb-24 text-center px-6">\n        <h1 class="text-5xl font-serif text-slate-900 mb-6">Your Digital <br><span class="italic text-teal-600">Command Center.</span></h1>\n        <p class="text-lg text-gray-600 mb-10 max-w-2xl mx-auto">Stop handing out dead links. Track the client journey from the first handshake to the final sale.</p>\n        <a href="intake_form.html" class="px-8 py-4 bg-[#fbbf24] text-slate-900 font-bold rounded-xl shadow-xl hover:translate-y-[-2px] transition inline-flex items-center gap-2"><span>Start Now</span> <i data-lucide="arrow-right" class="w-5 h-5"></i></a>\n    </header>\n    <script>lucide.createIcons();<\/script>\n</body>\n</html>`,
 
-            functions_email: `/**
- * functions/sendWelcomeEmail.js
- * Transactional welcome email + vCard attachment
- */
+            public_card: `<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Simpli-FI ID | Card</title>\n    <script src="https://cdn.tailwindcss.com"><\/script>\n    <script src="https://unpkg.com/lucide@latest"><\/script>\n</head>\n<body class="bg-gray-100 flex items-center justify-center min-h-screen">\n    <div class="bg-white w-full max-w-md h-full md:h-auto md:rounded-3xl shadow-2xl overflow-hidden relative">\n        <div class="h-32 bg-slate-900 relative">\n            <div class="absolute top-4 right-4 bg-white/20 p-2 rounded"><i data-lucide="qr-code" class="w-4 h-4 text-white"></i></div>\n        </div>\n        <div class="px-8 -mt-16 text-center relative z-10">\n            <div class="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-slate-200 mx-auto overflow-hidden">\n                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter" class="w-full h-full object-cover">\n            </div>\n            <h1 class="text-2xl font-bold mt-4 text-slate-900">Hunter Lott</h1>\n            <p class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest">Founder & CEO</p>\n        </div>\n        <div class="p-8 space-y-4">\n            <button class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-slate-800 transition"><i data-lucide="contact" class="w-4 h-4"></i> Save Contact</button>\n            <div class="grid grid-cols-3 gap-3">\n                <button class="py-3 bg-slate-50 border border-slate-200 rounded-xl flex flex-col items-center justify-center gap-1 hover:bg-slate-100"><i data-lucide="phone" class="w-4 h-4 text-slate-500"></i><span class="text-[10px] font-bold text-slate-400">Call</span></button>\n                <button class="py-3 bg-slate-50 border border-slate-200 rounded-xl flex flex-col items-center justify-center gap-1 hover:bg-slate-100"><i data-lucide="mail" class="w-4 h-4 text-slate-500"></i><span class="text-[10px] font-bold text-slate-400">Email</span></button>\n                <button class="py-3 bg-slate-50 border border-slate-200 rounded-xl flex flex-col items-center justify-center gap-1 hover:bg-slate-100"><i data-lucide="globe" class="w-4 h-4 text-slate-500"></i><span class="text-[10px] font-bold text-slate-400">Site</span></button>\n            </div>\n        </div>\n        <div class="py-4 bg-slate-50 text-center border-t border-slate-200">\n            <a href="#" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-slate-900">Powered by Simpli-FI</a>\n        </div>\n    </div>\n    <script>lucide.createIcons();<\/script>\n</body>\n</html>`,
 
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
-const sgMail = require('@sendgrid/mail');
+            public_intake: `<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <title>Simpli-FI ID | Intake</title>\n    <script src="https://cdn.tailwindcss.com"><\/script>\n</head>\n<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">\n    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl p-8">\n        <h1 class="text-2xl font-bold text-slate-900 mb-2">Claim Your Identity</h1>\n        <p class="text-slate-500 text-sm mb-8">Join the network in 30 seconds.</p>\n        <div class="space-y-4">\n            <div class="grid grid-cols-2 gap-4">\n                <input type="text" placeholder="First Name" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl">\n                <input type="text" placeholder="Last Name" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl">\n            </div>\n            <input type="text" placeholder="Job Title" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl">\n            <button class="w-full py-4 bg-[#fbbf24] text-slate-900 font-bold rounded-xl shadow-lg hover:bg-amber-400 transition">Launch Card</button>\n        </div>\n    </div>\n</body>\n</html>`,
 
-const SENDGRID_KEY = functions.config().sendgrid?.key;
-const TEMPLATE_ID = functions.config().sendgrid?.template_id;
+            public_setup: `<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <title>Enterprise Setup</title>\n    <script src="https://cdn.tailwindcss.com"><\/script>\n</head>\n<body class="bg-slate-100 p-12">\n    <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl p-8">\n        <h1 class="text-3xl font-bold text-slate-900 mb-8">Enterprise Command Center</h1>\n        <div class="grid grid-cols-3 gap-6">\n             <div class="p-6 border border-slate-200 rounded-xl hover:border-blue-500 cursor-pointer">\n                <div class="font-bold text-slate-900 mb-2">1. Branding</div>\n                <p class="text-xs text-slate-500">Upload vector logo and hex codes.</p>\n             </div>\n             <div class="p-6 border border-slate-200 rounded-xl hover:border-blue-500 cursor-pointer">\n                <div class="font-bold text-slate-900 mb-2">2. Roster</div>\n                <p class="text-xs text-slate-500">CSV upload of agents.</p>\n             </div>\n             <div class="p-6 border border-slate-200 rounded-xl hover:border-blue-500 cursor-pointer">\n                <div class="font-bold text-slate-900 mb-2">3. Assets</div>\n                <p class="text-xs text-slate-500">PDFs and Decks for the Airlock.</p>\n             </div>\n        </div>\n    </div>\n</body>\n</html>`,
 
-if (SENDGRID_KEY) {
-    sgMail.setApiKey(SENDGRID_KEY);
-}
+            public_admin: `<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <title>God Mode | Simpli-FI</title>\n    <script src="https://cdn.tailwindcss.com"><\/script>\n    <script src="https://unpkg.com/lucide@latest"><\/script>\n</head>\n<body class="bg-[#0f172a] text-white p-8">\n    <header class="flex justify-between items-center mb-8">\n        <h1 class="text-2xl font-bold flex items-center gap-2"><i data-lucide="activity" class="text-[#fbbf24]"></i> System Status</h1>\n        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded-full">ALL SYSTEMS OPERATIONAL</span>\n    </header>\n    <div class="grid grid-cols-4 gap-6 mb-8">\n        <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">\n            <div class="text-slate-400 text-xs font-bold mb-2">TOTAL IDENTITIES</div>\n            <div class="text-3xl font-bold text-white">1,240</div>\n        </div>\n        <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">\n            <div class="text-slate-400 text-xs font-bold mb-2">AIRLOCK LATENCY</div>\n            <div class="text-3xl font-bold text-emerald-400">42ms</div>\n        </div>\n        <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">\n            <div class="text-slate-400 text-xs font-bold mb-2">MRR (PROJ)</div>\n            <div class="text-3xl font-bold text-[#fbbf24]">$2,450</div>\n        </div>\n    </div>\n    <script>lucide.createIcons();<\/script>\n</body>\n</html>`,
 
-exports.sendWelcomeEmail = functions.firestore
-    .document('users/{userId}')
-    .onCreate(async (snap, context) => {
-        if (!SENDGRID_KEY || !TEMPLATE_ID) {
-            console.warn('Welcome Email Skipped: SendGrid not configured.');
-            return null;
-        }
+            public_catalog: `<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <title>Resource Catalog</title>\n    <script src="https://cdn.tailwindcss.com"><\/script>\n    <script src="https://unpkg.com/lucide@latest"><\/script>\n</head>\n<body class="bg-slate-50">\n    <header class="bg-[#1e293b] text-white p-6">\n        <h1 class="font-bold text-lg">Resource Command</h1>\n        <p class="text-xs text-slate-400">Distributed Asset Library</p>\n    </header>\n    <div class="p-4 grid grid-cols-2 gap-4">\n        <!-- Cards injected via JS -->\n        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">\n            <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-3"><i data-lucide="file-text"></i></div>\n            <h3 class="font-bold text-sm text-slate-900">Q4 Pricing Guide</h3>\n            <span class="text-[10px] text-slate-500 uppercase font-bold">Public</span>\n        </div>\n    </div>\n    <script>lucide.createIcons();<\/script>\n</body>\n</html>`,
+            
+            public_ops: `<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <title>Ops Center | Airlock Monitor</title>\n    <script src="https://cdn.tailwindcss.com"><\/script>\n    <script src="https://unpkg.com/lucide@latest"><\/script>\n    <meta http-equiv="refresh" content="60">\n    <style>\n        .metric-card { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); backdrop-filter: blur(10px); }\n    </style>\n</head>\n<body class="bg-[#0f172a] text-white min-h-screen p-6 font-mono">\n    <div class="max-w-6xl mx-auto">\n        <div class="flex items-center justify-between mb-8">\n            <div class="flex items-center gap-3">\n                <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>\n                <h1 class="text-xl font-bold tracking-tight">AIRLOCK OPS CENTER</h1>\n            </div>\n            <div class="text-xs text-slate-400">REFRESH: 60s</div>\n        </div>\n\n        <!-- KPI GRID -->\n        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">\n            <div class="metric-card p-6 rounded-xl">\n                <div class="text-[10px] text-slate-400 mb-2">AVG LATENCY (P99)</div>\n                <div class="text-3xl font-bold text-emerald-400">48ms</div>\n                <div class="text-[10px] text-slate-500 mt-2">TARGET: <100ms</div>\n            </div>\n            <div class="metric-card p-6 rounded-xl">\n                <div class="text-[10px] text-slate-400 mb-2">VIRAL K-FACTOR</div>\n                <div class="text-3xl font-bold text-[#fbbf24]">1.2</div>\n                <div class="text-[10px] text-slate-500 mt-2">GROWTH MODE</div>\n            </div>\n            <div class="metric-card p-6 rounded-xl">\n                <div class="text-[10px] text-slate-400 mb-2">ACTIVE CONTAINERS</div>\n                <div class="text-3xl font-bold text-blue-400">12</div>\n                <div class="text-[10px] text-slate-500 mt-2">CLOUD RUN</div>\n            </div>\n            <div class="metric-card p-6 rounded-xl">\n                <div class="text-[10px] text-slate-400 mb-2">ERROR RATE</div>\n                <div class="text-3xl font-bold text-slate-200">0.01%</div>\n                <div class="text-[10px] text-slate-500 mt-2">NOMINAL</div>\n            </div>\n        </div>\n\n        <!-- LOG STREAM -->\n        <div class="metric-card rounded-xl p-6 overflow-hidden">\n            <div class="flex items-center justify-between mb-4 border-b border-slate-700 pb-2">\n                <h3 class="text-xs font-bold text-slate-300">LIVE TRAFFIC STREAM</h3>\n                <span class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-1 rounded">200 OK</span>\n            </div>\n            <div class="space-y-2 text-xs font-mono text-slate-400 h-64 overflow-y-auto">\n                <div class="flex gap-4"><span class="text-slate-600">10:42:01</span> <span class="text-emerald-400">GET /hunter.lott</span> <span class="text-slate-500">-> 302 Found (32ms)</span></div>\n                <div class="flex gap-4"><span class="text-slate-600">10:42:05</span> <span class="text-emerald-400">GET /sarah.chen</span> <span class="text-slate-500">-> 302 Found (41ms)</span></div>\n                <div class="flex gap-4"><span class="text-slate-600">10:42:12</span> <span class="text-emerald-400">GET /q4.pricing</span> <span class="text-slate-500">-> 302 Found (28ms)</span></div>\n                <div class="flex gap-4"><span class="text-slate-600">10:42:15</span> <span class="text-yellow-400">GET /missing.link</span> <span class="text-slate-500">-> 404 Not Found (12ms)</span></div>\n                <div class="flex gap-4"><span class="text-slate-600">10:42:18</span> <span class="text-emerald-400">GET /alex.riv</span> <span class="text-slate-500">-> 302 Found (35ms)</span></div>\n            </div>\n        </div>\n    </div>\n    <script>lucide.createIcons();<\/script>\n</body>\n</html>`,
 
-        const userData = snap.data();
-        const userId = context.params.userId;
+            readme: `# SIMPLI-FI ID: MASTER REPOSITORY\n\n## Overview\nThis is the single source of truth for the Simpli-FI Operating System. It contains the entire codebase for the Digital Identity platform, the Airlock redirect service, and the Enterprise command center.\n\n## Architecture\n- **Frontend**: HTML5 + Tailwind CSS (No frameworks, pure speed)\n- **Backend**: Node.js (Airlock) on Google Cloud Run\n- **Database**: Firestore (Hot Data) + BigQuery (Analytics)\n\n## Deployment\nRun \`./scripts/deploy-hosting.sh\` to push the public directory to Firebase Hosting.\n\n## Critical Mandates\n1. **100ms Latency**: The Airlock must be faster than a blink.\n2. **Mobile First**: Design for iPhone SE, scale up to Desktop.\n3. **Zero Maintenance**: If it breaks, fix it forever.`,
 
-        if (!userData.email) {
-            console.warn(\`No email for user \${userId}\`);
-            return null;
-        }
+            firebaserc: `{ "projects": { "default": "simpli-fi-id" } }`,
 
-        const cardUrl = \`https://id.simpli-fi-os.com/\${userId}\`;
+            firebase_json: `{ "hosting": { "public": "public", "ignore": [ "firebase.json", "**/.*", "**/node_modules/**" ], "rewrites": [ { "source": "**", "destination": "/index.html" } ] } }`,
 
-        const msg = {
-            to: userData.email,
-            from: 'welcome@simpli-fi-os.com',
-            templateId: TEMPLATE_ID,
-            dynamicTemplateData: {
-                full_name: userData.full_name || 'there',
-                card_url: cardUrl,
-                tier: (userData.tier || 'Ambassador').charAt(0).toUpperCase() + (userData.tier || 'ambassador').slice(1),
-                login_url: 'https://dashboard.simpli-fi-os.com'
-            }
+            gitignore: `node_modules/\n.env\n.DS_Store\ncoverage/\n.firebase/`,
+
+            env_example: `PORT=8080\nFIREBASE_PROJECT_ID=simpli-fi-id\nSENDGRID_API_KEY=sg_...\nNOTION_API_KEY=secret_...`,
+
+            tailwind_config: `/** @type {import('tailwindcss').Config} */\nmodule.exports = {\n  content: ["./public/**/*.{html,js}"],\n  theme: {\n    extend: {\n      colors: {\n        brand: {\n          DEFAULT: '#1e293b',\n          accent: '#fbbf24'\n        }\n      }\n    },\n  },\n  plugins: [],\n}`
         };
 
-        try {
-            await sgMail.send(msg);
-            console.log(\`Welcome email sent to \${userData.email}\`);
-            return null;
-        } catch (error) {
-            console.error('SendGrid Error:', error.response ? error.response.body : error);
-            return null;
+        // --- CORE FUNCTIONS ---
+
+        function load(key, element) {
+            // UI Updates
+            document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            
+            // Content Loading
+            const content = FILES[key];
+            const codeView = document.getElementById('code-view');
+            const label = document.getElementById('file-label');
+            
+            if (content) {
+                // Escape HTML tags for display
+                codeView.textContent = content;
+                
+                // Update Label
+                label.innerText = key.replace(/_/g, '.').toUpperCase(); 
+                label.style.opacity = '1';
+                
+                // Store current key for copy function
+                window.currentKey = key;
+            } else {
+                codeView.textContent = "// Error: File content missing from archive.";
+            }
         }
-    });`,
 
-            src_utils: `/**
- * src/utils.js
- * Shared frontend utilities for Simpli-FI ID
- */
-
-export const Utils = {
-
-  formatPhone: (phone) => {
-    if (!phone) return '';
-    const digits = phone.replace(/\\D/g, '');
-    if (digits.length === 10) {
-      return \`(\${digits.slice(0,3)}) \${digits.slice(3,6)}-\${digits.slice(6)}\`;
-    }
-    if (digits.length === 11 && digits[0] === '1') {
-      return \`(\${digits.slice(1,4)}) \${digits.slice(4,7)}-\${digits.slice(7)}\`;
-    }
-    return phone;
-  },
-
-  isValidEmail: (email) => {
-    if (!email) return false;
-    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/;
-    return re.test(email.trim());
-  },
-
-  hasFeature: (tier, feature) => {
-    const features = {
-      ambassador: [],
-      professional: ['save_contact', 'custom_colors', 'payment_link', 'booking_link'],
-      founder: ['save_contact', 'custom_domain', 'resource_catalog', 'verified_badge', 'unlimited_updates'],
-      enterprise: ['all']
-    };
-    tier = (tier || 'ambassador').toLowerCase();
-    if (features[tier].includes('all')) return true;
-    return features[tier].includes(feature);
-  },
-
-  generateVCard: (profile) => {
-    if (!profile) return '';
-    const lines = [
-      'BEGIN:VCARD',
-      'VERSION:3.0',
-      \`N:\${profile.last_name || ''};\${profile.first_name || ''};;;\`,
-      \`FN:\${profile.full_name || 'Simpli-FI User'}\`,
-      profile.email ? \`EMAIL:\${profile.email}\` : '',
-      profile.phone ? \`TEL:\${profile.phone}\` : '',
-      profile.website ? \`URL:\${profile.website}\` : '',
-      profile.title ? \`TITLE:\${profile.title}\` : '',
-      profile.company ? \`ORG:\${profile.company}\` : '',
-      'END:VCARD'
-    ];
-    return lines.filter(line => line).join('\\n');
-  },
-
-  sanitizeUrl: (url) => {
-    if (!url) return '';
-    if (!/^https?:\\/\\//i.test(url)) {
-      return 'https://' + url;
-    }
-    return url;
-  },
-
-  celebrate: (tier = 'professional') => {
-    console.log(\`🎉 Celebrating \${tier} tier activation!\`);
-  }
-};`,
-
-            src_confetti: `/**
- * src/confettiManager.js
- * Tier-specific celebration effects using canvas-confetti
- */
-
-import confetti from 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js';
-
-const ConfettiManager = {
-  isMobile: () => window.innerWidth < 768,
-  baseCount: () => ConfettiManager.isMobile() ? 50 : 100,
-
-  ambassador: () => {
-    confetti({
-      particleCount: ConfettiManager.baseCount() / 2,
-      spread: 60,
-      origin: { y: 0.6 },
-      colors: ['#fbbf24', '#ffffff'],
-      ticks: 200
-    });
-  },
-
-  professional: () => {
-    confetti({
-      particleCount: ConfettiManager.baseCount(),
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#fbbf24', '#1e293b', '#ffffff']
-    });
-  },
-
-  founder: () => {
-    const duration = 1500;
-    const end = Date.now() + duration;
-
-    const frame = () => {
-      confetti({
-        particleCount: 8,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 },
-        colors: ['#fbbf24', '#0d9488']
-      });
-      confetti({
-        particleCount: 8,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 },
-        colors: ['#fbbf24', '#ffffff']
-      });
-
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
-      }
-    };
-    frame();
-  },
-
-  enterprise: () => {
-    const count = ConfettiManager.baseCount() * 3;
-    const defaults = {
-      origin: { y: 0.6 },
-      colors: ['#fbbf24', '#f59e0b', '#ffffff', '#1e293b', '#e11d48']
-    };
-
-    function fire(particleRatio, opts) {
-      confetti({
-        ...defaults,
-        ...opts,
-        particleCount: Math.floor(count * particleRatio)
-      });
-    }
-
-    fire(0.25, { spread: 26, startVelocity: 55 });
-    fire(0.2,  { spread: 60 });
-    fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-    fire(0.1,  { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-    fire(0.1,  { spread: 120, startVelocity: 45 });
-  },
-
-  celebrate: (tier = 'professional') => {
-    const normalizedTier = (tier || 'professional').toLowerCase();
-
-    switch (normalizedTier) {
-      case 'ambassador':
-        ConfettiManager.ambassador();
-        break;
-      case 'professional':
-        ConfettiManager.professional();
-        break;
-      case 'founder':
-        ConfettiManager.founder();
-        break;
-      case 'enterprise':
-        ConfettiManager.enterprise();
-        break;
-      default:
-        ConfettiManager.professional();
-    }
-  }
-};
-
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = ConfettiManager;
-} else {
-  window.ConfettiManager = ConfettiManager;
-}`,
-
-            src_vcard: `/**
- * src/vcardGenerator.js
- * Generates and downloads vCard (.vcf) for Professional+ tiers
- */
-
-import { Utils } from './utils.js';
-
-const VCardGenerator = {
-
-  downloadVCard: (profile, tier = 'ambassador') => {
-    if (!Utils.hasFeature(tier, 'save_contact')) {
-      console.warn('vCard download blocked: Insufficient tier');
-      return;
-    }
-
-    if (!profile || !profile.full_name) {
-      console.warn('Cannot generate vCard: Missing profile data');
-      return;
-    }
-
-    const vcard = VCardGenerator.buildVCard(profile);
-    VCardGenerator.triggerDownload(vcard, profile);
-  },
-
-  buildVCard: (profile) => {
-    const lines = [
-      'BEGIN:VCARD',
-      'VERSION:3.0',
-      \`N:\${profile.last_name || ''};\${profile.first_name || ''};;;\`,
-      \`FN:\${profile.full_name || 'Simpli-FI User'}\`
-    ];
-
-    if (profile.email) lines.push(\`EMAIL;TYPE=INTERNET:\${profile.email}\`);
-    if (profile.phone) lines.push(\`TEL;TYPE=CELL:\${profile.phone}\`);
-    if (profile.work_phone) lines.push(\`TEL;TYPE=WORK:\${profile.work_phone}\`);
-    if (profile.website) lines.push(\`URL:\${Utils.sanitizeUrl(profile.website)}\`);
-    if (profile.title) lines.push(\`TITLE:\${profile.title}\`);
-    if (profile.company) lines.push(\`ORG:\${profile.company}\`);
-
-    if (profile.address) {
-      lines.push(\`ADR;TYPE=WORK:;;\${profile.address.street || ''};\${profile.address.city || ''};\${profile.address.state || ''};\${profile.address.zip || ''};\${profile.address.country || ''}\`);
-    }
-
-    if (profile.linkedin) lines.push(\`item1.URL:\${Utils.sanitizeUrl(profile.linkedin)}\`);
-    if (profile.twitter) lines.push(\`item2.URL:\${Utils.sanitizeUrl(profile.twitter)}\`);
-
-    if (profile.tagline) lines.push(\`NOTE:\${profile.tagline}\`);
-
-    lines.push('END:VCARD');
-
-    return lines.join('\\n');
-  },
-
-  triggerDownload: (vcardContent, profile) => {
-    const filename = \`\${(profile.full_name || 'Simpli-FI_User').replace(/\\s+/g, '_')}.vcf\`;
-
-    const blob = new Blob([vcardContent], { type: 'text/vcard;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.style.display = 'none';
-
-    document.body.appendChild(a);
-    a.click();
-
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    if (typeof ConfettiManager !== 'undefined') {
-      ConfettiManager.celebrate(profile.tier || 'professional');
-    }
-  }
-};
-
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = VCardGenerator;
-} else {
-  window.VCardGenerator = VCardGenerator;
-}`,
-
-            scripts_deploy: `#!/usr/bin/env bash
-# scripts/deploy-hosting.sh
-set -euo pipefail
-
-PROJECT_ID="simpli-fi-id"
-PUBLIC_DIR="public"
-
-command -v firebase >/dev/null 2>&1 || {
-    echo "Firebase CLI not found. Install with: npm install -g firebase-tools"
-    exit 1
-}
-
-if [[ ! -d "$PUBLIC_DIR" ]]; then
-    echo "Error: Directory '$PUBLIC_DIR' not found"
-    exit 1
-fi
-
-if [[ ! -f "firebase.json" ]]; then
-    echo "Error: firebase.json not found"
-    exit 1
-fi
-
-firebase login:list | grep -q "Logged in as" || firebase login
-firebase use "$PROJECT_ID"
-
-echo "Deploying to Firebase Hosting..."
-firebase deploy --only hosting
-
-echo "Deployment completed successfully!"`,
-
-            scripts_env: `/**
- * scripts/setup-env.js
- * Creates .env from .env.example
- */
-
-const fs = require('fs');
-const path = require('path');
-
-const ENV_EXAMPLE = '.env.example';
-const ENV_LOCAL = '.env';
-const ROOT_DIR = path.resolve(__dirname, '..');
-
-const examplePath = path.join(ROOT_DIR, ENV_EXAMPLE);
-const envPath = path.join(ROOT_DIR, ENV_LOCAL);
-
-console.log('🔧 Simpli-FI Environment Setup\\n');
-
-if (!fs.existsSync(examplePath)) {
-    console.error(\`❌ Error: \${ENV_EXAMPLE} not found.\`);
-    process.exit(1);
-}
-
-if (fs.existsSync(envPath)) {
-    console.log(\`⚠️  \${ENV_LOCAL} already exists. Delete it first to recreate.\`);
-    process.exit(0);
-}
-
-fs.copyFileSync(examplePath, envPath);
-
-console.log(\`✅ Created \${ENV_LOCAL} from \${ENV_EXAMPLE}\\n\`);
-console.log('📝 Next: Edit .env with your keys\\n');
-console.log('🔒 NEVER commit .env to Git!\\n');
-console.log('🚀 Ready for development!');`,
-
-            firestore_rules: `rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    function isSignedIn() {
-      return request.auth != null;
-    }
-    
-    function isOrgMember(orgId) {
-      return isSignedIn() &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.org_id == orgId;
-    }
-
-    function isServiceAccount() {
-      return request.auth.token.firebase.sign_in_provider == 'firebase' &&
-             request.auth.token.email.endsWith('@simpli-fi-id.iam.gserviceaccount.com');
-    }
-
-    match /users/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
-      allow create, read: if isServiceAccount();
-    }
-
-    match /public_cards/{cardId} {
-      allow read: if true;
-      allow create, update: if isSignedIn() && request.auth.uid == request.resource.data.owner_uid;
-      allow update: if isSignedIn() && resource.data.owner_uid == request.auth.uid;
-    }
-
-    match /organizations/{org
+        function copyCurrentFile() {
+            const codeView = document.getElementById('code-view');
+            const btn = document.getElementById('copy-btn');
+            
+            if (!codeView.textContent || codeView.textContent.startsWith('// Error') || codeView.textContent.startsWith('/* Select')) {
+                return;
+            }
+
+            // Replacing navigator.clipboard with execCommand for preview compatibility
+            const textArea = document.createElement("textarea");
+            textArea.value = codeView.textContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                const original = btn.innerHTML;
+                btn.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i> Copied!`;
+                btn.classList.add('text-emerald-400', 'border-emerald-500');
+                
+                lucide.createIcons();
+                
+                setTimeout(() => {
+                    btn.innerHTML = original;
+                    btn.classList.remove('text-emerald-400', 'border-emerald-500');
+                    lucide.createIcons();
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // Initialize Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
