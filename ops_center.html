@@ -3,663 +3,538 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simpli-FI Ops Center | Global Command</title>
+    <title>Simpli-FI | COMMAND_V1</title>
     
-    <!-- Favicon -->
-    <link rel="icon" href="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png">
-
-    <!-- Core Deps -->
+    <!-- Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Map Deps (Leaflet) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     
-    <!-- Firebase SDKs (Compat) -->
+    <!-- Fonts: The Voice of the Machine -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+    
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
 
     <style>
-        body { background-color: #0f172a; color: white; font-family: 'Inter', sans-serif; }
-        .glass-panel { 
-            background: rgba(30, 41, 59, 0.5); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-        }
-        .stat-card { transition: transform 0.2s; }
-        .stat-card:hover { transform: translateY(-2px); }
-        
-        /* Map Styles */
-        #global-map { height: 500px; width: 100%; border-radius: 1rem; z-index: 1; }
-        .leaflet-container { background: #1e293b; }
-        .leaflet-popup-content-wrapper { background: #1e293b; color: white; border: 1px solid #475569; }
-        .leaflet-popup-tip { background: #475569; }
-        
-        /* Range Slider */
-        input[type=range] {
-            -webkit-appearance: none; width: 100%; background: transparent;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
-            background: #fbbf24; margin-top: -6px; cursor: pointer; box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
-        }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 2px;
+        :root {
+            --crt-amber: #ffb000;
+            --crt-green: #33ff00;
+            --crt-red: #ff3300;
+            --panel-bg: #1a1a1a;
+            --panel-border: #444;
+            --screen-bg: #0a0a0a;
         }
 
-        /* Ecosystem Map Styles */
-        .node {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
+        body {
+            background-color: #050505;
+            color: var(--crt-amber);
+            font-family: 'Share Tech Mono', monospace;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .node:hover {
-            transform: scale(1.05);
-            z-index: 20;
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
-        }
-        .connection-line {
-            stroke-dasharray: 5;
-            animation: dash 30s linear infinite;
-        }
-        @keyframes dash {
-            to {
-                stroke-dashoffset: -1000;
-            }
+
+        /* --- CRT EFFECTS --- */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.2) 50%,
+                rgba(0,0,0,0.2)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 50;
+            animation: scanline 0.2s linear infinite;
+            opacity: 0.6;
         }
         
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .screen-glow {
+            position: fixed;
+            inset: 0;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+            pointer-events: none;
+            z-index: 51;
+        }
+
+        /* --- UI COMPONENTS --- */
+        .retro-panel {
+            background: var(--panel-bg);
+            border: 2px solid var(--panel-border);
+            box-shadow: 
+                inset 1px 1px 0px rgba(255,255,255,0.1),
+                inset -1px -1px 0px rgba(0,0,0,0.5),
+                4px 4px 0px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .retro-panel::after {
+            /* Screw head effect */
+            content: '+';
+            position: absolute;
+            top: 4px; right: 4px;
+            color: #555;
+            font-size: 12px;
+        }
+        .retro-panel::before {
+            /* Screw head effect */
+            content: '+';
+            position: absolute;
+            top: 4px; left: 4px;
+            color: #555;
+            font-size: 12px;
+        }
+
+        .retro-screen {
+            background: var(--screen-bg);
+            border: 2px solid #333;
+            border-radius: 4px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blink { animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* --- BUTTONS --- */
+        .retro-btn {
+            background: #333;
+            border: 2px solid #555;
+            border-bottom: 4px solid #555;
+            border-right: 4px solid #555;
+            color: #ccc;
+            text-transform: uppercase;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .retro-btn:active {
+            border-width: 2px;
+            transform: translate(2px, 2px);
+        }
+        .retro-btn.active {
+            background: var(--crt-amber);
+            color: #000;
+            border-color: #cc8c00;
+            box-shadow: 0 0 10px var(--crt-amber);
+        }
+        .retro-btn.emergency {
+            background: #500;
+            color: var(--crt-red);
+            border-color: #800;
+        }
+        .retro-btn.emergency:hover {
+            background: var(--crt-red);
+            color: #000;
+            box-shadow: 0 0 15px var(--crt-red);
+        }
+
+        /* --- STATUS LIGHTS --- */
+        .led {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: #222;
+            border: 1px solid #000;
+            box-shadow: inset 2px 2px 2px rgba(0,0,0,0.5);
+        }
+        .led.on-green {
+            background: #0f0;
+            box-shadow: 0 0 5px #0f0, inset -2px -2px 5px rgba(255,255,255,0.5);
+        }
+        .led.on-red {
+            background: #f00;
+            box-shadow: 0 0 5px #f00, inset -2px -2px 5px rgba(255,255,255,0.5);
+        }
+
+        /* --- DATA TABLES --- */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        th { 
+            background: #222; 
+            color: #888; 
+            padding: 8px; 
+            border-bottom: 1px solid var(--crt-amber); 
+            text-align: left;
+        }
+        td { 
+            border-bottom: 1px solid #222; 
+            padding: 8px; 
+            color: var(--crt-amber); 
+        }
+        tr:hover td { background: rgba(255, 176, 0, 0.1); }
+
+        /* --- SCROLLBAR --- */
+        ::-webkit-scrollbar { width: 12px; background: #111; }
+        ::-webkit-scrollbar-thumb { background: #444; border: 2px solid #111; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--crt-amber); }
+
+        /* --- MAP FIX --- */
+        .leaflet-container { background: #050505 !important; }
+        .leaflet-control-attribution { display: none; }
     </style>
 </head>
-<!-- Changed: h-screen and overflow-hidden to force full page layout -->
-<body class="h-screen overflow-hidden p-6 flex flex-col">
+<body class="h-screen flex flex-col p-4">
 
-    <!-- HEADER -->
-    <header class="flex-none flex justify-between items-center mb-6 w-full z-30">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20 ring-1 ring-white/10">
-                <i data-lucide="globe-2" class="w-6 h-6"></i>
+    <!-- CRT OVERLAYS -->
+    <div class="scanlines"></div>
+    <div class="screen-glow"></div>
+
+    <!-- TOP PANEL: HEADER & NAV -->
+    <header class="retro-panel p-4 mb-4 flex justify-between items-end shrink-0 z-40">
+        <div class="flex items-center gap-6">
+            <div class="border-2 border-amber-500/50 p-2 relative">
+                <div class="w-12 h-12 bg-black flex items-center justify-center border border-amber-500/30">
+                    <i data-lucide="aperture" class="w-8 h-8 text-amber-500 animate-spin-slow" style="animation-duration: 10s;"></i>
+                </div>
+                <div class="absolute -top-1 -left-1 w-2 h-2 bg-amber-500"></div>
+                <div class="absolute -bottom-1 -right-1 w-2 h-2 bg-amber-500"></div>
             </div>
             <div>
-                <h1 class="font-bold text-2xl tracking-tight text-white">Simpli-FI <span class="text-indigo-400">Ops Center</span></h1>
-                <p class="text-xs text-slate-400 font-mono uppercase tracking-wider">Global Network Monitoring • v2.2</p>
+                <h1 class="text-2xl font-bold tracking-widest leading-none text-white">SIMPLI-FI <span style="color: var(--crt-amber)">COMMAND</span></h1>
+                <p class="text-xs text-gray-500 mt-1">SYS.OP.MODE: <span class="blink text-green-500">NOMINAL</span> // V.4.0</p>
             </div>
-        </div>
-        
-        <!-- Navigation Tabs -->
-        <div class="bg-slate-800/50 p-1 rounded-lg flex gap-1">
-            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="px-4 py-2 rounded-md text-sm font-bold bg-indigo-600 text-white shadow-sm transition-all">Dashboard</button>
-            <button onclick="switchTab('ecosystem')" id="tab-ecosystem" class="px-4 py-2 rounded-md text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">Ecosystem Map</button>
         </div>
 
-        <div class="flex items-center gap-4">
-            <div class="flex flex-col items-end mr-4 hidden md:block">
-                <span class="text-xs text-slate-400">System Status</span>
-                <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                    <span class="relative flex h-2 w-2">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    OPERATIONAL
-                </span>
+        <!-- PHYSICAL TABS -->
+        <div class="flex items-end gap-2">
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="retro-btn active px-6 py-2 text-sm font-bold">1_DASHBOARD</button>
+            <button onclick="switchTab('infra')" id="tab-infra" class="retro-btn px-6 py-2 text-sm font-bold">2_INFRA</button>
+            <button onclick="switchTab('ecosystem')" id="tab-ecosystem" class="retro-btn px-6 py-2 text-sm font-bold">3_MAP</button>
+            <button onclick="switchTab('crm')" id="tab-crm" class="retro-btn px-6 py-2 text-sm font-bold">4_CRM</button>
+            <button onclick="switchTab('alerts')" id="tab-alerts" class="retro-btn px-6 py-2 text-sm font-bold text-red-500">5_ALERTS</button>
+        </div>
+
+        <div class="flex flex-col items-end gap-2">
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500">AIRLOCK</span>
+                <div class="led on-green"></div>
             </div>
-            <button onclick="fetchData()" id="refresh-btn" class="p-3 bg-slate-800 rounded-xl hover:bg-slate-700 transition text-slate-400 hover:text-white flex items-center justify-center border border-slate-700 shadow-lg">
-                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-            </button>
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500">DB LINK</span>
+                <div class="led on-green"></div>
+            </div>
         </div>
     </header>
 
-    <!-- TAB 1: MAIN DASHBOARD (Existing) -->
-    <!-- Changed: Added overflow-y-auto to allow scrolling within the dashboard view -->
-    <div id="view-dashboard" class="flex-1 w-full flex flex-col gap-6 transition-opacity duration-300 overflow-y-auto pr-2 pb-2">
-        
-        <!-- KPI ROW -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full flex-none">
-            <!-- Total IDs -->
-            <div class="glass-panel p-6 rounded-2xl stat-card relative overflow-hidden group">
-                <div class="absolute -right-6 -top-6 bg-blue-500/10 w-32 h-32 rounded-full group-hover:bg-blue-500/20 transition-colors blur-xl"></div>
-                <div class="flex justify-between items-start mb-4 relative z-10">
-                    <div class="p-2.5 bg-blue-500/20 rounded-lg text-blue-400"><i data-lucide="users" class="w-6 h-6"></i></div>
-                    <div class="text-right">
-                        <span class="text-[10px] text-slate-400 font-mono uppercase tracking-wider block mb-1">Total Identities</span>
-                        <span class="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded">+12% this week</span>
-                    </div>
-                </div>
-                <h3 class="text-4xl font-bold text-white mb-1 relative z-10 tracking-tight" id="stat-total">-</h3>
-                <p class="text-xs text-slate-400 relative z-10">Active Digital Cards</p>
-            </div>
+    <!-- MAIN VIEWPORT -->
+    <div class="retro-screen flex-1 relative z-30 p-1">
+        <!-- GRID OVERLAY -->
+        <div class="absolute inset-0 pointer-events-none" style="background-image: linear-gradient(rgba(50,50,50,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(50,50,50,0.1) 1px, transparent 1px); background-size: 40px 40px; opacity: 0.3;"></div>
 
-            <!-- Virality -->
-            <div class="glass-panel p-6 rounded-2xl stat-card relative overflow-hidden group border-t-4 border-purple-500">
-                <div class="absolute -right-6 -top-6 bg-purple-500/10 w-32 h-32 rounded-full blur-xl"></div>
-                <div class="flex justify-between items-start mb-4 relative z-10">
-                    <div class="p-2.5 bg-purple-500/20 rounded-lg text-purple-400"><i data-lucide="share-2" class="w-6 h-6"></i></div>
-                    <div class="text-right">
-                        <span class="text-[10px] text-purple-400 font-mono uppercase tracking-wider font-bold">Virality (K)</span>
-                    </div>
+        <!-- TAB 1: DASHBOARD -->
+        <div id="view-dashboard" class="tab-content active h-full p-6 overflow-y-auto">
+            <div class="grid grid-cols-4 gap-6 mb-8">
+                <!-- METRIC CARD -->
+                <div class="retro-panel p-4 bg-black/50">
+                    <p class="text-xs text-gray-500 mb-1">TOTAL_IDENTITIES</p>
+                    <h3 class="text-4xl text-white tracking-tighter" id="total-users">1,248</h3>
+                    <div class="h-1 w-full bg-gray-800 mt-2"><div class="h-full bg-green-500" style="width: 75%"></div></div>
                 </div>
-                <h3 class="text-4xl font-bold text-white mb-1 relative z-10 tracking-tight" id="stat-k-factor">1.0</h3>
-                <p class="text-xs text-slate-400 relative z-10">Avg. Shares per User</p>
-            </div>
-
-            <!-- Lifetime Revenue -->
-            <div class="glass-panel p-6 rounded-2xl stat-card border-t-4 border-emerald-500 relative overflow-hidden">
-                <div class="absolute -right-6 -top-6 bg-emerald-500/10 w-32 h-32 rounded-full blur-xl"></div>
-                <div class="flex justify-between items-start mb-4 relative z-10">
-                    <div class="p-2.5 bg-emerald-500/20 rounded-lg text-emerald-400"><i data-lucide="dollar-sign" class="w-6 h-6"></i></div>
-                    <div class="text-right">
-                        <span class="text-[10px] text-emerald-400 font-mono uppercase tracking-wider font-bold">Lifetime Revenue</span>
-                    </div>
+                <div class="retro-panel p-4 bg-black/50">
+                    <p class="text-xs text-gray-500 mb-1">LIFETIME_REV</p>
+                    <h3 class="text-4xl text-amber-500 tracking-tighter" id="lifetime-rev">$28,500</h3>
+                    <div class="h-1 w-full bg-gray-800 mt-2"><div class="h-full bg-amber-500" style="width: 45%"></div></div>
                 </div>
-                <h3 class="text-4xl font-bold text-white mb-1 relative z-10 tracking-tight" id="stat-pro-rev">$0</h3>
-                <p class="text-xs text-slate-400 relative z-10">Total Income Earned</p>
-            </div>
-
-            <!-- Projected MRR -->
-            <div class="glass-panel p-6 rounded-2xl stat-card border-t-4 border-amber-500 relative overflow-hidden">
-                <div class="absolute -right-6 -top-6 bg-amber-500/10 w-32 h-32 rounded-full blur-xl"></div>
-                <div class="flex justify-between items-start mb-4 relative z-10">
-                    <div class="p-2.5 bg-amber-500/20 rounded-lg text-amber-400"><i data-lucide="zap" class="w-6 h-6"></i></div>
-                    <div class="text-right">
-                        <span class="text-[10px] text-amber-400 font-mono uppercase tracking-wider font-bold">Projected MRR</span>
-                    </div>
+                <div class="retro-panel p-4 bg-black/50">
+                    <p class="text-xs text-gray-500 mb-1">VIRAL_K_FACTOR</p>
+                    <h3 class="text-4xl text-white tracking-tighter">1.2</h3>
+                    <p class="text-xs text-green-500 mt-1">GROWTH_MODE: ACTIVE</p>
                 </div>
-                <h3 class="text-4xl font-bold text-white mb-1 relative z-10 tracking-tight" id="stat-mrr">$0</h3>
-                <p class="text-xs text-slate-400 relative z-10">Recurring Revenue</p>
-            </div>
-        </div>
-
-        <!-- MAIN DASHBOARD CONTENT -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full flex-grow">
-            <!-- MAP VIEW -->
-            <div class="lg:col-span-2 glass-panel rounded-2xl p-6 flex flex-col relative overflow-hidden h-[600px] lg:h-auto">
-                <div class="flex justify-between items-center mb-4 relative z-10">
-                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                        <i data-lucide="map" class="w-5 h-5 text-slate-400"></i> Live Deployment Map
-                    </h3>
-                    <div class="flex gap-4 text-xs bg-slate-900/50 p-2 rounded-lg border border-slate-700">
-                        <span class="flex items-center gap-1.5 text-emerald-400 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span> Sale Location</span>
-                        <span class="flex items-center gap-1.5 text-amber-400 font-medium"><span class="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]"></span> Scan Location</span>
-                    </div>
-                </div>
-                
-                <div id="global-map" class="bg-slate-900 border border-slate-700 mb-4 flex-grow shadow-inner min-h-[400px]"></div>
-                
-                <div class="bg-slate-900/80 backdrop-blur p-4 rounded-xl border border-slate-700 relative z-10 flex items-center gap-4">
-                    <button onclick="playTimeline()" id="play-btn" class="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-lg shrink-0">
-                        <i data-lucide="play" class="w-4 h-4 ml-0.5"></i>
-                    </button>
-                    <div class="flex-grow">
-                        <div class="flex justify-between text-[10px] text-slate-400 uppercase font-bold mb-2">
-                            <span>Inception</span>
-                            <span id="timeline-date" class="text-white">Live</span>
-                        </div>
-                        <input type="range" id="timeline-slider" min="0" max="100" value="100" oninput="updateMapTime(this.value)">
+                <div class="retro-panel p-4 bg-black/50">
+                    <p class="text-xs text-gray-500 mb-1">PROJ_MRR</p>
+                    <h3 class="text-4xl text-blue-400 tracking-tighter">$2,450</h3>
+                    <div class="flex gap-1 mt-2">
+                        <div class="w-2 h-2 bg-blue-500"></div>
+                        <div class="w-2 h-2 bg-blue-500"></div>
+                        <div class="w-2 h-2 bg-blue-900"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- RIGHT SIDE: Mix & Diagnostics -->
-            <div class="space-y-6 flex flex-col h-auto lg:h-full">
-                <div class="glass-panel rounded-2xl p-6 flex-grow flex flex-col justify-center min-h-[300px]">
-                    <h3 class="text-sm font-bold text-white mb-6 uppercase tracking-widest text-slate-400 flex items-center justify-between">
-                        Tier Distribution
-                        <i data-lucide="pie-chart" class="w-4 h-4 text-slate-500"></i>
-                    </h3>
-                    <div class="relative h-48 w-full flex items-center justify-center">
+            <div class="grid grid-cols-2 gap-6 h-96">
+                <div class="retro-panel p-4">
+                    <h3 class="text-sm text-gray-400 border-b border-gray-700 pb-2 mb-4">TIER_DISTRIBUTION</h3>
+                    <div class="h-64 flex items-center justify-center">
                         <canvas id="tierChart"></canvas>
                     </div>
-                    <div class="mt-6 grid grid-cols-3 gap-2 text-center">
-                        <div class="p-2 rounded bg-slate-800/50">
-                            <div class="text-[10px] text-slate-400">Free</div>
-                            <div class="text-sm font-bold text-slate-200" id="count-free">-</div>
-                        </div>
-                        <div class="p-2 rounded bg-emerald-900/20 border border-emerald-500/20">
-                            <div class="text-[10px] text-emerald-400">Pro</div>
-                            <div class="text-sm font-bold text-emerald-200" id="count-pro">-</div>
-                        </div>
-                        <div class="p-2 rounded bg-amber-900/20 border border-amber-500/20">
-                            <div class="text-[10px] text-amber-400">Founder</div>
-                            <div class="text-sm font-bold text-amber-200" id="count-founder">-</div>
-                        </div>
-                    </div>
                 </div>
-
-                <div class="glass-panel rounded-2xl p-6">
-                    <h3 class="text-sm font-bold text-white mb-4 uppercase tracking-widest text-slate-400">Infrastructure Health</h3>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center p-3 bg-slate-800/50 rounded-xl border border-slate-700">
-                            <span class="text-xs text-slate-300 flex items-center gap-2"><i data-lucide="database" class="w-3 h-3 text-slate-500"></i> DB Latency</span>
-                            <span class="text-xs font-mono font-bold text-emerald-400" id="latency-val">-- ms</span>
-                        </div>
-                        <div class="flex justify-between items-center p-3 bg-slate-800/50 rounded-xl border border-slate-700">
-                            <span class="text-xs text-slate-300 flex items-center gap-2"><i data-lucide="server" class="w-3 h-3 text-slate-500"></i> Redirect Engine</span>
-                            <span class="text-xs font-bold text-emerald-400 flex items-center gap-1">
-                                <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span> ONLINE
-                            </span>
-                        </div>
-                        
-                        <div class="pt-2 grid grid-cols-2 gap-3">
-                            <a href="https://console.firebase.google.com/" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 hover:border-slate-500 transition text-xs font-bold text-slate-300 group">
-                                <i data-lucide="settings" class="w-3 h-3 text-amber-500 group-hover:rotate-90 transition-transform"></i> Firebase
-                            </a>
-                            <a href="https://www.notion.so/" target="_blank" class="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 hover:border-slate-500 transition text-xs font-bold text-slate-300 group">
-                                <i data-lucide="file-text" class="w-3 h-3 text-white group-hover:scale-110 transition-transform"></i> Notion
-                            </a>
-                        </div>
-                    </div>
+                <div class="retro-panel p-4 flex flex-col">
+                    <h3 class="text-sm text-gray-400 border-b border-gray-700 pb-2 mb-4">GLOBAL_DEPLOYMENT_MAP</h3>
+                    <div id="global-map" class="flex-1 bg-black border border-gray-800 opacity-80 filter grayscale sepia"></div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- TAB 2: ECOSYSTEM MAP (Hidden by default) -->
-    <!-- Changed: Removed min-h, added flex-1 to fill remaining space -->
-    <div id="view-ecosystem" class="hidden w-full flex-1 relative transition-opacity duration-300">
-        <div class="glass-panel w-full h-full rounded-2xl p-0 relative overflow-hidden border border-slate-700 bg-slate-900/50">
-            <!-- Grid Background -->
-            <div class="absolute inset-0 bg-[linear-gradient(rgba(30,41,59,0.3)_1px,transparent_1px),linear-gradient(90deg,rgba(30,41,59,0.3)_1px,transparent_1px)] bg-[size:40px_40px] z-0"></div>
+        <!-- TAB 2: INFRASTRUCTURE -->
+        <div id="view-infra" class="tab-content hidden h-full p-6 overflow-y-auto">
+            <div class="grid grid-cols-3 gap-6 mb-6">
+                <div class="retro-panel p-4">
+                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>AIRLOCK_LATENCY</span><span class="text-green-500">OPTIMAL</span></div>
+                    <div class="text-5xl text-white mb-2">42<span class="text-sm text-gray-600">ms</span></div>
+                    <canvas id="latencyChart" class="h-16 w-full"></canvas>
+                </div>
+                <div class="retro-panel p-4">
+                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>DB_READS_SEC</span><span>---</span></div>
+                    <div class="text-5xl text-white mb-2">840</div>
+                    <div class="flex gap-1 h-4 items-end">
+                        <div class="w-1 bg-green-500 h-[40%]"></div>
+                        <div class="w-1 bg-green-500 h-[60%]"></div>
+                        <div class="w-1 bg-green-500 h-[80%]"></div>
+                        <div class="w-1 bg-green-500 h-[30%]"></div>
+                        <div class="w-1 bg-green-500 h-[50%]"></div>
+                    </div>
+                </div>
+                <div class="retro-panel p-4">
+                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>PAYMENT_GATEWAY</span><span class="text-green-500">CONNECTED</span></div>
+                    <div class="text-5xl text-white mb-2">99.9%</div>
+                    <p class="text-xs text-gray-600">STRIPE API: HEALTHY</p>
+                </div>
+            </div>
+
+            <div class="retro-panel p-4 h-96 flex flex-col">
+                <h3 class="text-sm text-gray-400 border-b border-gray-700 pb-2 mb-2">EVENT_LOG_STREAM // REAL_TIME</h3>
+                <div id="log-stream" class="flex-1 overflow-y-auto font-mono text-xs space-y-1 p-2 bg-black border border-gray-800">
+                    <!-- Logs injected via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: ECOSYSTEM -->
+        <div id="view-ecosystem" class="tab-content hidden h-full p-6">
+            <div class="retro-panel w-full h-full p-0 relative overflow-hidden flex items-center justify-center bg-black">
+                <svg id="ecosystem-svg"></svg>
+                <div class="absolute bottom-4 left-4 text-xs text-gray-600 border border-gray-700 p-2">
+                    NODE_GRAPH_VISUALIZER<br>
+                    RENDER_MODE: VECTOR
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: CRM -->
+        <div id="view-crm" class="tab-content hidden h-full p-6 flex gap-6">
+            <div class="flex-1 retro-panel flex flex-col overflow-hidden">
+                <div class="p-3 border-b border-gray-700 bg-[#222] flex justify-between items-center">
+                    <h3 class="text-sm font-bold">CLIENT_ROSTER_DB</h3>
+                    <input type="text" placeholder="QUERY_USER_ID..." class="bg-black border border-gray-600 text-amber-500 px-2 py-1 text-xs w-64 focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="flex-1 overflow-auto">
+                    <table class="w-full">
+                        <thead class="sticky top-0 z-10">
+                            <tr>
+                                <th>IDENTITY</th>
+                                <th>ACCESS_LEVEL</th>
+                                <th>STATUS</th>
+                                <th>LAST_PING</th>
+                                <th class="text-right">CMD</th>
+                            </tr>
+                        </thead>
+                        <tbody id="crm-table-body">
+                            <!-- Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
             
-            <!-- SVG Layer for Lines -->
-            <svg id="connection-layer" class="absolute inset-0 w-full h-full z-10 pointer-events-none">
-                <!-- Lines populated by JS -->
-            </svg>
-
-            <!-- Nodes Container -->
-            <div class="relative z-20 w-full h-full p-12 flex items-center justify-center">
-                
-                <!-- Central Node: Database -->
-                <div id="node-db" class="node absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full border-4 border-amber-500/30 bg-slate-900 flex flex-col items-center justify-center shadow-[0_0_50px_rgba(245,158,11,0.1)] group">
-                    <div class="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mb-2 group-hover:bg-amber-500/20 transition-colors">
-                        <i data-lucide="database" class="w-8 h-8 text-amber-500"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-white">Firestore</h3>
-                    <p class="text-xs text-amber-500 font-mono">Central Brain</p>
+            <div class="w-80 retro-panel p-4 flex flex-col bg-black/40">
+                <h3 class="text-sm text-amber-500 border-b border-gray-700 pb-2 mb-4">INSPECTOR_MODULE</h3>
+                <div id="god-mode-panel" class="flex-1 space-y-4">
+                    <p class="text-xs text-gray-600 text-center mt-10">[ NO_TARGET_SELECTED ]</p>
                 </div>
-
-                <!-- Node: Landing Page -->
-                <a href="https://simpli-fi-os.github.io/simpli-fi-test/" target="_blank" id="node-landing" class="node absolute top-[15%] left-[20%] w-40 p-4 rounded-xl bg-slate-800 border border-slate-600 hover:border-indigo-500 flex flex-col items-center text-center shadow-xl group">
-                    <div class="w-10 h-10 bg-indigo-500/20 rounded-lg flex items-center justify-center mb-2 text-indigo-400 group-hover:text-indigo-300">
-                        <i data-lucide="layout" class="w-5 h-5"></i>
-                    </div>
-                    <h4 class="font-bold text-sm text-slate-200">Landing Page</h4>
-                    <span class="text-[10px] text-slate-500 mt-1">Public Entry</span>
-                </a>
-
-                <!-- Node: Intake Form -->
-                <a href="https://simpli-fi-os.github.io/simpli-fi-test/intake_form.html" target="_blank" id="node-intake" class="node absolute top-[15%] right-[20%] w-40 p-4 rounded-xl bg-slate-800 border border-slate-600 hover:border-emerald-500 flex flex-col items-center text-center shadow-xl group">
-                    <div class="w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center mb-2 text-emerald-400 group-hover:text-emerald-300">
-                        <i data-lucide="clipboard-list" class="w-5 h-5"></i>
-                    </div>
-                    <h4 class="font-bold text-sm text-slate-200">Intake Engine</h4>
-                    <span class="text-[10px] text-slate-500 mt-1">User Onboarding</span>
-                </a>
-
-                <!-- Node: Digital Identity -->
-                <a href="https://simpli-fi-os.github.io/simpli-fi-test/card.html" target="_blank" id="node-card" class="node absolute bottom-[20%] right-[15%] w-40 p-4 rounded-xl bg-slate-800 border border-slate-600 hover:border-pink-500 flex flex-col items-center text-center shadow-xl group">
-                    <div class="w-10 h-10 bg-pink-500/20 rounded-lg flex items-center justify-center mb-2 text-pink-400 group-hover:text-pink-300">
-                        <i data-lucide="smartphone" class="w-5 h-5"></i>
-                    </div>
-                    <h4 class="font-bold text-sm text-slate-200">Digital ID Card</h4>
-                    <span class="text-[10px] text-slate-500 mt-1">End User Product</span>
-                </a>
-
-                <!-- Node: Client Admin -->
-                <a href="https://simpli-fi-os.github.io/simpli-fi-test/admin_dashboard.html#" target="_blank" id="node-admin" class="node absolute bottom-[20%] left-[15%] w-40 p-4 rounded-xl bg-slate-800 border border-slate-600 hover:border-blue-500 flex flex-col items-center text-center shadow-xl group">
-                    <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center mb-2 text-blue-400 group-hover:text-blue-300">
-                        <i data-lucide="users" class="w-5 h-5"></i>
-                    </div>
-                    <h4 class="font-bold text-sm text-slate-200">Client Admin</h4>
-                    <span class="text-[10px] text-slate-500 mt-1">Team Management</span>
-                </a>
-
-                <!-- Node: Resource Catalog -->
-                <a href="https://simpli-fi-os.github.io/simpli-fi-test/resource_catalog.html" target="_blank" id="node-catalog" class="node absolute top-[50%] right-[5%] transform -translate-y-1/2 w-40 p-4 rounded-xl bg-slate-800 border border-slate-600 hover:border-orange-500 flex flex-col items-center text-center shadow-xl group">
-                    <div class="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center mb-2 text-orange-400 group-hover:text-orange-300">
-                        <i data-lucide="library" class="w-5 h-5"></i>
-                    </div>
-                    <h4 class="font-bold text-sm text-slate-200">Asset Catalog</h4>
-                    <span class="text-[10px] text-slate-500 mt-1">Resource Library</span>
-                </a>
-
-                <!-- Node: Ops Center (Self) -->
-                <a href="https://simpli-fi-os.github.io/simpli-fi-test/ops_center.html" target="_blank" id="node-ops" class="node absolute top-[50%] left-[5%] transform -translate-y-1/2 w-40 p-4 rounded-xl bg-indigo-900/50 border-2 border-indigo-500 flex flex-col items-center text-center shadow-xl shadow-indigo-900/50 hover:bg-indigo-900/80 transition-colors">
-                    <div class="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center mb-2 text-white animate-pulse">
-                        <i data-lucide="globe-2" class="w-5 h-5"></i>
-                    </div>
-                    <h4 class="font-bold text-sm text-white">Ops Center</h4>
-                    <span class="text-[10px] text-indigo-300 mt-1">You Are Here</span>
-                </a>
-
-                <!-- NEW Node: Lindsey -->
-                <a href="https://simpli-fi-os.github.io/simpli-fi-test/lindsey.html" target="_blank" id="node-lindsey" class="node absolute top-[8%] left-1/2 transform -translate-x-1/2 w-40 p-4 rounded-xl bg-slate-800 border border-slate-600 hover:border-cyan-500 flex flex-col items-center text-center shadow-xl group">
-                    <div class="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center mb-2 text-cyan-400 group-hover:text-cyan-300">
-                        <i data-lucide="user" class="w-5 h-5"></i>
-                    </div>
-                    <h4 class="font-bold text-sm text-slate-200">Lindsey</h4>
-                    <span class="text-[10px] text-slate-500 mt-1">Client Product</span>
-                </a>
-
-                <!-- NEW Node: DFD Catalog -->
-                <a href="https://simpli-fi-os.github.io/simpli-fi-test/dfd_catalog.html" target="_blank" id="node-dfd" class="node absolute bottom-[8%] left-1/2 transform -translate-x-1/2 w-40 p-4 rounded-xl bg-slate-800 border border-slate-600 hover:border-teal-500 flex flex-col items-center text-center shadow-xl group">
-                    <div class="w-10 h-10 bg-teal-500/20 rounded-lg flex items-center justify-center mb-2 text-teal-400 group-hover:text-teal-300">
-                        <i data-lucide="book-open" class="w-5 h-5"></i>
-                    </div>
-                    <h4 class="font-bold text-sm text-slate-200">DFD Catalog</h4>
-                    <span class="text-[10px] text-slate-500 mt-1">Client Product</span>
-                </a>
-
             </div>
         </div>
+
+        <!-- TAB 5: ALERTS -->
+        <div id="view-alerts" class="tab-content hidden h-full p-6">
+            <div class="retro-panel p-6 max-w-3xl mx-auto bg-black/20">
+                <h2 class="text-lg text-red-500 mb-6 border-b border-red-900 pb-2 flex items-center gap-2">
+                    <i data-lucide="siren" class="w-5 h-5 animate-pulse"></i> ALERT_CONFIGURATION
+                </h2>
+                <div class="space-y-4" id="alert-list">
+                    <!-- Alerts Injected -->
+                </div>
+            </div>
+        </div>
+
     </div>
 
+    <!-- SCRIPT LOGIC -->
     <script>
-        // --- CONFIGURATION ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyAnlmGZNwoPS-vBnK1AlHvNsB73q0UAkCU",
-            authDomain: "simpli-fi-id.firebaseapp.com",
-            projectId: "simpli-fi-id",
-            storageBucket: "simpli-fi-id.firebasestorage.app",
-            messagingSenderId: "97006103916",
-            appId: "1:97006103916:web:631c876a6eb263caf81749"
-        };
-
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-        
-        let tierChartInstance = null; 
-        let mapInstance = null;
-        let mapMarkers = [];
-        let globalData = null;
-        let isPlaying = false;
-        let animationFrame = null;
-
-        // Initialize
         lucide.createIcons();
-        initMap();
-        drawConnections();
+        
+        // --- DATA SIMULATION & LOGIC ---
+        
+        const db = { collection: () => ({ get: async () => ({ size: 1248, docs: [] }) }) }; // Mock for display
 
-        // --- TAB SWITCHING ---
-        function switchTab(tabId) {
-            const dashboard = document.getElementById('view-dashboard');
-            const ecosystem = document.getElementById('view-ecosystem');
-            const btnDash = document.getElementById('tab-dashboard');
-            const btnEco = document.getElementById('tab-ecosystem');
-
-            if (tabId === 'dashboard') {
-                dashboard.classList.remove('hidden');
-                ecosystem.classList.add('hidden');
-                btnDash.className = "px-4 py-2 rounded-md text-sm font-bold bg-indigo-600 text-white shadow-sm transition-all";
-                btnEco.className = "px-4 py-2 rounded-md text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all";
-            } else {
-                dashboard.classList.add('hidden');
-                ecosystem.classList.remove('hidden');
-                btnDash.className = "px-4 py-2 rounded-md text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all";
-                btnEco.className = "px-4 py-2 rounded-md text-sm font-bold bg-indigo-600 text-white shadow-sm transition-all";
-                
-                // Redraw lines after transition to ensure correct positioning
-                setTimeout(drawConnections, 100);
-            }
+        function switchTab(tab) {
+            document.querySelectorAll('.retro-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            
+            document.getElementById('tab-' + tab).classList.add('active');
+            document.getElementById('view-' + tab).classList.remove('hidden');
+            
+            // Tab Specific Inits
+            if(tab === 'dashboard') initMap();
+            if(tab === 'ecosystem') initEcosystemMap();
+            if(tab === 'crm') loadCRM();
+            if(tab === 'alerts') loadAlerts();
         }
 
-        // --- ECOSYSTEM MAP LOGIC ---
-        function drawConnections() {
-            const svg = document.getElementById('connection-layer');
-            svg.innerHTML = ''; // Clear existing lines
-
-            const connections = [
-                { from: 'node-landing', to: 'node-intake', color: '#64748b' }, // Traffic -> Intake
-                { from: 'node-intake', to: 'node-db', color: '#10b981' },      // Intake -> DB (Write)
-                { from: 'node-db', to: 'node-card', color: '#3b82f6' },        // DB -> Card (Read)
-                { from: 'node-db', to: 'node-admin', color: '#f59e0b' },       // DB -> Admin (Read/Write)
-                { from: 'node-admin', to: 'node-catalog', color: '#f59e0b' },  // Admin -> Catalog (Manage)
-                { from: 'node-catalog', to: 'node-card', color: '#8b5cf6' },   // Catalog -> Card (Share)
-                { from: 'node-db', to: 'node-ops', color: '#ef4444' },         // DB -> Ops (Monitoring)
-            ];
-
-            connections.forEach(conn => {
-                const startEl = document.getElementById(conn.from);
-                const endEl = document.getElementById(conn.to);
-                
-                if (startEl && endEl) {
-                    const startRect = startEl.getBoundingClientRect();
-                    const endRect = endEl.getBoundingClientRect();
-                    const containerRect = document.getElementById('view-ecosystem').getBoundingClientRect();
-
-                    // Calculate centers relative to the container
-                    const x1 = startRect.left + startRect.width / 2 - containerRect.left;
-                    const y1 = startRect.top + startRect.height / 2 - containerRect.top;
-                    const x2 = endRect.left + endRect.width / 2 - containerRect.left;
-                    const y2 = endRect.top + endRect.height / 2 - containerRect.top;
-
-                    // Create line
-                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                    line.setAttribute('x1', x1);
-                    line.setAttribute('y1', y1);
-                    line.setAttribute('x2', x2);
-                    line.setAttribute('y2', y2);
-                    line.setAttribute('stroke', conn.color);
-                    line.setAttribute('stroke-width', '2');
-                    line.classList.add('connection-line');
-                    
-                    svg.appendChild(line);
-                }
-            });
-        }
-
-        // Redraw lines on window resize
-        window.addEventListener('resize', () => {
-            if (!document.getElementById('view-ecosystem').classList.contains('hidden')) {
-                drawConnections();
+        // Dashboard Init
+        const ctx = document.getElementById('tierChart').getContext('2d');
+        Chart.defaults.color = '#555';
+        Chart.defaults.font.family = "'Share Tech Mono', monospace";
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['AMBASSADOR', 'PRO', 'FOUNDER'],
+                datasets: [{
+                    data: [65, 25, 10],
+                    backgroundColor: ['#333', '#0d9488', '#fbbf24'],
+                    borderColor: '#1a1a1a',
+                    borderWidth: 2
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { position: 'right', labels: { color: '#888', boxWidth: 10 } } },
+                cutout: '70%'
             }
         });
 
-        // --- EXISTING MAP LOGIC (Leaflet) ---
+        // Map Init (Dark Mode)
         function initMap() {
-            mapInstance = L.map('global-map', {
-                zoomControl: false,
-                attributionControl: false
-            }).setView([39.8283, -98.5795], 4);
-
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                maxZoom: 19,
-                subdomains: 'abcd'
-            }).addTo(mapInstance);
-        }
-
-        // --- MOCK DATA ---
-        function getMockData() {
-            const now = Date.now();
-            return {
-                users: [
-                    { id: '1', tier: 'founder', lat: 33.2148, lng: -97.1331, type: 'sale', timestamp: now }, 
-                    { id: '2', tier: 'pro', lat: 32.7767, lng: -96.7970, type: 'sale', timestamp: now - 86400000 * 2 },
-                    { id: '3', tier: 'free', lat: 30.2672, lng: -97.7431, type: 'scan', timestamp: now - 86400000 * 5 },
-                    { id: '4', tier: 'pro', lat: 40.7128, lng: -74.0060, type: 'sale', timestamp: now - 86400000 * 10 },
-                    { id: '5', tier: 'free', lat: 34.0522, lng: -118.2437, type: 'scan', timestamp: now - 86400000 * 15 },
-                    { id: '6', tier: 'pro', lat: 51.5074, lng: -0.1278, type: 'sale', timestamp: now - 86400000 * 20 },
-                    { id: '7', tier: 'founder', lat: 35.6762, lng: 139.6503, type: 'sale', timestamp: now - 86400000 * 25 },
-                    { id: '8', tier: 'free', lat: 41.8781, lng: -87.6298, type: 'scan', timestamp: now - 86400000 * 3 },
-                    { id: '9', tier: 'pro', lat: 25.7617, lng: -80.1918, type: 'scan', timestamp: now - 86400000 * 1 },
-                ],
-                stats: { 
-                    total: 1240, 
-                    proRev: 28500, 
-                    mrr: 2450, 
-                    kFactor: 1.4,
-                    counts: { free: 800, pro: 400, founder: 40 }
-                }
-            };
-        }
-
-        async function fetchData() {
-            const btn = document.getElementById('refresh-btn');
-            const originalContent = btn.innerHTML;
-            btn.innerHTML = '<div class="w-5 h-5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>';
-            btn.disabled = true;
+            if (window.mapInstance) return;
+            const map = L.map('global-map', { zoomControl: false, attributionControl: false }).setView([30, -10], 2);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+            window.mapInstance = map;
             
-            const start = Date.now();
-            let isDemoMode = false;
-            
-            try {
-                if (!auth.currentUser) {
-                    try { await auth.signInAnonymously(); } 
-                    catch (e) { isDemoMode = true; }
-                }
-
-                await new Promise(r => setTimeout(r, 800)); 
-                globalData = getMockData();
-                isDemoMode = true;
-
-                document.getElementById('latency-val').innerText = isDemoMode ? "Simulated" : `${Date.now() - start} ms`;
-                
-                const stats = globalData.stats;
-                animateValue('stat-total', 0, stats.total, 1000);
-                document.getElementById('stat-pro-rev').innerText = "$" + stats.proRev.toLocaleString();
-                document.getElementById('stat-mrr').innerText = "$" + stats.mrr.toLocaleString();
-                document.getElementById('stat-k-factor').innerText = stats.kFactor;
-                
-                document.getElementById('count-free').innerText = stats.counts.free;
-                document.getElementById('count-pro').innerText = stats.counts.pro;
-                document.getElementById('count-founder').innerText = stats.counts.founder;
-
-                updateChart(stats.counts.free, stats.counts.pro, stats.counts.founder);
-                updateMapTime(100); 
-
-            } catch (error) {
-                console.error(error);
-                alert("Connection Failed");
-            } finally {
-                btn.innerHTML = originalContent;
-                btn.disabled = false;
-                lucide.createIcons();
-            }
+            // Fake data points
+            const points = [[40.7, -74.0], [34.0, -118.2], [51.5, -0.1], [35.6, 139.6], [33.2, -97.1]];
+            points.forEach(p => {
+                L.circleMarker(p, {
+                    color: '#ffb000',
+                    fillColor: '#ffb000',
+                    fillOpacity: 0.5,
+                    radius: 3
+                }).addTo(map);
+            });
         }
 
-        function updateMapTime(value) {
-            if (!globalData) return;
-            const percentage = value / 100;
-            const sorted = [...globalData.users].sort((a, b) => a.timestamp - b.timestamp);
-            const newest = sorted[sorted.length - 1].timestamp;
-            const oldest = sorted[0].timestamp;
-            const range = newest - oldest;
-            const cutoff = oldest + (range * percentage);
-            const visiblePoints = globalData.users.filter(u => u.timestamp <= cutoff);
+        // Live Logs
+        const logContainer = document.getElementById('log-stream');
+        function addLog() {
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+            const actions = ['GET /card/hunter', 'POST /intake', '302 REDIRECT', 'DB_WRITE_SUCCESS'];
+            const action = actions[Math.floor(Math.random() * actions.length)];
+            const div = document.createElement('div');
+            div.style.color = action.includes('302') ? '#33ff00' : '#888';
+            div.innerHTML = `[${time}] :: ${action}`;
+            logContainer.prepend(div);
+            if(logContainer.children.length > 20) logContainer.lastElementChild.remove();
+        }
+        setInterval(addLog, 800);
+
+        // Ecosystem D3 (Wireframe Style)
+        function initEcosystemMap() {
+            const svg = d3.select("#ecosystem-svg");
+            svg.selectAll("*").remove(); // Clear
+            const width = document.getElementById('view-ecosystem').clientWidth;
+            const height = document.getElementById('view-ecosystem').clientHeight;
             
-            renderMapPoints(visiblePoints);
-            const date = new Date(cutoff);
-            document.getElementById('timeline-date').innerText = value == 100 ? "Live" : date.toLocaleDateString();
+            const nodes = [
+                { id: "INTAKE", x: width * 0.2, y: height * 0.5 },
+                { id: "DB", x: width * 0.5, y: height * 0.5 },
+                { id: "CARD", x: width * 0.8, y: height * 0.5 },
+                { id: "AIRLOCK", x: width * 0.5, y: height * 0.2 },
+                { id: "ADMIN", x: width * 0.5, y: height * 0.8 }
+            ];
+
+            // Lines
+            svg.selectAll("line")
+                .data([
+                    { s: 0, t: 1 }, { s: 1, t: 2 }, { s: 3, t: 1 }, { s: 1, t: 4 }
+                ])
+                .enter().append("line")
+                .attr("x1", d => nodes[d.s].x).attr("y1", d => nodes[d.s].y)
+                .attr("x2", d => nodes[d.t].x).attr("y2", d => nodes[d.t].y)
+                .attr("stroke", "#333").attr("stroke-width", 2);
+
+            // Nodes
+            const g = svg.selectAll("g").data(nodes).enter().append("g")
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+
+            g.append("circle").attr("r", 30).attr("fill", "#000").attr("stroke", "#ffb000").attr("stroke-width", 2);
+            g.append("text").text(d => d.id).attr("text-anchor", "middle").attr("dy", 4).attr("fill", "#ffb000").attr("font-size", "10px");
         }
 
-        function renderMapPoints(points) {
-            mapMarkers.forEach(m => mapInstance.removeLayer(m));
-            mapMarkers = [];
+        // CRM Logic
+        function loadCRM() {
+            const tbody = document.getElementById('crm-table-body');
+            tbody.innerHTML = `
+                <tr>
+                    <td class="font-bold text-white">HUNTER_LOTT</td>
+                    <td><span class="text-amber-500">[FOUNDER]</span></td>
+                    <td class="text-green-500">ACTIVE</td>
+                    <td>00:02:45</td>
+                    <td class="text-right"><button class="text-blue-400 hover:text-white" onclick="inspectUser('HUNTER')">[INSPECT]</button></td>
+                </tr>
+                <tr>
+                    <td class="font-bold text-white">ACME_CORP</td>
+                    <td><span class="text-purple-400">[ENTERPRISE]</span></td>
+                    <td class="text-green-500">ACTIVE</td>
+                    <td>01:15:00</td>
+                    <td class="text-right"><button class="text-blue-400 hover:text-white" onclick="inspectUser('ACME')">[INSPECT]</button></td>
+                </tr>
+            `;
+        }
 
-            points.forEach(u => {
-                const isSale = u.type === 'sale';
-                const color = isSale ? '#10b981' : '#f59e0b';
-                const radius = isSale ? 6 : 4;
-                
-                const marker = L.circleMarker([u.lat, u.lng], {
-                    radius: radius,
-                    fillColor: color,
-                    color: "#fff",
-                    weight: 1,
-                    opacity: 0.8,
-                    fillOpacity: 0.8
-                }).addTo(mapInstance);
-                
-                marker.bindPopup(`
-                    <div class="text-xs">
-                        <strong class="${isSale ? 'text-emerald-400' : 'text-amber-400'} uppercase tracking-wider">${u.type}</strong><br>
-                        <span class="text-slate-300 capitalize">${u.tier} Tier</span>
+        function inspectUser(name) {
+            document.getElementById('god-mode-panel').innerHTML = `
+                <div class="border border-amber-500/30 p-4 bg-black">
+                    <h4 class="text-white font-bold mb-2">TARGET: ${name}</h4>
+                    <p class="text-xs text-gray-500 mb-4">UID: 8d9a7f-x9...</p>
+                    <div class="space-y-2">
+                        <button class="retro-btn w-full py-2 text-xs" onclick="alert('Impersonating...')">IMPERSONATE_SESSION</button>
+                        <button class="retro-btn w-full py-2 text-xs" onclick="alert('Resetting...')">RESET_CREDENTIALS</button>
+                        <button class="retro-btn emergency w-full py-2 text-xs" onclick="alert('Nuking...')">!!! NUKE_DATA !!!</button>
                     </div>
-                `);
-                mapMarkers.push(marker);
-            });
+                </div>
+            `;
         }
 
-        function playTimeline() {
-            if (isPlaying) {
-                isPlaying = false;
-                clearInterval(animationFrame);
-                document.getElementById('play-btn').innerHTML = '<i data-lucide="play" class="w-4 h-4 ml-0.5"></i>';
-                lucide.createIcons();
-                return;
-            }
-            isPlaying = true;
-            document.getElementById('play-btn').innerHTML = '<i data-lucide="pause" class="w-4 h-4"></i>';
-            lucide.createIcons();
-            
-            const slider = document.getElementById('timeline-slider');
-            let val = parseInt(slider.value);
-            if (val >= 100) val = 0;
-
-            animationFrame = setInterval(() => {
-                val += 1;
-                slider.value = val;
-                updateMapTime(val);
-                if(val >= 100) {
-                    playTimeline();
-                }
-            }, 50);
+        function loadAlerts() {
+            document.getElementById('alert-list').innerHTML = `
+                <div class="border border-red-900 bg-red-900/10 p-4 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-red-500 font-bold">LATENCY_SPIKE_DETECTED</h3>
+                        <p class="text-xs text-gray-500">Airlock > 120ms for 5s</p>
+                    </div>
+                    <div class="led on-red animate-pulse"></div>
+                </div>
+                <div class="border border-yellow-900 bg-yellow-900/10 p-4 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-yellow-500 font-bold">PAYMENT_GATEWAY_WARN</h3>
+                        <p class="text-xs text-gray-500">Webhook delay > 2s</p>
+                    </div>
+                    <div class="led" style="background: #aa0"></div>
+                </div>
+            `;
         }
 
-        function updateChart(free, pro, founder) {
-            const ctx = document.getElementById('tierChart').getContext('2d');
-            if (tierChartInstance) tierChartInstance.destroy();
-            tierChartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Free', 'Pro', 'Founder'],
-                    datasets: [{ 
-                        data: [free, pro, founder], 
-                        backgroundColor: ['#334155', '#10b981', '#f59e0b'],
-                        borderWidth: 0,
-                        hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { 
-                            position: 'right', 
-                            labels: { usePointStyle: true, color: '#94a3b8', boxWidth: 8, font: { size: 10 } } 
-                        } 
-                    },
-                    cutout: '75%',
-                    animation: { animateScale: true, animateRotate: true }
-                }
-            });
-        }
-        
-        function animateValue(id, start, end, duration) {
-            if (start === end) return;
-            const range = end - start;
-            let current = start;
-            const increment = end > start ? 1 : -1;
-            const stepTime = Math.abs(Math.floor(duration / range));
-            const obj = document.getElementById(id);
-            const timer = setInterval(function() {
-                current += increment;
-                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
-                    obj.innerHTML = end.toLocaleString();
-                    clearInterval(timer);
-                } else {
-                    obj.innerHTML = current.toLocaleString();
-                }
-            }, stepTime < 10 ? 10 : stepTime);
-        }
-
-        window.onload = fetchData;
+        // Init
+        switchTab('dashboard');
     </script>
 </body>
 </html>
