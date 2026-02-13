@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:title" content="Simpli-FI ID" id="og-title">
+    <meta property="og:description" content="Connect with me." id="og-desc">
+    <meta property="og:image" content="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png" id="og-image">
+    
+    <!-- Favicons -->
+    <link rel="icon" href="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png" id="dynamic-favicon">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png" id="dynamic-apple-icon">
+
+    <title>Simpli-FI ID | Loading...</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons (Reverted to unpkg for stability) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Firebase SDKs (Compat 11.6.1) -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+
+    <style>
+        :root {
+            --brand-primary: #1e293b;
+            --brand-accent: #fbbf24;
+        }
+        body { background-color: #FBF9F7; overflow: hidden; }
+        .physics-element { position: absolute; pointer-events: none; z-index: 0; }
+        
+        #loader { display: flex; }
+        #error-screen { display: none; }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .ad-banner-enter {
+            animation: slideUp 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="fixed inset-0">
+
+    <!-- Physics Layer -->
+    <div id="physics-layer" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
+
+    <!-- Loader -->
+    <div id="loader" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50 transition-opacity duration-500">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#fbbf24]"></div>
+    </div>
+
+    <!-- Error Screen (Hidden by default) -->
+    <div id="error-screen" class="fixed inset-0 bg-slate-900 z-[60] flex flex-col items-center justify-center p-8 text-center hidden">
+        <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4 text-red-500">
+            <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+        </div>
+        <h2 class="text-white font-bold text-xl mb-2">System Error</h2>
+        <p id="error-message" class="text-slate-400 text-sm mb-6">Unable to load identity.</p>
+        <button onclick="window.location.reload()" class="px-6 py-3 bg-white text-slate-900 font-bold rounded-xl text-sm">Retry Connection</button>
+    </div>
+
+    <!-- Main Content -->
+    <div id="scroll-container" class="w-full h-full overflow-y-auto relative z-10 flex justify-center p-4 pb-32">
+        <main id="card-body" class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 relative flex flex-col shrink-0 my-auto transition-all duration-300 opacity-0 transform translate-y-4">
+            
+            <!-- HEADER -->
+            <div class="h-32 relative overflow-hidden shrink-0" id="header-bg" style="background-color: var(--brand-primary);">
+                <!-- QR Icon Top Right -->
+                <div class="absolute top-4 right-4 z-20 bg-white/20 backdrop-blur p-1.5 rounded-lg cursor-pointer hover:bg-white/30 transition">
+                    <i data-lucide="qr-code" class="w-4 h-4 text-white"></i>
+                </div>
+
+                <div class="absolute top-4 left-4 z-10 flex items-center gap-3">
+                    <div id="org-logo" class="w-10 h-10 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center text-white font-bold text-lg">S</div>
+                    <span class="font-serif text-white font-bold tracking-tight text-sm opacity-90" id="org-name">Simpli-FI</span>
+                </div>
+                <div class="absolute inset-0 opacity-20 bg-[radial-gradient(var(--brand-accent)_1px,transparent_1px)] [background-size:14px_14px]"></div>
+            </div>
+
+            <!-- PROFILE -->
+            <div class="relative px-8 -mt-16 mb-6 text-center shrink-0">
+                <div class="inline-block relative">
+                    <div class="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-slate-100 mx-auto relative z-10">
+                        <img id="avatar" src="" class="w-full h-full object-cover">
+                    </div>
+                    <div id="badge" class="hidden absolute bottom-1 right-1 z-20 rounded-full p-1.5 border-2 border-white shadow-sm" style="background-color: var(--brand-accent); color: var(--brand-primary);">
+                        <i data-lucide="shield-check" class="w-3 h-3 stroke-[4]"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <h1 id="user-name" class="font-serif text-3xl font-bold" style="color: var(--brand-primary);">User Name</h1>
+                    <p id="user-title" class="font-bold text-xs tracking-widest uppercase mt-1" style="color: var(--brand-accent);">Title</p>
+                </div>
+            </div>
+
+            <!-- ACTIONS GRID -->
+            <div id="actions-grid" class="grid grid-cols-4 gap-2 px-6 mb-6 shrink-0"></div>
+
+            <!-- MISSION -->
+            <div class="px-6 mb-6 shrink-0">
+                <div class="relative bg-slate-50 p-4 rounded-xl border-l-4 overflow-hidden" id="mission-box" style="border-color: var(--brand-primary);">
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-2 mb-1">
+                            <i data-lucide="target" class="w-3 h-3" style="color: var(--brand-primary);"></i>
+                            <h3 class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--brand-primary);">Current Mission</h3>
+                        </div>
+                        <p id="mission-text" class="text-slate-700 text-sm font-medium italic leading-relaxed">Loading...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BIO -->
+            <div class="px-8 mb-6 shrink-0">
+                <h3 class="text-xs font-bold uppercase tracking-wider mb-2" style="color: var(--brand-accent);">About</h3>
+                <p id="bio-text" class="text-slate-600 text-sm leading-relaxed font-light"></p>
+            </div>
+
+            <!-- CONTACT DETAILS (New Section based on Intake) -->
+            <div id="contact-details" class="px-6 mb-6 shrink-0 space-y-2">
+                <!-- Injected via JS -->
+            </div>
+
+            <!-- FOOTER -->
+            <div class="mt-auto py-6 text-center border-t border-slate-100 bg-slate-50">
+                <a href="https://simpli-fi-os.com" target="_blank" class="inline-flex items-center gap-2 group opacity-60 hover:opacity-100 transition">
+                    <span class="text-[10px] text-slate-400 font-bold tracking-widest uppercase group-hover:text-brand-primary">Powered by Simpli-FI OS</span>
+                    <i data-lucide="external-link" class="w-3 h-3 text-slate-400 group-hover:text-brand-primary"></i>
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <!-- FREEMIUM AD BANNER -->
+    <div id="ad-banner" class="hidden fixed bottom-4 left-4 right-4 z-40 max-w-md mx-auto">
+        <div class="bg-slate-900/95 backdrop-blur text-white p-4 rounded-2xl shadow-2xl border border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4 transform translate-y-full transition-transform duration-500">
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <div class="w-10 h-10 bg-[#fbbf24] rounded-lg flex items-center justify-center text-slate-900 font-bold font-serif italic text-xl shrink-0">S</div>
+                <div class="flex flex-col">
+                    <a href="https://simpli-fi-os.com" target="_blank" onclick="trackMothershipClick()" class="text-[10px] text-slate-400 uppercase tracking-widest hover:text-white transition flex items-center gap-1">
+                        Powered by <strong>Simpli-FI OS</strong>
+                        <i data-lucide="external-link" class="w-3 h-3"></i>
+                    </a>
+                    <span class="text-xs font-medium text-white">The Digital Infrastructure for Pros.</span>
+                </div>
+            </div>
+            <button onclick="handleAdClick()" class="w-full sm:w-auto px-5 py-2.5 bg-white text-slate-900 text-xs font-bold rounded-xl hover:bg-[#fbbf24] hover:text-slate-900 transition shadow-lg whitespace-nowrap flex items-center justify-center gap-2 group">
+                <span>Claim Free Gift</span>
+                <i data-lucide="gift" class="w-3 h-3 group-hover:scale-110 transition-transform"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAnlmGZNwoPS-vBnK1AlHvNsB73q0UAkCU",
+            authDomain: "simpli-fi-id.firebaseapp.com",
+            projectId: "simpli-fi-id",
+            storageBucket: "simpli-fi-id.firebasestorage.app",
+            messagingSenderId: "97006103916",
+            appId: "1:97006103916:web:631c876a6eb263caf81749"
+        };
+
+        let db, auth;
+        let userData = null;
+
+        // --- INIT ---
+        async function init() {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                auth = firebase.auth();
+            } catch(e) {
+                showError("Firebase Init Failed. Check Console.");
+                console.error(e);
+                return;
+            }
+
+            // 2. URL Parse
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('u') || 'hunter_lott'; 
+
+            try {
+                // 3. Auth
+                await auth.signInAnonymously();
+
+                // 4. Data Fetch
+                const userDoc = await db.collection('users').doc(userId).get();
+                
+                if (!userDoc.exists) {
+                    console.warn("User not found, using demo data");
+                    userData = {
+                        full_name: "Future User",
+                        title: "Business Owner",
+                        tier: "free",
+                        avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Future",
+                        bio: "This is a placeholder for a mass-generated card.",
+                        org_id: "simpli_fi_public"
+                    };
+                } else {
+                    userData = userDoc.data();
+                }
+
+                // 5. Org Data
+                let brand = { primary_color: '#1e293b', accent_color: '#fbbf24' };
+                if (userData.org_id) {
+                    try {
+                        const orgDoc = await db.collection('organizations').doc(userData.org_id).get();
+                        if (orgDoc.exists) {
+                            brand = orgDoc.data().branding || brand;
+                        }
+                    } catch(e) { console.warn("Org fetch failed", e); }
+                }
+
+                // 6. Render
+                renderCard(brand);
+                
+                // 7. Icons (Try/Catch in case CDN fails)
+                try {
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    } else {
+                        console.warn("Lucide library not loaded.");
+                    }
+                } catch(e) { console.warn("Icon render error", e); }
+
+                // 8. Physics
+                initPhysics(userData.gamification?.physics_type || 'default');
+
+            } catch (error) {
+                console.error("Critical Load Error:", error);
+                showError("Connection Failed. Please check your internet.");
+            }
+        }
+
+        function showError(msg) {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('error-screen').style.display = 'flex';
+            document.getElementById('error-screen').classList.remove('hidden');
+            document.getElementById('error-message').innerText = msg;
+            
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        // --- RENDER ENGINE ---
+        function renderCard(brand) {
+            document.documentElement.style.setProperty('--brand-primary', brand.primary_color);
+            document.documentElement.style.setProperty('--brand-accent', userData.custom_accent || brand.accent_color);
+
+            document.title = `${userData.full_name} | Simpli-FI`;
+            document.getElementById('user-name').innerText = userData.full_name;
+            document.getElementById('user-title').innerText = userData.title;
+            document.getElementById('bio-text').innerText = userData.bio || "Building my digital legacy.";
+            document.getElementById('mission-text').innerText = userData.mission || "Building connections.";
+            document.getElementById('avatar').src = userData.avatar_url;
+
+            // Tier Logic
+            if (userData.tier !== 'free') {
+                document.getElementById('badge').classList.remove('hidden');
+            } else {
+                setTimeout(() => {
+                    const adBanner = document.getElementById('ad-banner');
+                    adBanner.classList.remove('hidden');
+                    void adBanner.offsetWidth; 
+                    adBanner.firstElementChild.classList.remove('translate-y-full');
+                }, 1500);
+            }
+
+            // Actions Grid (Quick Actions)
+            const grid = document.getElementById('actions-grid');
+            grid.innerHTML = '';
+            
+            // Note: We use the same Quick Action logic as the Intake Preview
+            const actions = [
+                { icon: 'phone', label: 'Call', action: `tel:${userData.phone || ''}`, isLink: true, visible: !!userData.phone },
+                { icon: 'mail', label: 'Email', action: `mailto:${userData.email || ''}`, isLink: true, visible: !!userData.email },
+                { icon: 'globe', label: 'Site', action: userData.social_links?.website || '#', isLink: true, visible: !!userData.social_links?.website },
+                { icon: 'contact', label: 'Save', action: 'saveContact', isLink: false, visible: true }
+            ];
+
+            actions.forEach(act => {
+                if (!act.visible) return;
+                
+                let html = '';
+                if (act.isLink) {
+                    html = `<a href="${act.action}" class="flex flex-col items-center gap-1 group"><div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-sm border border-slate-200 group-hover:bg-[${brand.primary_color}] group-hover:text-white transition"><i data-lucide="${act.icon}" class="w-5 h-5"></i></div><span class="text-[10px] text-slate-500 font-medium">${act.label}</span></a>`;
+                } else {
+                    html = `<button onclick="${act.action}()" class="flex flex-col items-center gap-1 group w-full"><div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-sm border border-slate-200 group-hover:bg-[${brand.primary_color}] group-hover:text-white transition"><i data-lucide="${act.icon}" class="w-5 h-5"></i></div><span class="text-[10px] text-slate-500 font-medium">${act.label}</span></button>`;
+                }
+                grid.innerHTML += html;
+            });
+
+            // Contact Details List (Below Bio)
+            const contactList = document.getElementById('contact-details');
+            if (userData.email) {
+                contactList.innerHTML += `<div class="flex items-center p-3 rounded-xl bg-white shadow-sm border border-slate-100"><i data-lucide="mail" class="w-4 h-4 text-[${brand.primary_color}]"></i><a href="mailto:${userData.email}" class="ml-3 text-xs text-slate-600 truncate flex-1">${userData.email}</a></div>`;
+            }
+            if (userData.phone) {
+                contactList.innerHTML += `<div class="flex items-center p-3 rounded-xl bg-white shadow-sm border border-slate-100"><i data-lucide="phone" class="w-4 h-4 text-[${brand.primary_color}]"></i><a href="tel:${userData.phone}" class="ml-3 text-xs text-slate-600 truncate flex-1">${userData.phone}</a></div>`;
+            }
+            if (userData.social_links?.website) {
+                contactList.innerHTML += `<div class="flex items-center p-3 rounded-xl bg-white shadow-sm border border-slate-100"><i data-lucide="globe" class="w-4 h-4 text-[${brand.primary_color}]"></i><a href="${userData.social_links.website}" target="_blank" class="ml-3 text-xs text-slate-600 truncate flex-1">${userData.social_links.website.replace('https://','')}</a></div>`;
+            }
+
+            document.getElementById('loader').classList.add('opacity-0');
+            setTimeout(() => {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('card-body').classList.remove('opacity-0', 'translate-y-4');
+            }, 500);
+        }
+
+        // --- TRACKING ---
+        function saveContact() {
+            logEvent('save_contact');
+            const vCardData = `BEGIN:VCARD\nVERSION:3.0\nFN:${userData.full_name}\nTEL:${userData.phone}\nEMAIL:${userData.email}\nEND:VCARD`;
+            const blob = new Blob([vCardData], { type: 'text/vcard' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${userData.full_name.replace(' ', '_')}.vcf`;
+            a.click();
+        }
+
+        function handleAdClick() {
+            logEvent('click_viral_offer');
+            window.open("https://id.simpli-fi-os.com", "_blank"); 
+        }
+
+        function trackMothershipClick() {
+            logEvent('click_mothership');
+        }
+
+        function logEvent(type) {
+            if (db && userData) {
+                db.collection('events').add({
+                    type: type,
+                    referrer_user_id: userData.doc_id || 'unknown',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    visitor_data: { user_agent: navigator.userAgent }
+                }).catch(e => console.warn("Analytics error", e));
+            }
+        }
+
+        function initPhysics(type) {
+            const container = document.getElementById('scroll-container');
+            const physicsLayer = document.getElementById('physics-layer');
+            let startY = 0;
+
+            container.addEventListener('touchstart', e => {
+                if (container.scrollTop === 0) startY = e.touches[0].pageY;
+            }, { passive: true });
+
+            container.addEventListener('touchmove', e => {
+                const delta = e.touches[0].pageY - startY;
+                if (delta > 0 && container.scrollTop <= 0) {
+                    document.getElementById('card-body').style.transform = `translateY(${delta * 0.4}px)`;
+                    if (Math.random() < 0.2) spawnItem(type);
+                }
+            }, { passive: false });
+
+            container.addEventListener('touchend', () => {
+                document.getElementById('card-body').style.transform = '';
+            });
+
+            function spawnItem(type) {
+                const el = document.createElement('div');
+                el.className = 'physics-element';
+                el.style.left = Math.random() * window.innerWidth + 'px';
+                el.style.top = '-50px';
+                if (type === 'finance') {
+                    el.innerText = '💵';
+                    el.style.fontSize = '24px';
+                } else if (type === 'organizer') {
+                    el.innerText = '✅';
+                    el.style.fontSize = '20px';
+                } else {
+                    el.style.width = '10px';
+                    el.style.height = '10px';
+                    el.style.background = getComputedStyle(document.documentElement).getPropertyValue('--brand-accent');
+                    el.style.borderRadius = '50%';
+                }
+                physicsLayer.appendChild(el);
+                const duration = 1000 + Math.random() * 1000;
+                el.animate([
+                    { transform: `translateY(0) rotate(0deg)`, opacity: 1 },
+                    { transform: `translateY(${window.innerHeight}px) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                ], { duration: duration, fill: 'forwards' });
+                setTimeout(() => el.remove(), duration);
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

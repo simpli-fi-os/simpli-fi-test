@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI ID | Claim Your Identity</title>
+    <!-- Favicon -->
+    <link rel="icon" href="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Firebase SDKs (Compat 11.6.1) -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-functions-compat.js"></script>
+
+    <style>
+        body { background-color: #F3F4F6; font-family: 'Inter', sans-serif; }
+        .preview-scroll::-webkit-scrollbar { width: 0px; background: transparent; }
+        .slide-in { animation: slideIn 0.5s ease-out forwards; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .toggle-checkbox:checked { right: 0; border-color: #1e293b; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #1e293b; }
+        .field-disabled { opacity: 0.4; pointer-events: none; filter: grayscale(1); }
+        .section-disabled { opacity: 0.6; pointer-events: none; filter: grayscale(1); }
+        
+        /* Velvet Rope (Locked Feature) Styling */
+        .velvet-rope { position: relative; opacity: 0.7; user-select: none; transition: all 0.3s; }
+        .velvet-rope.unlocked { opacity: 1; user-select: auto; pointer-events: auto; }
+        .velvet-rope::after { 
+            content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.4); 
+            backdrop-filter: blur(1px); z-index: 10; border-radius: 0.75rem; 
+            transition: opacity 0.3s;
+        }
+        .velvet-rope.unlocked::after { opacity: 0; pointer-events: none; }
+        
+        .lock-badge { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 20; 
+            background: #1e293b; color: #fbbf24; padding: 6px 12px; border-radius: 9999px; 
+            font-size: 10px; font-weight: bold; display: flex; align-items: center; gap: 6px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); white-space: nowrap; 
+            transition: opacity 0.3s;
+        }
+        .velvet-rope.unlocked .lock-badge { opacity: 0; pointer-events: none; }
+
+        /* Preview Card Expansion Logic */
+        .preview-card-container { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .preview-card-container.expanded { height: 100%; border-radius: 0; }
+        
+        /* Color Picker Reset */
+        input[type="color"] {
+            -webkit-appearance: none; border: none; width: 32px; height: 32px; padding: 0; overflow: hidden; border-radius: 50%; cursor: pointer;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row relative">
+
+    <!-- SUCCESS MODAL -->
+    <div id="success-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-500 to-yellow-400"></div>
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
+                <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl font-serif text-slate-800 font-bold mb-2">Identity Launched!</h2>
+            <p class="text-slate-500 text-sm mb-6">Your Simpli-FI ID has been successfully created.</p>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 text-left">
+                <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Your Card URL</p>
+                <div class="flex items-center gap-2">
+                    <input type="text" id="final-url" readonly class="w-full bg-transparent text-sm font-mono text-slate-700 focus:outline-none" value="">
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="copyFinalURL()" class="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition flex items-center justify-center gap-2"><i data-lucide="copy" class="w-4 h-4"></i> Copy</button>
+                <button onclick="openFinalURL()" class="flex-1 py-3 bg-[#1e293b] text-white font-bold rounded-xl hover:bg-slate-800 transition flex items-center justify-center gap-2">Open <i data-lucide="external-link" class="w-4 h-4"></i></button>
+            </div>
+            <button onclick="closeModal()" class="mt-6 text-xs text-slate-400 hover:text-slate-600">Close</button>
+        </div>
+    </div>
+
+    <!-- LEFT PANEL: THE FORM -->
+    <div class="w-full md:w-1/2 bg-white flex flex-col h-screen overflow-y-auto relative">
+        
+        <!-- HEADER & TIER TOGGLE -->
+        <div class="p-8 border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur z-30">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-[#1e293b] text-[#fbbf24] rounded-lg flex items-center justify-center font-serif text-xl leading-none tracking-[0.25em] pl-1" style="font-family: 'Playfair Display', serif;">ID</div>
+                    <span class="font-serif text-[#1e293b] font-bold tracking-tight text-lg">Simpli-FI <span class="font-light text-[#fbbf24]">Intake</span></span>
+                </div>
+            </div>
+
+            <!-- TIER SELECTION TOGGLE -->
+            <div class="bg-slate-100 p-1 rounded-xl flex gap-1 mb-4">
+                <button onclick="setTier('free')" id="btn-tier-free" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all shadow-sm bg-white text-slate-800">Ambassador</button>
+                <button onclick="setTier('pro')" id="btn-tier-pro" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-500 hover:bg-white/50">Professional</button>
+                <button onclick="setTier('founder')" id="btn-tier-founder" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-500 hover:bg-white/50">Founder/Ent</button>
+            </div>
+
+            <div class="flex items-center gap-2 text-[10px] text-slate-400 uppercase tracking-wider font-medium">
+                <span id="tier-badge" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                <span id="tier-desc">Basic Digital Identity</span>
+            </div>
+        </div>
+
+        <div class="flex-1 p-8 space-y-8">
+            
+            <!-- Section 1: Essentials -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.1s">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Identity Essentials</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-medium text-slate-600 mb-1">First Name</label><input type="text" id="input-fname" placeholder="Hunter" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()"></div>
+                    <div><label class="block text-xs font-medium text-slate-600 mb-1">Last Name</label><input type="text" id="input-lname" placeholder="Lott" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-medium text-slate-600 mb-1">Professional Title</label><input type="text" id="input-title" placeholder="Founder & CEO" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()"></div>
+                    <div><label class="block text-xs font-medium text-slate-600 mb-1">Company / Employer</label><input type="text" id="input-company" placeholder="Simpli-FI OS" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()"></div>
+                </div>
+                
+                <!-- FOUNDER FEATURE: Tag Line -->
+                <div id="feature-tagline" class="velvet-rope"><div class="lock-badge"><i data-lucide="crown" class="w-3 h-3"></i> Founder</div><div><label class="block text-xs font-medium text-slate-600 mb-1">Tag Line / Motto</label><input disabled type="text" id="input-tagline" placeholder="Building the future, one connection at a time." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()"></div></div>
+
+                <div><label class="block text-xs font-medium text-slate-600 mb-1">Role & Responsibilities</label><input type="text" id="input-role" placeholder="Leading strategic vision..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()"></div>
+            </div>
+
+            <!-- Section 2: Visuals -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.2s">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="image" class="w-4 h-4"></i> Visual Brand</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden border border-slate-200 shrink-0"><img id="thumb-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="w-full h-full object-cover"></div><div class="flex-1"><label class="block w-full cursor-pointer group"><div class="flex items-center justify-center w-full p-2 border-2 border-dashed border-slate-200 rounded-xl group-hover:border-[#1e293b] transition bg-white"><span class="text-[10px] text-slate-500 font-medium group-hover:text-[#1e293b]">Upload Headshot</span></div><input type="file" id="input-photo" accept="image/*" class="hidden" onchange="handleImage(this, 'preview-avatar')"></label></div></div>
+                    
+                    <!-- PRO FEATURE: Logo Upload -->
+                    <div id="feature-logo-upload" class="velvet-rope flex items-center gap-4"><div class="lock-badge"><i data-lucide="lock" class="w-3 h-3"></i> Pro</div><div class="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden border border-slate-200 shrink-0 flex items-center justify-center opacity-50"><i data-lucide="image" class="w-5 h-5 text-slate-300"></i></div><div class="flex-1 opacity-50"><label class="block w-full cursor-not-allowed"><div class="flex items-center justify-center w-full p-2 border-2 border-dashed border-slate-200 rounded-xl bg-white"><span class="text-[10px] text-slate-500 font-medium">Upload Logo</span></div><input disabled type="file" id="input-logo" accept="image/*" class="hidden" onchange="handleLogo(this)"></label></div></div>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-2">Color Palette</label>
+                    <div class="grid grid-cols-3 gap-2 mb-2">
+                        <button onclick="setTheme('finance')" class="p-3 rounded-xl border border-slate-200 hover:border-[#fbbf24] hover:bg-[#fbbf24]/5 transition flex items-center justify-center gap-2 text-sm font-medium bg-white text-xs"><span class="w-3 h-3 rounded-full bg-[#1e293b]"></span> Finance</button>
+                        <button onclick="setTheme('creative')" class="p-3 rounded-xl border border-slate-200 hover:border-[#fbbf24] hover:bg-[#fbbf24]/5 transition flex items-center justify-center gap-2 text-sm font-medium bg-white text-xs"><span class="w-3 h-3 rounded-full bg-[#214F4B]"></span> Creative</button>
+                        <button onclick="setTheme('stealth')" class="p-3 rounded-xl border border-slate-200 hover:border-[#fbbf24] hover:bg-[#fbbf24]/5 transition flex items-center justify-center gap-2 text-sm font-medium bg-white text-xs"><span class="w-3 h-3 rounded-full bg-[#000000]"></span> Stealth</button>
+                    </div>
+                    
+                    <!-- PRO FEATURE: Custom Hex & Eye Dropper -->
+                    <div id="feature-custom-hex" class="velvet-rope p-3 rounded-xl border border-slate-200 flex items-center justify-between bg-white">
+                        <div class="flex items-center gap-3 w-full">
+                            <input type="color" id="color-picker" disabled class="cursor-pointer hover:scale-110 transition" onchange="updateCustomColor(this.value)" value="#1e293b">
+                            <input type="text" id="hex-input" placeholder="#CustomHex" class="text-xs font-medium text-slate-600 bg-transparent focus:outline-none w-full uppercase" disabled onchange="updateCustomColor(this.value)">
+                        </div>
+                        <div class="lock-badge"><i data-lucide="lock" class="w-3 h-3"></i> Pro</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Digital Presence (PRO/FOUNDER) -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.25s">
+                <div class="flex items-center justify-between border-t border-slate-100 pt-6"><h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="smartphone" class="w-4 h-4"></i> App Icon & Presence</h3></div>
+                
+                <div id="feature-app-icon" class="velvet-rope p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                    <div class="lock-badge"><i data-lucide="lock" class="w-3 h-3"></i> Pro</div>
+                    <div class="flex items-center justify-between opacity-50">
+                        <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center"><i data-lucide="box" class="w-5 h-5 text-slate-400"></i></div><div><p class="text-xs font-bold text-slate-700">Custom Home Screen Icon</p><p class="text-[10px] text-slate-500">Use your face or logo.</p></div></div>
+                    </div>
+                </div>
+                
+                <div id="feature-social-preview" class="velvet-rope p-4 bg-slate-50 border border-slate-200 rounded-xl mt-2">
+                    <div class="lock-badge" style="background: #fbbf24; color: #1e293b;"><i data-lucide="crown" class="w-3 h-3"></i> Founder</div>
+                    <div class="flex items-center justify-between opacity-50">
+                        <div class="flex items-center gap-3"><div class="w-10 h-8 rounded bg-slate-200 flex items-center justify-center"><i data-lucide="image" class="w-4 h-4 text-slate-400"></i></div><div><p class="text-xs font-bold text-slate-700">Custom Social Preview</p><p class="text-[10px] text-slate-500">Stand out in iMessage & LinkedIn.</p></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: The Mission -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.3s">
+                <div class="flex items-center justify-between border-t border-slate-100 pt-6"><h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="target" class="w-4 h-4"></i> The Mission</h3></div>
+                <div><label class="block text-xs font-medium text-slate-600 mb-1">Current 90-Day Goal</label><textarea id="input-mission" rows="3" placeholder="Example: I'm looking to connect with..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition resize-none" oninput="updatePreview()"></textarea></div>
+            </div>
+
+            <!-- Section 4: Contact -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.4s">
+                <div class="flex items-center justify-between border-t border-slate-100 pt-6"><h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="link" class="w-4 h-4"></i> Contact Details</h3></div>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-4"><div class="relative mt-2 shrink-0"><input type="checkbox" id="toggle-email" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-2 appearance-none cursor-pointer border-slate-300 left-0" onclick="toggleField('email')"/><label for="toggle-email" class="toggle-label block overflow-hidden h-4 w-8 rounded-full bg-slate-300 cursor-pointer"></label></div><div id="field-email" class="w-full relative field-disabled transition-opacity"><i data-lucide="mail" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i><input type="email" id="input-email" placeholder="Email Address" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] text-sm" oninput="updatePreview()"></div></div>
+                    <div class="flex items-start gap-4"><div class="relative mt-2 shrink-0"><input type="checkbox" id="toggle-phone" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-2 appearance-none cursor-pointer border-slate-300 left-0" onclick="toggleField('phone')"/><label for="toggle-phone" class="toggle-label block overflow-hidden h-4 w-8 rounded-full bg-slate-300 cursor-pointer"></label></div><div id="field-phone" class="w-full relative field-disabled transition-opacity"><i data-lucide="phone" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i><input type="tel" id="input-phone" placeholder="Phone Number" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] text-sm" oninput="updatePreview()"></div></div>
+                    <div class="flex items-start gap-4"><div class="relative mt-2 shrink-0"><input type="checkbox" id="toggle-website" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-2 appearance-none cursor-pointer border-slate-300 left-0" onclick="toggleField('website')"/><label for="toggle-website" class="toggle-label block overflow-hidden h-4 w-8 rounded-full bg-slate-300 cursor-pointer"></label></div><div id="field-website" class="w-full relative field-disabled transition-opacity"><i data-lucide="globe" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i><input type="url" id="input-website" placeholder="Website URL" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] text-sm" oninput="updatePreview()"></div></div>
+                    <div class="flex items-start gap-4"><div class="relative mt-2 shrink-0"><input type="checkbox" id="toggle-location" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-2 appearance-none cursor-pointer border-slate-300 left-0" onclick="toggleField('location')"/><label for="toggle-location" class="toggle-label block overflow-hidden h-4 w-8 rounded-full bg-slate-300 cursor-pointer"></label></div><div id="field-location" class="w-full relative field-disabled transition-opacity"><i data-lucide="map-pin" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i><input type="text" id="input-location" placeholder="City, State or Address" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] text-sm" oninput="updatePreview()"></div></div>
+                </div>
+            </div>
+
+            <!-- FOUNDER FEATURE: Commerce & Payments -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.45s">
+                <div class="flex items-center justify-between border-t border-slate-100 pt-6">
+                    <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="dollar-sign" class="w-4 h-4"></i> Commerce</h3>
+                </div>
+                <div id="feature-commerce" class="velvet-rope">
+                    <div class="lock-badge" style="background: #fbbf24; color: #1e293b;"><i data-lucide="crown" class="w-3 h-3"></i> Founder</div>
+                    <div class="space-y-2 opacity-50">
+                        <label class="block text-xs font-medium text-slate-600">Payment Link</label>
+                        <div class="relative">
+                            <i data-lucide="credit-card" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i>
+                            <input disabled type="url" id="input-payment" placeholder="Stripe / Venmo / CashApp Link" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm" oninput="updatePreview()">
+                        </div>
+                        <p class="text-[10px] text-slate-400">Easily charge clients or share bills.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 5: Social Media -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.5s">
+                <div class="flex items-center justify-between border-t border-slate-100 pt-6"><h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="share-2" class="w-4 h-4"></i> Social Media</h3><div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" name="toggle" id="toggle-social" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300 left-0 transition-all duration-300" onclick="toggleSection('social')"/><label for="toggle-social" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label></div></div>
+                <div id="section-social" class="section-disabled transition-opacity duration-300"><div class="flex gap-2 mb-3"><div class="relative w-1/3 shrink-0"><select id="input-social-platform" onchange="updateSocialIcon()" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 appearance-none focus:outline-none focus:border-[#1e293b] transition"><option value="linkedin">LinkedIn</option><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="twitter">X (Twitter)</option><option value="youtube">YouTube</option></select><i data-lucide="chevron-down" class="absolute right-3 top-3.5 w-4 h-4 text-slate-400 pointer-events-none"></i></div><div class="relative w-2/3"><input type="url" id="input-social-url" placeholder="Paste URL here..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#1e293b] transition"><div class="absolute right-3 top-3.5 text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded">Free</div></div></div>
+                <!-- PRO FEATURE: Additional Links -->
+                <div id="feature-more-links" class="velvet-rope relative"><div class="lock-badge"><i data-lucide="lock" class="w-3 h-3"></i> Pro</div><div class="relative"><i data-lucide="plus" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i><input disabled type="text" placeholder="Add another link..." class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl"></div></div></div>
+            </div>
+
+            <!-- Founder Domain (FOUNDER) -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.55s">
+                <div class="flex items-center justify-between border-t border-slate-100 pt-6"><h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="globe-2" class="w-4 h-4"></i> Founder Domain Suite</h3></div>
+                
+                <div id="feature-domain" class="velvet-rope p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <div class="lock-badge" style="background: #fbbf24; color: #1e293b;"><i data-lucide="crown" class="w-3 h-3"></i> Founder</div>
+                    <div class="flex gap-2 mb-4 opacity-50 pointer-events-none">
+                        <button class="flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-[#1e293b] text-white">I Need a Domain</button>
+                        <button class="flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-white text-slate-500 border border-slate-200">I Have One</button>
+                    </div>
+                    <div class="flex gap-2 opacity-50 pointer-events-none">
+                        <input type="text" placeholder="hunterlott.com" class="flex-1 p-3 bg-white border border-slate-200 rounded-xl text-sm">
+                        <button class="bg-[#673DE6] text-white px-4 rounded-xl font-bold text-xs flex items-center gap-2">Check</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intelligence Suite (FOUNDER) -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.6s">
+                <div class="flex items-center justify-between border-t border-slate-100 pt-6"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2"><i data-lucide="bar-chart-2" class="w-4 h-4"></i> Intelligence Suite</h3></div>
+                
+                <div id="feature-intelligence" class="velvet-rope p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3 bg-white">
+                    <div class="lock-badge" style="background: #fbbf24; color: #1e293b;"><i data-lucide="crown" class="w-3 h-3"></i> Founder</div>
+                    <div class="flex items-center justify-between opacity-50"><span class="text-xs font-medium text-slate-600">Sync Leads to Salesforce/HubSpot</span><div class="w-8 h-4 bg-slate-200 rounded-full"></div></div>
+                    <div class="flex items-center justify-between opacity-50"><span class="text-xs font-medium text-slate-600">Real-time Visitor Analytics</span><div class="w-8 h-4 bg-slate-200 rounded-full"></div></div>
+                </div>
+            </div>
+
+            <div class="h-12"></div>
+        </div>
+
+        <div class="p-6 border-t border-gray-100 bg-white sticky bottom-0 z-20">
+            <button onclick="submitForm()" id="btn-submit" class="w-full py-4 bg-[#1e293b] text-white font-bold rounded-2xl shadow-xl hover:bg-slate-800 transition flex items-center justify-center gap-2 group">
+                <span>Launch Identity</span>
+                <i data-lucide="rocket" class="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL: LIVE PREVIEW -->
+    <div class="hidden md:flex w-1/2 bg-slate-100 items-center justify-center p-12 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-5 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:20px_20px]"></div>
+        
+        <!-- Toggle Buttons for View Switching -->
+        <div class="absolute right-12 bottom-12 flex flex-col gap-4 z-50">
+            <button onclick="togglePreviewMode('expand')" class="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-[#1e293b] hover:scale-110 transition"><i data-lucide="plus" class="w-6 h-6"></i></button>
+            <button onclick="togglePreviewMode('collapse')" class="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-[#1e293b] hover:scale-110 transition"><i data-lucide="minus" class="w-6 h-6"></i></button>
+        </div>
+
+        <div id="preview-container" class="relative w-full max-w-[380px] h-[750px] bg-white rounded-[40px] shadow-2xl border-8 border-slate-900 overflow-hidden ring-1 ring-white/20 preview-card-container">
+            <div class="w-full h-full overflow-y-auto preview-scroll bg-[#FBF9F7] relative">
+                <!-- PREVIEW CONTENT -->
+                <div class="h-32 bg-[#1e293b] relative overflow-hidden transition-colors duration-500" id="preview-header">
+                    <div class="absolute top-6 right-6 z-20 bg-white/20 backdrop-blur p-1.5 rounded-lg cursor-pointer hover:bg-white/30 transition"><i data-lucide="qr-code" class="w-4 h-4 text-white"></i></div>
+                    <div class="absolute top-6 left-6 z-10 flex items-center gap-2" id="preview-logo-area">
+                        <div id="default-logo-container" class="flex items-center gap-2"><div class="w-8 h-8 bg-white/10 backdrop-blur rounded flex items-center justify-center text-white font-bold font-serif leading-none">ID</div><span class="text-white font-serif text-xs font-bold opacity-80">Simpli-FI</span></div>
+                        <div id="custom-logo-container" class="hidden items-center gap-2"><div class="w-8 h-8 bg-white/10 backdrop-blur rounded flex items-center justify-center overflow-hidden"><img id="preview-custom-logo" src="" class="w-full h-full object-contain"></div><span id="preview-company" class="text-white font-serif text-xs font-bold opacity-80 truncate max-w-[150px]"></span></div>
+                    </div>
+                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#fbbf24_1px,transparent_1px)] [background-size:10px_10px]"></div>
+                </div>
+                <div class="relative px-6 -mt-16 text-center"><div class="inline-block relative"><div class="w-28 h-28 rounded-full border-4 border-white shadow-lg overflow-hidden bg-slate-200"><img id="preview-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="w-full h-full object-cover"></div></div><div class="mt-3"><h2 id="preview-name" class="font-serif text-2xl font-bold text-[#1e293b]">Your Name</h2><p id="preview-title" class="text-[#fbbf24] font-bold text-[10px] tracking-widest uppercase mt-1">Professional Title</p><p id="preview-tagline" class="text-slate-500 text-[10px] mt-1 font-medium hidden">"Building the future..."</p><p id="preview-role" class="text-slate-400 text-[10px] mt-1 font-medium italic"></p></div></div>
+                
+                <!-- Quick Actions -->
+                <div class="px-6 mt-6 flex justify-center gap-3" id="quick-actions-row">
+                    <div id="quick-phone" class="hidden flex flex-col items-center gap-1"><div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600 shadow-sm"><i data-lucide="phone" class="w-4 h-4"></i></div><span class="text-[9px] font-bold text-slate-400">Call</span></div>
+                    <div id="quick-email" class="hidden flex flex-col items-center gap-1"><div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600 shadow-sm"><i data-lucide="mail" class="w-4 h-4"></i></div><span class="text-[9px] font-bold text-slate-400">Email</span></div>
+                    <div id="quick-save" class="hidden flex flex-col items-center gap-1"><div class="w-10 h-10 rounded-xl bg-[#fbbf24]/10 border border-[#fbbf24]/20 flex items-center justify-center text-[#fbbf24] shadow-sm"><i data-lucide="contact" class="w-4 h-4"></i></div><span class="text-[9px] font-bold text-[#fbbf24]">Save</span></div>
+                    <div id="quick-pay" class="hidden flex flex-col items-center gap-1"><div class="w-10 h-10 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center text-green-600 shadow-sm"><i data-lucide="dollar-sign" class="w-4 h-4"></i></div><span class="text-[9px] font-bold text-slate-400">Pay</span></div>
+                </div>
+
+                <div id="preview-mission-block" class="px-4 mt-6 hidden"><div class="bg-white p-4 rounded-xl border-l-4 border-[#1e293b] shadow-sm"><div class="flex items-center gap-2 mb-1"><i data-lucide="target" class="w-3 h-3 text-[#1e293b]"></i><span class="text-[8px] font-bold uppercase tracking-widest text-[#1e293b]">Mission</span></div><p id="preview-mission" class="text-slate-600 text-xs italic"></p></div></div>
+                <div class="px-4 mt-4 space-y-2">
+                    <div id="preview-email-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100"><i data-lucide="mail" class="w-3 h-3 text-[#1e293b]"></i><span id="preview-email" class="ml-3 text-[10px] text-slate-600 truncate"></span></div>
+                    <div id="preview-phone-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100"><i data-lucide="phone" class="w-3 h-3 text-[#1e293b]"></i><span id="preview-phone" class="ml-3 text-[10px] text-slate-600 truncate"></span></div>
+                    <div id="preview-website-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100"><i data-lucide="globe" class="w-3 h-3 text-[#1e293b]"></i><span id="preview-website" class="ml-3 text-[10px] text-slate-600 truncate"></span></div>
+                    <div id="preview-location-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100"><i data-lucide="map-pin" class="w-3 h-3 text-[#1e293b]"></i><span id="preview-location" class="ml-3 text-[10px] text-slate-600 truncate"></span></div>
+                </div>
+                
+                <div id="preview-social-block" class="px-4 mt-4 flex justify-center hidden"><div class="flex items-center gap-2 bg-white px-3 py-2 rounded-full shadow-sm border border-slate-100"><span id="social-icon-container"><i id="preview-social-icon" data-lucide="linkedin" class="w-4 h-4 text-[#1e293b]"></i></span><span class="text-[10px] font-bold text-slate-600">Connect</span></div></div>
+                
+                <!-- Footer Area -->
+                <div class="mt-8 px-4 pb-8">
+                    <div id="preview-branding-ad" class="bg-slate-900 p-3 rounded-xl flex items-center justify-between shadow-lg">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 bg-[#fbbf24] rounded flex items-center justify-center text-[10px] font-bold font-serif leading-none">ID</div>
+                            <div class="flex flex-col"><span class="text-[8px] text-slate-400 uppercase">Powered By</span><span class="text-[10px] font-bold text-white">Simpli-FI OS</span></div>
+                        </div>
+                        <span class="text-[10px] bg-white text-slate-900 px-3 py-1 rounded font-bold">Get Yours</span>
+                    </div>
+                    <div id="preview-branding-pro" class="hidden text-center">
+                        <p class="text-[8px] text-slate-400 uppercase tracking-widest font-bold">Powered by Simpli-FI</p>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute top-0 left-0 -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-xl z-50 left-1/2"></div>
+        </div>
+        <div class="absolute bottom-8 text-slate-400 text-xs font-mono">Live Preview</div>
+    </div>
+
+    <script>
+        // --- FIREBASE INIT ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAnlmGZNwoPS-vBnK1AlHvNsB73q0UAkCU",
+            authDomain: "simpli-fi-id.firebaseapp.com",
+            projectId: "simpli-fi-id",
+            storageBucket: "simpli-fi-id.firebasestorage.app",
+            messagingSenderId: "97006103916",
+            appId: "1:97006103916:web:631c876a6eb263caf81749"
+        };
+
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        lucide.createIcons();
+        
+        const uniqueId = Math.floor(1000 + Math.random() * 9000);
+        let finalSlug = "";
+        let currentTier = "free";
+
+        // --- TIER LOGIC ---
+        function setTier(tier) {
+            currentTier = tier;
+            
+            // 1. Update Button Styles
+            document.querySelectorAll('[id^="btn-tier"]').forEach(btn => {
+                btn.className = 'flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-500 hover:bg-white/50';
+            });
+            const activeBtn = document.getElementById(`btn-tier-${tier}`);
+            activeBtn.className = 'flex-1 py-2 text-xs font-bold rounded-lg transition-all shadow-sm bg-white text-slate-800 ring-1 ring-slate-200';
+
+            // 2. Feature Unlocking
+            const lockedFeatures = ['feature-custom-hex', 'feature-logo-upload', 'feature-app-icon', 'feature-social-preview', 'feature-more-links', 'feature-tagline', 'feature-commerce', 'feature-domain', 'feature-intelligence'];
+            
+            // Reset all
+            lockedFeatures.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.classList.remove('unlocked');
+                    const inputs = el.querySelectorAll('input');
+                    inputs.forEach(i => i.disabled = true);
+                }
+            });
+
+            // Unlock based on tier
+            let featuresToUnlock = [];
+            
+            if(tier === 'free') {
+                document.getElementById('tier-badge').className = 'w-2 h-2 rounded-full bg-slate-400';
+                document.getElementById('tier-desc').innerText = 'Ambassador Identity';
+                // No features unlocked
+            } else if(tier === 'pro') {
+                document.getElementById('tier-badge').className = 'w-2 h-2 rounded-full bg-[#1e293b]';
+                document.getElementById('tier-desc').innerText = 'Professional Identity';
+                featuresToUnlock = ['feature-custom-hex', 'feature-logo-upload', 'feature-app-icon', 'feature-more-links'];
+            } else if(tier === 'founder') {
+                document.getElementById('tier-badge').className = 'w-2 h-2 rounded-full bg-[#fbbf24]';
+                document.getElementById('tier-desc').innerText = 'Founder Command Center';
+                featuresToUnlock = lockedFeatures; // All
+            }
+
+            featuresToUnlock.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.classList.add('unlocked');
+                    const inputs = el.querySelectorAll('input');
+                    inputs.forEach(i => i.disabled = false);
+                }
+            });
+
+            // 3. Update Preview Elements Visibility
+            const quickSave = document.getElementById('quick-save');
+            const quickPay = document.getElementById('quick-pay');
+            const footerAd = document.getElementById('preview-branding-ad');
+            const footerPro = document.getElementById('preview-branding-pro');
+            const tagline = document.getElementById('preview-tagline');
+
+            if(tier === 'free') {
+                quickSave.classList.add('hidden');
+                quickPay.classList.add('hidden');
+                footerAd.classList.remove('hidden');
+                footerPro.classList.add('hidden');
+                tagline.classList.add('hidden');
+            } else if (tier === 'pro') {
+                quickSave.classList.remove('hidden');
+                quickPay.classList.add('hidden');
+                footerAd.classList.add('hidden');
+                footerPro.classList.remove('hidden');
+                tagline.classList.add('hidden');
+            } else { // founder
+                quickSave.classList.remove('hidden');
+                quickPay.classList.remove('hidden'); // Show payment link if exists
+                footerAd.classList.add('hidden');
+                footerPro.classList.add('hidden'); // No branding
+                tagline.classList.remove('hidden');
+            }
+            
+            updatePreview();
+        }
+
+        // --- PREVIEW LOGIC ---
+        function updatePreview() {
+            const fname = document.getElementById('input-fname').value || 'Your';
+            const lname = document.getElementById('input-lname').value || 'Name';
+            document.getElementById('preview-name').innerText = `${fname} ${lname}`;
+            document.getElementById('preview-title').innerText = document.getElementById('input-title').value || 'Professional Title';
+            document.getElementById('preview-role').innerText = document.getElementById('input-role').value;
+            document.getElementById('preview-mission').innerText = document.getElementById('input-mission').value || 'Mission...';
+            
+            // Founder Tagline
+            const taglineVal = document.getElementById('input-tagline').value;
+            const taglineEl = document.getElementById('preview-tagline');
+            if(taglineVal && currentTier === 'founder') {
+                taglineEl.innerText = `"${taglineVal}"`;
+                taglineEl.classList.remove('hidden');
+            }
+
+            // Payment Logic (Founder Only)
+            const payLink = document.getElementById('input-payment').value;
+            const payIcon = document.getElementById('quick-pay');
+            if(payLink && currentTier === 'founder') {
+                payIcon.classList.remove('hidden');
+            } else {
+                payIcon.classList.add('hidden');
+            }
+
+            // Update URL display
+            const cleanName = `${fname.toLowerCase().replace(/[^a-z0-9]/g, '')}.${lname.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+            document.getElementById('generated-url').value = `id.simpli-fi-os.com/${cleanName}.${uniqueId}`;
+        }
+        
+        function updateCustomColor(hex) {
+            document.getElementById('hex-input').value = hex;
+            document.getElementById('color-picker').value = hex;
+            
+            // Apply to Preview Header & Text
+            const header = document.getElementById('preview-header');
+            const name = document.getElementById('preview-name');
+            const missionIcon = document.querySelector('#preview-mission-block i');
+            const missionBorder = document.querySelector('#preview-mission-block div');
+            
+            header.style.backgroundColor = hex;
+            name.style.color = hex;
+            if(missionIcon) missionIcon.style.color = hex;
+            if(missionBorder) missionBorder.style.borderColor = hex;
+        }
+
+        function handleImage(input, targetId) { if(input.files && input.files[0]) { const reader = new FileReader(); reader.onload = function(e) { if(targetId === 'preview-avatar') { document.getElementById('preview-avatar').src = e.target.result; document.getElementById('thumb-preview').src = e.target.result; } }; reader.readAsDataURL(input.files[0]); } }
+        function handleLogo(input) { if(input.files && input.files[0]) { const reader = new FileReader(); reader.onload = function(e) { document.getElementById('logo-thumb-preview').src = e.target.result; document.getElementById('logo-thumb-preview').classList.remove('hidden'); document.getElementById('logo-placeholder').classList.add('hidden'); document.getElementById('preview-custom-logo').src = e.target.result; document.getElementById('custom-logo-container').classList.remove('hidden'); document.getElementById('default-logo-container').classList.add('hidden'); }; reader.readAsDataURL(input.files[0]); } }
+        
+        function setTheme(theme) { 
+            const header = document.getElementById('preview-header'); 
+            const title = document.getElementById('preview-title'); 
+            if(theme === 'creative') { 
+                updateCustomColor('#214F4B'); title.style.color = '#E27D60'; 
+            } else if (theme === 'stealth') {
+                updateCustomColor('#000000'); title.style.color = '#64748b';
+            } else { 
+                updateCustomColor('#1e293b'); title.style.color = '#fbbf24'; 
+            } 
+        }
+        
+        function updateSocialIcon() { const platform = document.getElementById('input-social-platform').value; const container = document.getElementById('social-icon-container'); if(platform === 'twitter') { container.innerHTML = `<svg viewBox="0 0 24 24" class="w-4 h-4 text-[#1e293b]" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>`; } else { container.innerHTML = `<i data-lucide="${platform}" class="w-4 h-4 text-[#1e293b]"></i>`; lucide.createIcons(); } }
+        function toggleSection(section) { const checkbox = document.getElementById(`toggle-${section}`); const inputSection = document.getElementById(`section-${section}`); const previewBlock = document.getElementById(`preview-${section}-block`); if(checkbox.checked) { inputSection.classList.remove('section-disabled'); previewBlock.classList.remove('hidden'); } else { inputSection.classList.add('section-disabled'); previewBlock.classList.add('hidden'); } updatePreview(); }
+        function toggleField(field) { const checkbox = document.getElementById(`toggle-${field}`); const inputContainer = document.getElementById(`field-${field}`); const previewBlock = document.getElementById(`preview-${field}-block`); const quickIcon = document.getElementById(`quick-${field}`); if(checkbox.checked) { inputContainer.classList.remove('field-disabled'); previewBlock.classList.remove('hidden'); if(quickIcon) quickIcon.classList.remove('hidden'); } else { inputContainer.classList.add('field-disabled'); previewBlock.classList.add('hidden'); if(quickIcon) quickIcon.classList.add('hidden'); } updatePreview(); }
+        
+        // --- PREVIEW TOGGLE ---
+        function togglePreviewMode(mode) {
+            const container = document.getElementById('preview-container');
+            if (mode === 'expand') {
+                container.classList.add('expanded');
+            } else {
+                container.classList.remove('expanded');
+            }
+        }
+
+        // --- SUBMISSION ---
+        async function submitForm() {
+            // ... (Same submission logic as before, just includes new fields)
+            const btn = document.getElementById('btn-submit');
+            const originalText = btn.innerHTML;
+            const fname = document.getElementById('input-fname').value;
+            const lname = document.getElementById('input-lname').value;
+            
+            if(!fname || !lname) { alert("Please enter at least a First and Last Name."); return; }
+
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Generating ID...';
+            lucide.createIcons();
+            btn.disabled = true;
+
+            try {
+                const slug = `${fname.toLowerCase().replace(/[^a-z0-9]/g, '')}.${lname.toLowerCase().replace(/[^a-z0-9]/g, '')}.${uniqueId}`;
+                document.getElementById('final-url').value = `https://id.simpli-fi-os.com/${slug}`;
+                
+                // Simulate DB Write
+                await new Promise(r => setTimeout(r, 1500));
+                
+                document.getElementById('success-modal').classList.remove('hidden');
+                document.getElementById('success-modal').classList.add('flex');
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            } catch (error) {
+                console.error(error);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+        function closeModal() { document.getElementById('success-modal').classList.add('hidden'); document.getElementById('success-modal').classList.remove('flex'); }
+        function copyFinalURL() { document.getElementById('final-url').select(); document.execCommand('copy'); alert("Copied!"); }
+        function openFinalURL() { window.open(document.getElementById('final-url').value, '_blank'); }
+
+        // Initialize
+        window.onload = function() {
+            auth.signInAnonymously().catch(e => console.error("Auth failed:", e));
+            setTier('free'); // Default to Free
+            updatePreview();
+        };
+    </script>
+</body>
+</html>

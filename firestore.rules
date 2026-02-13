@@ -1,0 +1,52 @@
+rules_version = '2';
+// THIS IS FOR THE DATABASE
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- HELPER FUNCTIONS ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Strict Tenant Isolation
+    function isOrgMember(orgId) {
+      return isSignedIn() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.org_id == orgId;
+    }
+
+    // --- COLLECTIONS ---
+
+    // 1. Users (Private Profile Data)
+    // Only the user themselves can read/write their own PII.
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // 2. Public Cards (Denormalized Data)
+    // World readable (needed for QR scans). 
+    // Only the owner can write.
+    match /public_cards/{cardId} {
+      allow read: if true;
+      allow write: if isSignedIn() && 
+                   request.auth.uid == resource.data.owner_uid;
+    }
+
+    // 3. Organizations (Enterprise Layer)
+    // Strict isolation.
+    match /organizations/{orgId} {
+      allow read: if isOrgMember(orgId);
+      match /assets/{assetId} {
+        allow read: if isOrgMember(orgId);
+        allow write: if isOrgMember(orgId) && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      }
+    }
+
+    // 4. Events (Analytics)
+    // Append-only for public (scans). No deletes allowed.
+    match /events/{eventId} {
+      allow create: if true; 
+      allow read, update, delete: if false; 
+    }
+  }
+}

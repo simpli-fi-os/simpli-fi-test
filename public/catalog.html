@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Resource Command | Simpli-FI</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png">
+    
+    <!-- Tailwind & Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- Firebase SDKs (Compat 11.6.1) -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-storage-compat.js"></script>
+
+    <style>
+        /* DYNAMIC THEME VARIABLES (Default: Simpli-FI Navy/Gold) */
+        :root {
+            --brand-primary: #1e293b; 
+            --brand-accent: #fbbf24;
+            --brand-surface: #F3F4F6;
+        }
+
+        body { background-color: var(--brand-surface); font-family: 'Inter', sans-serif; }
+        .glass-panel { background: white; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .resource-card { transition: all 0.2s; border-left: 4px solid transparent; }
+        .resource-card:active { transform: scale(0.98); }
+        .resource-card:hover { border-left-color: var(--brand-accent); }
+        
+        /* Smooth Fade for Modals */
+        .modal-enter { animation: fadeIn 0.2s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        /* Hide scrollbar for category tabs */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Dynamic Text Colors */
+        .text-primary { color: var(--brand-primary); }
+        .bg-primary { background-color: var(--brand-primary); }
+        .border-primary { border-color: var(--brand-primary); }
+        .text-accent { color: var(--brand-accent); }
+        .bg-accent { background-color: var(--brand-accent); }
+        .border-accent { border-color: var(--brand-accent); }
+        
+        /* Admin-Only Elements */
+        .admin-only { display: none; }
+        
+        /* Main View Tabs */
+        .view-tab.active {
+            border-bottom: 2px solid var(--brand-accent);
+            color: var(--brand-primary);
+        }
+        .view-tab {
+            color: #94a3b8;
+            border-bottom: 2px solid transparent;
+        }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- HEADER -->
+    <header class="bg-primary text-white p-6 sticky top-0 z-40 shadow-lg transition-colors duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <!-- DYNAMIC LOGO -->
+                <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center p-1 shadow-md overflow-hidden">
+                    <img id="org-logo" src="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Command Center</h1>
+                    <p id="org-name" class="text-[10px] text-white/60 uppercase tracking-wider font-bold">Simpli-FI OS</p>
+                </div>
+            </div>
+            <!-- Profile Avatar (User) -->
+            <div class="w-10 h-10 rounded-full bg-slate-600 border-2 border-accent overflow-hidden relative shadow-md">
+                <img id="user-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter" class="w-full h-full object-cover">
+            </div>
+        </div>
+
+        <!-- MAIN VIEW TOGGLE -->
+        <div class="flex border-b border-white/10 mb-4">
+            <button onclick="switchMainView('resources')" id="tab-resources" class="flex-1 pb-3 text-sm font-bold text-white border-b-2 border-accent transition-colors">Resources</button>
+            <button onclick="switchMainView('contacts')" id="tab-contacts" class="flex-1 pb-3 text-sm font-bold text-white/50 border-b-2 border-transparent hover:text-white transition-colors">Contacts</button>
+        </div>
+
+        <!-- SEARCH BAR -->
+        <div class="relative">
+            <i data-lucide="search" class="absolute left-3 top-3.5 w-5 h-5 text-slate-400"></i>
+            <input type="text" id="search-input" onkeyup="handleSearch()" placeholder="Search assets..." class="w-full pl-10 pr-4 py-3 bg-black/20 border border-white/10 rounded-xl text-sm text-white placeholder-white/40 focus:outline-none focus:border-accent transition shadow-inner">
+        </div>
+    </header>
+
+    <!-- VIEW 1: RESOURCES -->
+    <div id="view-resources">
+        <!-- CATEGORY TABS -->
+        <div class="flex gap-2 p-4 overflow-x-auto no-scrollbar sticky top-[188px] bg-brand-surface z-30 pb-2 transition-colors duration-300" style="background-color: var(--brand-surface);">
+            <button onclick="filterCategory('all', this)" class="cat-tab active px-4 py-2 bg-primary text-white text-xs font-bold rounded-full whitespace-nowrap shadow-sm transition-colors border border-primary">All Assets</button>
+            <button onclick="filterCategory('public', this)" class="cat-tab px-4 py-2 bg-white text-slate-600 text-xs font-bold rounded-full whitespace-nowrap border border-slate-200 shadow-sm transition-colors hover:border-primary">Public Info</button>
+            <button onclick="filterCategory('internal', this)" class="cat-tab px-4 py-2 bg-white text-slate-600 text-xs font-bold rounded-full whitespace-nowrap border border-slate-200 shadow-sm transition-colors hover:border-primary">Internal Ops</button>
+            <button onclick="filterCategory('legal', this)" class="cat-tab px-4 py-2 bg-white text-slate-600 text-xs font-bold rounded-full whitespace-nowrap border border-slate-200 shadow-sm transition-colors hover:border-primary">Legal & Forms</button>
+        </div>
+
+        <!-- RESOURCE GRID -->
+        <main id="resource-grid" class="px-4 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <!-- JS will inject cards here -->
+        </main>
+    </div>
+
+    <!-- VIEW 2: CONTACTS (Hidden by default) -->
+    <div id="view-contacts" class="hidden">
+        <!-- CONTACT GRID -->
+        <main id="contact-grid" class="p-4 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <!-- JS will inject cards here -->
+        </main>
+    </div>
+
+    <!-- FAB (Context Aware) -->
+    <button id="fab-main" onclick="handleFabClick()" class="fixed bottom-6 right-6 w-14 h-14 bg-accent text-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition z-50 border-2 border-white">
+        <i data-lucide="plus" class="w-8 h-8"></i>
+    </button>
+
+    <!-- MODAL: ADD CONTACT OPTIONS -->
+    <div id="contact-options-modal" class="fixed inset-0 z-[70] bg-slate-900/90 backdrop-blur-sm hidden items-end sm:items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl p-6 relative modal-enter">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-bold text-slate-800">Add New Contact</h2>
+                <button onclick="closeModal('contact-options-modal')" class="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition">
+                    <i data-lucide="x" class="w-4 h-4 text-slate-600"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-3">
+                <button onclick="alert('Camera Scan Feature Coming Soon')" class="w-full p-4 flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-xl hover:border-accent transition group text-left">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-600 shadow-sm group-hover:text-accent"><i data-lucide="scan-line" class="w-5 h-5"></i></div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-sm">Scan QR Code</h3>
+                        <p class="text-[10px] text-slate-500">Capture a Simpli-FI ID instantly.</p>
+                    </div>
+                </button>
+                
+                <button onclick="alert('Paste URL Logic')" class="w-full p-4 flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-xl hover:border-accent transition group text-left">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-600 shadow-sm group-hover:text-accent"><i data-lucide="link" class="w-5 h-5"></i></div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-sm">Paste ID Link</h3>
+                        <p class="text-[10px] text-slate-500">Add via shared URL.</p>
+                    </div>
+                </button>
+                
+                <button onclick="openBuildContact()" class="w-full p-4 flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-xl hover:border-accent transition group text-left">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-600 shadow-sm group-hover:text-accent"><i data-lucide="user-plus" class="w-5 h-5"></i></div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-sm">Build & Gift</h3>
+                        <p class="text-[10px] text-slate-500">Create a card for a lead.</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: BUILD CONTACT (Lead Gen) -->
+    <div id="build-contact-modal" class="fixed inset-0 z-[80] bg-slate-900/95 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 relative modal-enter h-[80vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6 sticky top-0 bg-white z-10 py-2 border-b border-slate-100">
+                <h2 class="text-lg font-bold text-slate-800">Build New Contact</h2>
+                <button onclick="closeModal('build-contact-modal')" class="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition">
+                    <i data-lucide="x" class="w-4 h-4 text-slate-600"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="p-3 bg-amber-50 rounded-xl border border-amber-100 flex gap-3">
+                    <i data-lucide="gift" class="w-5 h-5 text-amber-500 shrink-0"></i>
+                    <p class="text-xs text-amber-800">You are building a <strong>Free Ambassador Card</strong> for this lead. They will receive an email to claim it.</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-xs font-bold text-slate-500 uppercase">First Name</label><input type="text" class="w-full p-3 bg-slate-50 border rounded-xl text-sm mt-1"></div>
+                    <div><label class="text-xs font-bold text-slate-500 uppercase">Last Name</label><input type="text" class="w-full p-3 bg-slate-50 border rounded-xl text-sm mt-1"></div>
+                </div>
+                
+                <div><label class="text-xs font-bold text-slate-500 uppercase">Email</label><input type="email" class="w-full p-3 bg-slate-50 border rounded-xl text-sm mt-1"></div>
+                <div><label class="text-xs font-bold text-slate-500 uppercase">Phone</label><input type="tel" class="w-full p-3 bg-slate-50 border rounded-xl text-sm mt-1"></div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-xs font-bold text-slate-500 uppercase">Business</label><input type="text" class="w-full p-3 bg-slate-50 border rounded-xl text-sm mt-1"></div>
+                    <div><label class="text-xs font-bold text-slate-500 uppercase">Industry/Field</label><input type="text" class="w-full p-3 bg-slate-50 border rounded-xl text-sm mt-1"></div>
+                </div>
+                
+                <button onclick="submitBuildContact()" class="w-full py-4 bg-primary text-white font-bold rounded-xl mt-4 shadow-lg">Generate & Send Gift</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: RESOURCE DETAILS (Existing) -->
+    <div id="details-modal" class="fixed inset-0 z-[60] bg-slate-900/90 backdrop-blur-sm hidden items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-0 overflow-hidden relative modal-enter shadow-2xl">
+            <!-- Header Image Area -->
+            <div class="h-32 bg-primary relative flex items-center justify-center transition-colors duration-300">
+                <button onclick="closeModal('details-modal')" class="absolute top-4 right-4 p-2 bg-black/20 text-white rounded-full hover:bg-black/40 transition z-10">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                <div id="detail-icon-bg" class="w-20 h-20 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white text-4xl shadow-lg border border-white/20">
+                    <!-- Icon Injected Here -->
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="text-center mb-6">
+                    <h3 id="detail-title" class="text-2xl font-black text-slate-800 mb-2 leading-tight">Title</h3>
+                    <span id="detail-category" class="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wider rounded-full">Category</span>
+                </div>
+
+                <div class="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-100">
+                    <p id="detail-desc" class="text-sm text-slate-600 leading-relaxed">Description goes here...</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="detail-open-btn" class="py-3 px-4 bg-primary text-white font-bold rounded-xl shadow-lg hover:opacity-90 transition flex items-center justify-center gap-2 text-sm">
+                        <i data-lucide="external-link" class="w-4 h-4"></i> Preview
+                    </button>
+                    <button id="detail-qr-btn" class="py-3 px-4 bg-white text-primary font-bold rounded-xl shadow border border-slate-200 hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm">
+                        <i data-lucide="qr-code" class="w-4 h-4"></i> Generate QR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: QR DISPLAY (Existing) -->
+    <div id="qr-modal" class="fixed inset-0 z-[70] bg-slate-900/95 backdrop-blur-md hidden items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-8 text-center relative modal-enter shadow-2xl border-4 border-primary transition-colors duration-300">
+            <button onclick="closeModal('qr-modal')" class="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition">
+                <i data-lucide="x" class="w-4 h-4 text-slate-600"></i>
+            </button>
+            
+            <div class="mb-6">
+                <div class="w-12 h-12 bg-accent rounded-full flex items-center justify-center mx-auto mb-4 text-primary transition-colors duration-300">
+                    <i data-lucide="scan-line" class="w-6 h-6"></i>
+                </div>
+                <h3 id="qr-title" class="text-xl font-black text-slate-800 mb-1">Resource Title</h3>
+                <p class="text-xs text-slate-500 uppercase tracking-widest font-bold">Trackable Link Generated</p>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl border-2 border-dashed border-slate-300 shadow-sm inline-block mx-auto mb-6 relative">
+                <div class="absolute -top-3 -left-3 w-6 h-6 border-t-4 border-l-4 border-primary rounded-tl-lg transition-colors duration-300"></div>
+                <div class="absolute -top-3 -right-3 w-6 h-6 border-t-4 border-r-4 border-primary rounded-tr-lg transition-colors duration-300"></div>
+                <div class="absolute -bottom-3 -left-3 w-6 h-6 border-b-4 border-l-4 border-primary rounded-bl-lg transition-colors duration-300"></div>
+                <div class="absolute -bottom-3 -right-3 w-6 h-6 border-b-4 border-r-4 border-primary rounded-br-lg transition-colors duration-300"></div>
+                <div id="qrcode"></div>
+            </div>
+            
+            <p class="text-[10px] text-slate-400 mb-4">This QR code is unique to you. Scans will be tracked in your dashboard.</p>
+
+            <button onclick="closeModal('qr-modal')" class="w-full py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition text-sm">
+                Done
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: UPLOAD RESOURCE (Admin Only) (Existing) -->
+    <div id="upload-modal" class="fixed inset-0 z-[60] bg-slate-900/90 backdrop-blur-sm hidden items-center justify-center p-6">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 relative modal-enter">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-bold text-slate-800">Add New Resource</h2>
+                <button onclick="closeModal('upload-modal')" class="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition">
+                    <i data-lucide="x" class="w-4 h-4 text-slate-600"></i>
+                </button>
+            </div>
+            <!-- (Existing Upload Form Code) -->
+             <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Resource Title</label>
+                    <input type="text" id="new-title" placeholder="e.g. Q4 Pricing Guide" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent">
+                </div>
+                
+                <div id="url-input-group">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Destination URL</label>
+                    <input type="url" id="new-url" placeholder="https://..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Or Upload Document</label>
+                    <label class="flex items-center justify-center w-full p-4 border-2 border-dashed border-slate-200 rounded-xl hover:border-accent hover:bg-slate-50 transition cursor-pointer group">
+                        <div class="text-center" id="file-upload-text">
+                            <i data-lucide="upload-cloud" class="w-6 h-6 text-slate-400 group-hover:text-accent mx-auto mb-1 transition"></i>
+                            <span class="text-xs font-bold text-slate-500 group-hover:text-slate-700 transition">Click to select PDF/DOC</span>
+                        </div>
+                        <input type="file" id="file-upload" class="hidden" onchange="handleFileSelect(this)">
+                    </label>
+                    <div id="upload-progress-container" class="hidden mt-2">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                            <div id="upload-progress-bar" class="bg-accent h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <p class="text-xs text-center mt-1 text-slate-500" id="upload-status-text">Uploading...</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Description</label>
+                    <textarea id="new-desc" rows="2" placeholder="Brief description..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Category</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="selectUploadCategory('public')" class="cat-btn py-2 bg-slate-100 rounded-lg text-xs font-bold text-slate-600 border border-transparent hover:border-accent focus:bg-primary focus:text-white transition">Public</button>
+                        <button onclick="selectUploadCategory('internal')" class="cat-btn py-2 bg-slate-100 rounded-lg text-xs font-bold text-slate-600 border border-transparent hover:border-accent focus:bg-primary focus:text-white transition">Internal</button>
+                        <button onclick="selectUploadCategory('legal')" class="cat-btn py-2 bg-slate-100 rounded-lg text-xs font-bold text-slate-600 border border-transparent hover:border-accent focus:bg-primary focus:text-white transition">Legal/Form</button>
+                    </div>
+                </div>
+
+                <div class="pt-4 space-y-3">
+                    <button onclick="saveResource()" id="btn-save-resource" class="w-full py-4 bg-accent text-primary font-bold rounded-xl shadow-lg hover:shadow-xl transition flex items-center justify-center gap-2">
+                        <i data-lucide="plus-circle" class="w-5 h-5"></i> Add to Catalog
+                    </button>
+                    
+                    <a href="mailto:info@simpli-fi-os.com?subject=Request: Convert Document to Microsite&body=Please find attached the document I would like converted into a mobile-responsive microsite." class="w-full py-3 bg-slate-100 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-200 transition flex items-center justify-center gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-purple-500"></i> Convert to Microsite
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL: UPSELL INTELLIGENCE (Hidden) (Existing) -->
+    <div id="upsell-modal" class="fixed inset-0 z-[80] bg-indigo-900/90 backdrop-blur-sm hidden items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-8 relative modal-enter shadow-2xl text-center overflow-hidden">
+            <!-- Decorative Background -->
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl"></div>
+            
+            <div class="mb-6 relative z-10">
+                <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
+                    <i data-lucide="sparkles" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Unlock Intelligence?</h2>
+                <p class="text-sm text-slate-500 leading-relaxed">
+                    Don't just upload a static file. Turn this document into a 
+                    <span class="font-bold text-indigo-600">Trackable Microsite</span>.
+                </p>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6 text-left space-y-3">
+                <div class="flex items-start gap-3">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
+                    <p class="text-xs text-slate-600"><span class="font-bold">Heatmaps:</span> See which pages they read.</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
+                    <p class="text-xs text-slate-600"><span class="font-bold">Lead Capture:</span> Gate content with email.</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
+                    <p class="text-xs text-slate-600"><span class="font-bold">Instant Updates:</span> Fix typos without re-sending.</p>
+                </div>
+            </div>
+
+            <button onclick="confirmUpsell()" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition mb-3 flex items-center justify-center gap-2">
+                <span>Upgrade to Intelligence Suite</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+            
+            <button onclick="declineUpsell()" class="text-xs text-slate-400 font-medium hover:text-slate-600 transition">
+                No thanks, just upload PDF
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const currentUser = {
+            id: "hunter_lott",
+            role: "admin", 
+            org_id: "simpli_fi_os", 
+            // org_id: "denton_fire_dept",
+        };
+
+        const branding = {
+            "simpli_fi_os": { primary: "#1e293b", accent: "#fbbf24", name: "Simpli-FI OS", logo: "https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png" },
+            "denton_fire_dept": { primary: "#b91c1c", accent: "#fbbf24", name: "Denton Fire Dept", logo: "https://files.constantcontact.com/3720c3fd901/10017eb4-f7d2-424d-92ed-c1b5424b9869.png" }
+        };
+
+        // Initialize Firebase - Replace with your config
+        const firebaseConfig = {
+             // apiKey: "...",
+        };
+        // if (!firebase.apps.length) firebase.initializeApp(firebaseConfig); 
+
+        // --- INIT ---
+        let currentMainView = 'resources';
+
+        window.onload = function() {
+            applyBranding();
+            checkPermissions();
+            renderResources(resources); 
+            renderContacts(contacts);
+            lucide.createIcons();
+            
+            // Set initial state
+            switchMainView('resources');
+        };
+
+        function applyBranding() {
+            const config = branding[currentUser.org_id] || branding["simpli_fi_os"];
+            document.documentElement.style.setProperty('--brand-primary', config.primary);
+            document.documentElement.style.setProperty('--brand-accent', config.accent);
+            document.getElementById('org-name').innerText = config.name;
+            document.getElementById('org-logo').src = config.logo;
+        }
+
+        function checkPermissions() {
+            if (currentUser.role === 'admin') {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
+            }
+        }
+
+        // --- VIEW SWITCHING LOGIC ---
+        function switchMainView(view) {
+            currentMainView = view;
+            const resView = document.getElementById('view-resources');
+            const conView = document.getElementById('view-contacts');
+            const fab = document.getElementById('fab-main');
+            const searchInput = document.getElementById('search-input');
+            
+            const tabRes = document.getElementById('tab-resources');
+            const tabCon = document.getElementById('tab-contacts');
+
+            if (view === 'resources') {
+                resView.classList.remove('hidden');
+                conView.classList.add('hidden');
+                tabRes.className = "flex-1 pb-3 text-sm font-bold text-white border-b-2 border-accent transition-colors";
+                tabCon.className = "flex-1 pb-3 text-sm font-bold text-white/50 border-b-2 border-transparent hover:text-white transition-colors";
+                searchInput.placeholder = "Search assets...";
+                
+                // FAB is only for admins in Resource view (usually) or uploads. 
+                // Using existing logic:
+                fab.classList.add('admin-only'); // Or keep existing visibility
+                checkPermissions(); 
+                
+            } else {
+                resView.classList.add('hidden');
+                conView.classList.remove('hidden');
+                tabRes.className = "flex-1 pb-3 text-sm font-bold text-white/50 border-b-2 border-transparent hover:text-white transition-colors";
+                tabCon.className = "flex-1 pb-3 text-sm font-bold text-white border-b-2 border-accent transition-colors";
+                searchInput.placeholder = "Search contacts, businesses, fields...";
+                
+                // FAB is always visible in Contacts for adding new people
+                fab.style.display = 'flex'; 
+                fab.classList.remove('admin-only');
+            }
+            // Clear search on switch
+            searchInput.value = '';
+            filterResources();
+            filterContacts();
+        }
+
+        // --- FAB CLICK HANDLER ---
+        function handleFabClick() {
+            if (currentMainView === 'resources') {
+                openUploadModal();
+            } else {
+                openContactOptions();
+            }
+        }
+
+        function openContactOptions() {
+            const modal = document.getElementById('contact-options-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function openBuildContact() {
+            closeModal('contact-options-modal');
+            const modal = document.getElementById('build-contact-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function submitBuildContact() {
+            alert("Generating Card & Sending Email... (Simulation)");
+            closeModal('build-contact-modal');
+            // In prod: Add to contacts array, write to DB, trigger Cloud Function for email
+        }
+
+        // --- DATA (Mock) ---
+        let resources = [
+            { id: 1, title: "2025 Pricing Guide", category: "public", url: "#", desc: "Standard rate card.", icon: "file-text", color: "text-blue-500", bg: "bg-blue-50" },
+            { id: 2, title: "Intro Video", category: "public", url: "#", desc: "Explainer video.", icon: "video", color: "text-purple-500", bg: "bg-purple-50" }
+        ];
+
+        let contacts = [
+            { id: 101, name: "Sarah Jenkins", title: "Marketing Director", business: "TechFlow Inc.", field: "SaaS", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" },
+            { id: 102, name: "Mike Ross", title: "Real Estate Agent", business: "Keller Williams", field: "Real Estate", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike" },
+            { id: 103, name: "Jessica Pearson", title: "Attorney", business: "Pearson Specter", field: "Legal", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jess" }
+        ];
+
+        // --- RENDER LOGIC: RESOURCES ---
+        function renderResources(data) {
+            const grid = document.getElementById('resource-grid');
+            grid.innerHTML = '';
+            data.forEach(item => {
+                const deleteBtn = currentUser.role === 'admin' ? `<button onclick="deleteResource(${item.id}, event)" class="p-2 text-slate-300 hover:text-red-500 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : '';
+                grid.innerHTML += `
+                    <div class="resource-card glass-panel rounded-2xl p-4 flex items-center justify-between cursor-pointer group hover:shadow-lg" onclick="openDetails(${item.id})">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-xl ${item.bg} ${item.color} flex items-center justify-center shrink-0 border border-black/5 shadow-sm"><i data-lucide="${item.icon}" class="w-7 h-7"></i></div>
+                            <div class="flex-1 min-w-0"><h3 class="font-bold text-slate-800 text-sm leading-tight mb-1 group-hover:text-primary truncate transition-colors">${item.title}</h3><span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 px-2 py-0.5 rounded border border-slate-100">${item.category}</span></div>
+                        </div>
+                        <div class="flex items-center gap-2">${deleteBtn}<div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100 group-hover:bg-accent group-hover:text-primary group-hover:border-accent transition shadow-sm"><i data-lucide="chevron-right" class="w-5 h-5"></i></div></div>
+                    </div>`;
+            });
+            lucide.createIcons();
+        }
+
+        // --- RENDER LOGIC: CONTACTS ---
+        function renderContacts(data) {
+            const grid = document.getElementById('contact-grid');
+            grid.innerHTML = '';
+            data.forEach(item => {
+                grid.innerHTML += `
+                    <div class="glass-panel rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition group border-l-4 border-transparent hover:border-l-accent" onclick="window.open('card.html?u=${item.id}', '_blank')">
+                        <div class="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
+                            <img src="${item.avatar}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-slate-800 text-sm truncate">${item.name}</h3>
+                            <p class="text-xs text-slate-500 truncate">${item.title} @ ${item.business}</p>
+                            <span class="inline-block mt-1 text-[10px] font-bold text-primary bg-primary/5 px-2 py-0.5 rounded-full">${item.field}</span>
+                        </div>
+                        <div class="text-slate-300 group-hover:text-accent"><i data-lucide="arrow-up-right" class="w-4 h-4"></i></div>
+                    </div>`;
+            });
+            lucide.createIcons();
+        }
+
+        // --- SEARCH HANDLER ---
+        function handleSearch() {
+            if (currentMainView === 'resources') filterResources();
+            else filterContacts();
+        }
+
+        function filterResources() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtered = resources.filter(item => item.title.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query));
+            renderResources(filtered);
+        }
+
+        function filterContacts() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtered = contacts.filter(item => 
+                item.name.toLowerCase().includes(query) || 
+                item.business.toLowerCase().includes(query) || 
+                item.field.toLowerCase().includes(query)
+            );
+            renderContacts(filtered);
+        }
+
+        function filterCategory(cat, btn) {
+            document.querySelectorAll('.cat-tab').forEach(el => { el.classList.remove('bg-primary', 'text-white', 'border-primary'); el.classList.add('bg-white', 'text-slate-600', 'border-slate-200'); });
+            btn.classList.remove('bg-white', 'text-slate-600', 'border-slate-200'); btn.classList.add('bg-primary', 'text-white', 'border-primary');
+            if (cat === 'all') renderResources(resources);
+            else renderResources(resources.filter(item => item.category === cat));
+        }
+
+        // ... (Existing openDetails, openQR, openUploadModal, saveResource, handleFileSelect, etc. remain the same) ...
+        // Re-included for completeness
+        function openDetails(id) { const item = resources.find(r => r.id === id); if(!item) return; document.getElementById('detail-title').innerText = item.title; document.getElementById('detail-category').innerText = item.category; document.getElementById('detail-desc').innerText = item.desc; document.getElementById('detail-icon-bg').innerHTML = `<i data-lucide="${item.icon}" class="w-10 h-10 ${item.color}"></i>`; document.getElementById('details-modal').classList.remove('hidden'); document.getElementById('details-modal').classList.add('flex'); lucide.createIcons(); }
+        function openUploadModal() { document.getElementById('upload-modal').classList.remove('hidden'); document.getElementById('upload-modal').classList.add('flex'); }
+        function selectUploadCategory(cat) { selectedCategory = cat; }
+        function saveResource() { /* Existing logic */ closeModal('upload-modal'); }
+        function deleteResource(id, event) { event.stopPropagation(); if(confirm("Delete?")) { resources = resources.filter(r => r.id !== id); renderResources(resources); } }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+        let selectedCategory = 'public';
+        let pendingFile = null;
+        function handleFileSelect(input) { if(input.files && input.files[0]) { pendingFile = input.files[0]; document.getElementById('file-upload-text').innerHTML = `<span class="text-xs font-bold text-slate-700">${pendingFile.name}</span>`; if (currentUser.org_id !== 'denton_fire_dept') { document.getElementById('upsell-modal').classList.remove('hidden'); document.getElementById('upsell-modal').classList.add('flex'); } } }
+        function confirmUpsell() { window.location.href = "mailto:info@simpli-fi-os.com..."; closeModal('upsell-modal'); }
+        function declineUpsell() { closeModal('upsell-modal'); }
+
+    </script>
+</body>
+</html>
