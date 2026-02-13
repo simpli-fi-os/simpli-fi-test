@@ -2,51 +2,131 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- Open Graph / Social Sharing -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <!-- Open Graph / Social Sharing (updated dynamically) -->
     <meta property="og:title" content="Simpli-FI ID" id="og-title">
     <meta property="og:description" content="Connect with me." id="og-desc">
-    <meta property="og:image" content="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png" id="og-image">
-    
+    <meta property="og:image" content="/assets/images/social-preview.png" id="og-image">
+
     <!-- Favicons -->
-    <link rel="icon" href="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png" id="dynamic-favicon">
-    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png" id="dynamic-apple-icon">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/favicon.png">
 
     <title>Simpli-FI ID | Loading...</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Lucide Icons (Reverted to unpkg for stability) -->
+
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+
     <!-- Firebase SDKs (Compat 11.6.1) -->
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-storage-compat.js"></script>
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/tiers.js"></script>
 
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            primary: 'var(--brand-primary)',
+                            accent: 'var(--brand-accent)',
+                            canvas: '#FBF9F7',
+                            surface: '#F0EFEB',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    boxShadow: {
+                        'neu-flat': '9px 9px 18px #d1cfcb, -9px -9px 18px #ffffff',
+                        'neu-pressed': 'inset 6px 6px 12px #d1cfcb, inset -6px -6px 12px #ffffff',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         :root {
             --brand-primary: #1e293b;
             --brand-accent: #fbbf24;
         }
         body { background-color: #FBF9F7; overflow: hidden; }
-        .physics-element { position: absolute; pointer-events: none; z-index: 0; }
-        
+        a, button { -webkit-tap-highlight-color: transparent; }
+
+        /* View Transitions */
+        #simple-view-container {
+            position: fixed; inset: 0; z-index: 10;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.5s ease; opacity: 1; pointer-events: auto;
+            touch-action: none;
+        }
+        #full-view {
+            position: fixed; inset: 0; z-index: 20;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
+            display: flex; align-items: center; justify-content: center;
+        }
+        body.show-full #simple-view-container { opacity: 0; pointer-events: none; }
+        body.show-full #full-view { opacity: 1; pointer-events: auto; }
+
+        /* Card Scaling */
+        #card-wrapper {
+            width: 650px; height: 370px; position: relative;
+            transform-origin: center center; transition: transform 0.1s ease-out;
+        }
+        #main-card {
+            transform-origin: top center; transition: transform 0.1s ease-out;
+        }
+
+        /* FAB Button */
+        .toggle-btn {
+            position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px;
+            border-radius: 50%; background: #ffffff; border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center;
+            justify-content: center; z-index: 50; transition: all 0.2s ease; cursor: pointer;
+            overflow: hidden;
+        }
+        .toggle-btn:active { transform: scale(0.95); }
+        .fab-icon { position: absolute; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        #icon-plus { opacity: 1; transform: rotate(0deg) scale(1); }
+        #icon-minus { opacity: 0; transform: rotate(-90deg) scale(0.5); }
+        body.show-full #icon-plus { opacity: 0; transform: rotate(90deg) scale(0.5); }
+        body.show-full #icon-minus { opacity: 1; transform: rotate(0deg) scale(1); }
+
+        /* Physics */
+        .physics-element {
+            position: absolute; pointer-events: none; z-index: 0;
+        }
+
+        #scroll-container {
+            height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+            position: relative; z-index: 10; padding-bottom: 120px;
+        }
+
+        /* Loader & Error */
         #loader { display: flex; }
         #error-screen { display: none; }
-        
+
         @keyframes slideUp {
             from { transform: translateY(100%); }
             to { transform: translateY(0); }
         }
-        .ad-banner-enter {
-            animation: slideUp 0.5s ease-out forwards;
-        }
     </style>
 </head>
 <body class="fixed inset-0">
+
+    <!-- Background pattern -->
+    <div id="bg-pattern" class="fixed inset-0 opacity-[0.99]" style="background-color: #FBF9F7; background-image: radial-gradient(var(--brand-primary) 1px, transparent 1px); background-size: 24px 24px;"></div>
 
     <!-- Physics Layer -->
     <div id="physics-layer" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
@@ -56,187 +136,306 @@
         <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#fbbf24]"></div>
     </div>
 
-    <!-- Error Screen (Hidden by default) -->
+    <!-- Error Screen -->
     <div id="error-screen" class="fixed inset-0 bg-slate-900 z-[60] flex flex-col items-center justify-center p-8 text-center hidden">
         <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4 text-red-500">
             <i data-lucide="alert-triangle" class="w-8 h-8"></i>
         </div>
-        <h2 class="text-white font-bold text-xl mb-2">System Error</h2>
+        <h2 class="text-white font-bold text-xl mb-2">Profile Not Found</h2>
         <p id="error-message" class="text-slate-400 text-sm mb-6">Unable to load identity.</p>
-        <button onclick="window.location.reload()" class="px-6 py-3 bg-white text-slate-900 font-bold rounded-xl text-sm">Retry Connection</button>
+        <button onclick="window.location.reload()" class="px-6 py-3 bg-white text-slate-900 font-bold rounded-xl text-sm">Retry</button>
     </div>
 
-    <!-- Main Content -->
-    <div id="scroll-container" class="w-full h-full overflow-y-auto relative z-10 flex justify-center p-4 pb-32">
-        <main id="card-body" class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 relative flex flex-col shrink-0 my-auto transition-all duration-300 opacity-0 transform translate-y-4">
-            
-            <!-- HEADER -->
-            <div class="h-32 relative overflow-hidden shrink-0" id="header-bg" style="background-color: var(--brand-primary);">
-                <!-- QR Icon Top Right -->
-                <div class="absolute top-4 right-4 z-20 bg-white/20 backdrop-blur p-1.5 rounded-lg cursor-pointer hover:bg-white/30 transition">
-                    <i data-lucide="qr-code" class="w-4 h-4 text-white"></i>
-                </div>
+    <!-- SIMPLE CARD VIEW (Business Card) -->
+    <div id="simple-view-container" class="hidden">
+        <div id="card-wrapper">
+            <div class="w-full h-full rounded-[2.5rem] shadow-neu-flat flex items-center justify-between border border-stone-300/50 overflow-hidden relative" style="background-color: #FBF9F7;">
 
-                <div class="absolute top-4 left-4 z-10 flex items-center gap-3">
-                    <div id="org-logo" class="w-10 h-10 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center text-white font-bold text-lg">S</div>
-                    <span class="font-serif text-white font-bold tracking-tight text-sm opacity-90" id="org-name">Simpli-FI</span>
-                </div>
-                <div class="absolute inset-0 opacity-20 bg-[radial-gradient(var(--brand-accent)_1px,transparent_1px)] [background-size:14px_14px]"></div>
-            </div>
-
-            <!-- PROFILE -->
-            <div class="relative px-8 -mt-16 mb-6 text-center shrink-0">
-                <div class="inline-block relative">
-                    <div class="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-slate-100 mx-auto relative z-10">
-                        <img id="avatar" src="" class="w-full h-full object-cover">
-                    </div>
-                    <div id="badge" class="hidden absolute bottom-1 right-1 z-20 rounded-full p-1.5 border-2 border-white shadow-sm" style="background-color: var(--brand-accent); color: var(--brand-primary);">
-                        <i data-lucide="shield-check" class="w-3 h-3 stroke-[4]"></i>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <h1 id="user-name" class="font-serif text-3xl font-bold" style="color: var(--brand-primary);">User Name</h1>
-                    <p id="user-title" class="font-bold text-xs tracking-widest uppercase mt-1" style="color: var(--brand-accent);">Title</p>
-                </div>
-            </div>
-
-            <!-- ACTIONS GRID -->
-            <div id="actions-grid" class="grid grid-cols-4 gap-2 px-6 mb-6 shrink-0"></div>
-
-            <!-- MISSION -->
-            <div class="px-6 mb-6 shrink-0">
-                <div class="relative bg-slate-50 p-4 rounded-xl border-l-4 overflow-hidden" id="mission-box" style="border-color: var(--brand-primary);">
-                    <div class="relative z-10">
-                        <div class="flex items-center gap-2 mb-1">
-                            <i data-lucide="target" class="w-3 h-3" style="color: var(--brand-primary);"></i>
-                            <h3 class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--brand-primary);">Current Mission</h3>
+                <!-- Left Side -->
+                <div class="flex flex-col justify-between h-full w-2/3 p-10">
+                    <!-- Header -->
+                    <div class="flex items-center gap-5">
+                        <div id="sv-logo" class="w-16 h-16 shrink-0 rounded-2xl shadow-neu-flat flex items-center justify-center border border-white/20" style="background-color: #F0EFEB;">
+                            <span class="text-3xl font-serif italic font-bold" style="color: var(--brand-primary);">S</span>
                         </div>
-                        <p id="mission-text" class="text-slate-700 text-sm font-medium italic leading-relaxed">Loading...</p>
+                        <div>
+                            <h2 id="sv-company" class="text-2xl font-bold tracking-tight leading-none" style="color: var(--brand-primary);">Simpli-FI</h2>
+                            <p id="sv-tagline" class="text-[11px] font-bold uppercase tracking-[0.15em] mt-1.5" style="color: var(--brand-accent);"></p>
+                        </div>
+                    </div>
+
+                    <!-- Name Block -->
+                    <div>
+                        <h1 id="sv-name" class="text-5xl font-black mb-1 font-serif leading-none" style="color: var(--brand-primary);">Loading...</h1>
+                        <p id="sv-title" class="font-extrabold text-sm tracking-[0.2em] uppercase pl-1" style="color: var(--brand-accent);"></p>
+                    </div>
+
+                    <!-- Contact Grid -->
+                    <div id="sv-contacts" class="grid grid-cols-2 gap-3 w-full">
                     </div>
                 </div>
-            </div>
 
-            <!-- BIO -->
-            <div class="px-8 mb-6 shrink-0">
-                <h3 class="text-xs font-bold uppercase tracking-wider mb-2" style="color: var(--brand-accent);">About</h3>
-                <p id="bio-text" class="text-slate-600 text-sm leading-relaxed font-light"></p>
-            </div>
+                <!-- Right Side (Color Band) -->
+                <div class="w-1/3 h-full relative flex flex-col items-center justify-center pl-6 pr-4" style="background-color: var(--brand-primary);">
+                    <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(var(--brand-accent) 1px, transparent 1px); background-size: 14px 14px;"></div>
 
-            <!-- CONTACT DETAILS (New Section based on Intake) -->
-            <div id="contact-details" class="px-6 mb-6 shrink-0 space-y-2">
-                <!-- Injected via JS -->
-            </div>
+                    <!-- Profile Pic -->
+                    <div class="relative mb-6 group cursor-pointer z-20" onclick="toggleQR()">
+                        <div class="w-48 h-48 rounded-full p-2.5 bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-2xl">
+                            <div class="w-full h-full rounded-full overflow-hidden relative border-4" style="border-color: var(--brand-accent);">
+                                <img id="sv-avatar" src="" alt="" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <div id="sv-badge" class="hidden absolute bottom-3 right-3 w-10 h-10 rounded-full shadow-lg flex items-center justify-center border-2 border-white" style="background-color: var(--brand-accent); color: var(--brand-primary);">
+                            <i data-lucide="shield-check" class="w-5 h-5 stroke-[2.5]"></i>
+                        </div>
+                    </div>
 
-            <!-- FOOTER -->
-            <div class="mt-auto py-6 text-center border-t border-slate-100 bg-slate-50">
-                <a href="https://simpli-fi-os.com" target="_blank" class="inline-flex items-center gap-2 group opacity-60 hover:opacity-100 transition">
-                    <span class="text-[10px] text-slate-400 font-bold tracking-widest uppercase group-hover:text-brand-primary">Powered by Simpli-FI OS</span>
-                    <i data-lucide="external-link" class="w-3 h-3 text-slate-400 group-hover:text-brand-primary"></i>
-                </a>
+                    <!-- Save Button -->
+                    <button onclick="downloadVCard()" class="w-full max-w-[180px] py-3.5 rounded-xl bg-black/20 backdrop-blur-md shadow-lg text-white font-extrabold text-xs uppercase tracking-wider hover:text-slate-900 transition-all flex items-center justify-center gap-2 group z-20 border border-white/10" onmouseover="this.style.backgroundColor=getComputedStyle(document.documentElement).getPropertyValue('--brand-accent')" onmouseout="this.style.backgroundColor='rgba(0,0,0,0.2)'">
+                        <span>Save Contact</span>
+                        <i data-lucide="arrow-down-to-line" class="w-4 h-4"></i>
+                    </button>
+                </div>
             </div>
-        </main>
+        </div>
     </div>
 
-    <!-- FREEMIUM AD BANNER -->
+    <!-- FULL VIEW (Scrollable) -->
+    <div id="full-view" class="hidden">
+        <div id="scroll-container" class="w-full flex justify-center p-4">
+            <main id="main-card" class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border relative flex flex-col shrink-0 my-auto transition-transform duration-75 will-change-transform" style="border-color: #F0EFEB;">
+
+                <!-- Top Banner -->
+                <div class="h-32 relative overflow-hidden shrink-0" style="background-color: var(--brand-primary);">
+                    <div class="absolute top-4 left-4 z-10 flex items-center gap-3">
+                        <div id="fv-logo" class="w-10 h-10 object-contain drop-shadow-md bg-white/10 rounded-full backdrop-blur-sm p-1 flex items-center justify-center">
+                            <span class="text-white font-serif italic font-bold text-lg">S</span>
+                        </div>
+                        <span id="fv-company" class="font-serif text-white font-bold tracking-tight text-sm opacity-90">Simpli-FI</span>
+                    </div>
+                    <button onclick="toggleQR()" aria-label="Show QR Code" class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white transition-all border border-white/10 shadow-lg group">
+                        <i data-lucide="qr-code" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+                    </button>
+                    <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(var(--brand-accent) 1px, transparent 1px); background-size: 14px 14px;"></div>
+                    <div class="absolute -bottom-8 -right-8 w-32 h-32 rounded-full opacity-30 blur-3xl" style="background-color: var(--brand-accent);"></div>
+                </div>
+
+                <!-- Profile Image -->
+                <div class="relative px-8 -mt-16 mb-6 text-center shrink-0">
+                    <div class="inline-block relative">
+                        <div class="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-slate-100 mx-auto relative z-10">
+                            <img id="fv-avatar" src="" alt="" class="w-full h-full object-cover object-center">
+                        </div>
+                        <div id="fv-badge" class="hidden absolute bottom-1 right-1 z-20 rounded-full p-1.5 border-2 border-white shadow-sm" style="background-color: var(--brand-accent); color: var(--brand-primary);">
+                            <i data-lucide="shield-check" class="w-3 h-3 stroke-[4]"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h1 id="fv-name" class="font-serif text-3xl font-bold" style="color: var(--brand-primary);">Loading...</h1>
+                        <p id="fv-title" class="font-bold text-xs tracking-widest uppercase mt-1" style="color: var(--brand-accent);"></p>
+                        <p id="fv-company-sub" class="text-slate-400 text-xs mt-1"></p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div id="fv-actions" class="grid gap-2 px-4 mb-6 shrink-0">
+                </div>
+
+                <!-- Current Mission -->
+                <div id="fv-mission-wrap" class="px-6 mb-6 shrink-0 hidden">
+                    <div class="relative p-4 rounded-xl border-l-4 overflow-hidden" style="background: linear-gradient(to right, color-mix(in srgb, var(--brand-primary) 5%, transparent), transparent); border-color: var(--brand-primary);">
+                        <div class="absolute right-0 top-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
+                            <i data-lucide="trending-up" class="w-24 h-24" style="color: var(--brand-primary);"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-1">
+                                <i data-lucide="target" class="w-3 h-3" style="color: var(--brand-primary);"></i>
+                                <h3 class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--brand-primary);">Current Mission</h3>
+                            </div>
+                            <p id="fv-mission" class="text-slate-700 text-sm font-medium italic leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tagline / Who We Serve (Founder+) -->
+                <div id="fv-tagline-wrap" class="px-8 mb-6 shrink-0 hidden">
+                    <h3 class="text-xs font-bold uppercase tracking-wider mb-2" style="color: var(--brand-accent);">What We Do</h3>
+                    <p id="fv-tagline" class="text-slate-600 text-sm leading-relaxed font-light"></p>
+                </div>
+
+                <!-- Bio -->
+                <div id="fv-bio-wrap" class="px-8 mb-6 shrink-0 hidden">
+                    <h3 class="text-xs font-bold uppercase tracking-wider mb-2" style="color: var(--brand-accent);">About</h3>
+                    <p id="fv-bio" class="text-slate-600 text-sm leading-relaxed font-light"></p>
+                </div>
+
+                <!-- Contact Details -->
+                <div id="fv-contact-details" class="px-6 mb-8 space-y-3 shrink-0">
+                </div>
+
+                <!-- Social Links -->
+                <div id="fv-social-wrap" class="hidden bg-slate-50 p-6 flex justify-center gap-6 border-t border-slate-100 mt-auto">
+                </div>
+
+                <!-- Payment / Commerce (Founder+) -->
+                <div id="fv-payment-wrap" class="hidden px-6 mb-6">
+                    <a id="fv-payment-link" href="#" target="_blank" class="block w-full py-3.5 rounded-xl text-center font-bold text-sm uppercase tracking-wider transition-all shadow-lg border" style="background-color: var(--brand-accent); color: var(--brand-primary); border-color: transparent;">
+                        <span class="flex items-center justify-center gap-2">
+                            <i data-lucide="credit-card" class="w-4 h-4"></i>
+                            <span>Make a Payment</span>
+                        </span>
+                    </a>
+                </div>
+
+                <!-- Powered By Footer (Ambassador only) -->
+                <div id="fv-powered-by" class="hidden">
+                    <a href="https://id.simpli-fi-os.com" target="_blank" onclick="logEvent('click_mothership')" class="block bg-slate-900 py-3 text-center relative group cursor-pointer overflow-hidden decoration-0">
+                        <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition"></div>
+                        <div class="inline-flex items-center text-[10px] font-bold tracking-[0.2em] text-white/40 uppercase">
+                            <span class="mr-2 opacity-60">Powered by</span>
+                            <span class="transition-all duration-300 group-hover:scale-110 flex items-center gap-1">
+                                Simpli-FI <span class="group-hover:text-white transition-colors duration-300" style="color: var(--brand-accent);">ID</span>
+                            </span>
+                        </div>
+                    </a>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- FAB Button -->
+    <button id="toggle-view-btn" onclick="toggleView()" aria-label="Toggle View" class="toggle-btn hidden">
+        <i data-lucide="plus" id="icon-plus" class="fab-icon w-8 h-8" style="color: var(--brand-primary);"></i>
+        <i data-lucide="minus" id="icon-minus" class="fab-icon w-8 h-8" style="color: var(--brand-primary);"></i>
+    </button>
+
+    <!-- QR Modal -->
+    <div id="qrModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300" style="background-color: color-mix(in srgb, var(--brand-primary) 90%, transparent);" onclick="toggleQR()">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center relative transform transition-transform duration-300 scale-95" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4">
+                <span id="qr-brand-name" class="font-serif font-bold italic" style="color: var(--brand-primary);">Simpli-FI ID</span>
+                <button onclick="toggleQR()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div class="p-4 rounded-xl border shadow-inner mb-4" style="background-color: #FBF9F7; border-color: #F0EFEB;">
+                <img id="qr-image" src="" alt="Scan QR Code" class="w-full h-auto rounded-lg mix-blend-multiply">
+            </div>
+            <p class="text-slate-500 text-xs uppercase tracking-widest font-medium mb-4">Scan to Connect</p>
+        </div>
+    </div>
+
+    <!-- Location Confirm Modal -->
+    <div id="confirmModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-xs w-full text-center scale-100 transition-transform">
+            <h3 class="text-lg font-bold mb-2" style="color: var(--brand-primary);">Add Location?</h3>
+            <p class="text-sm text-gray-500 mb-6">Would you like to include your current location in the contact card?</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="handleLocationChoice(false)" class="px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-gray-200 transition" style="background-color: #F0EFEB; color: var(--brand-primary);">No</button>
+                <button onclick="handleLocationChoice(true)" class="px-5 py-2.5 rounded-full text-white font-bold text-xs uppercase tracking-wider shadow-lg transition" style="background-color: var(--brand-primary);">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ad Banner (Ambassador tier only) -->
     <div id="ad-banner" class="hidden fixed bottom-4 left-4 right-4 z-40 max-w-md mx-auto">
         <div class="bg-slate-900/95 backdrop-blur text-white p-4 rounded-2xl shadow-2xl border border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4 transform translate-y-full transition-transform duration-500">
             <div class="flex items-center gap-3 w-full sm:w-auto">
                 <div class="w-10 h-10 bg-[#fbbf24] rounded-lg flex items-center justify-center text-slate-900 font-bold font-serif italic text-xl shrink-0">S</div>
                 <div class="flex flex-col">
-                    <a href="https://simpli-fi-os.com" target="_blank" onclick="trackMothershipClick()" class="text-[10px] text-slate-400 uppercase tracking-widest hover:text-white transition flex items-center gap-1">
+                    <span class="text-[10px] text-slate-400 uppercase tracking-widest flex items-center gap-1">
                         Powered by <strong>Simpli-FI OS</strong>
-                        <i data-lucide="external-link" class="w-3 h-3"></i>
-                    </a>
+                    </span>
                     <span class="text-xs font-medium text-white">The Digital Infrastructure for Pros.</span>
                 </div>
             </div>
-            <button onclick="handleAdClick()" class="w-full sm:w-auto px-5 py-2.5 bg-white text-slate-900 text-xs font-bold rounded-xl hover:bg-[#fbbf24] hover:text-slate-900 transition shadow-lg whitespace-nowrap flex items-center justify-center gap-2 group">
-                <span>Claim Free Gift</span>
-                <i data-lucide="gift" class="w-3 h-3 group-hover:scale-110 transition-transform"></i>
-            </button>
+            <a href="https://id.simpli-fi-os.com" target="_blank" onclick="logEvent('click_viral_offer')" class="w-full sm:w-auto px-5 py-2.5 bg-white text-slate-900 text-xs font-bold rounded-xl hover:bg-[#fbbf24] transition shadow-lg whitespace-nowrap flex items-center justify-center gap-2 group no-underline">
+                <span>Get Your Card</span>
+                <i data-lucide="arrow-right" class="w-3 h-3 group-hover:translate-x-0.5 transition-transform"></i>
+            </a>
         </div>
     </div>
 
     <script>
-        // --- FIREBASE CONFIGURATION ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyAnlmGZNwoPS-vBnK1AlHvNsB73q0UAkCU",
-            authDomain: "simpli-fi-id.firebaseapp.com",
-            projectId: "simpli-fi-id",
-            storageBucket: "simpli-fi-id.firebasestorage.app",
-            messagingSenderId: "97006103916",
-            appId: "1:97006103916:web:631c876a6eb263caf81749"
-        };
-
-        let db, auth;
+        // --- STATE ---
         let userData = null;
+        let slug = null;
+        let tierConfig = null;
+        let photoBase64 = '';
+
+        // --- SCALING ---
+        let baseScale = 1;
+        let userZoom = 1.0;
+        let fullViewZoom = 1.0;
+        const ZOOM_SENSITIVITY = 0.001;
+        const MIN_ZOOM = 0.5;
+        const MAX_ZOOM = 4.0;
 
         // --- INIT ---
         async function init() {
-            try {
-                firebase.initializeApp(firebaseConfig);
-                db = firebase.firestore();
-                auth = firebase.auth();
-            } catch(e) {
-                showError("Firebase Init Failed. Check Console.");
-                console.error(e);
+            // Parse slug from URL
+            const params = new URLSearchParams(window.location.search);
+            slug = params.get('u');
+
+            if (!slug) {
+                showError("No profile specified. Add ?u=your-slug to the URL.");
                 return;
             }
 
-            // 2. URL Parse
-            const urlParams = new URLSearchParams(window.location.search);
-            const userId = urlParams.get('u') || 'hunter_lott'; 
-
             try {
-                // 3. Auth
-                await auth.signInAnonymously();
+                // Wait for auth to be ready
+                await new Promise((resolve, reject) => {
+                    const unsub = auth.onAuthStateChanged(user => {
+                        unsub();
+                        if (user) resolve(user);
+                        else reject(new Error('Auth failed'));
+                    });
+                    setTimeout(() => reject(new Error('Auth timeout')), 5000);
+                });
 
-                // 4. Data Fetch
-                const userDoc = await db.collection('users').doc(userId).get();
-                
+                // Fetch user data
+                const userDoc = await db.collection('users').doc(slug).get();
+
                 if (!userDoc.exists) {
-                    console.warn("User not found, using demo data");
-                    userData = {
-                        full_name: "Future User",
-                        title: "Business Owner",
-                        tier: "free",
-                        avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Future",
-                        bio: "This is a placeholder for a mass-generated card.",
-                        org_id: "simpli_fi_public"
-                    };
-                } else {
-                    userData = userDoc.data();
+                    showError(`Profile "${slug}" not found.`);
+                    return;
                 }
 
-                // 5. Org Data
-                let brand = { primary_color: '#1e293b', accent_color: '#fbbf24' };
-                if (userData.org_id) {
-                    try {
-                        const orgDoc = await db.collection('organizations').doc(userData.org_id).get();
-                        if (orgDoc.exists) {
-                            brand = orgDoc.data().branding || brand;
-                        }
-                    } catch(e) { console.warn("Org fetch failed", e); }
-                }
+                userData = userDoc.data();
+                const normalizedTier = normalizeTier(userData.tier);
+                tierConfig = getTierConfig(normalizedTier);
 
-                // 6. Render
-                renderCard(brand);
-                
-                // 7. Icons (Try/Catch in case CDN fails)
-                try {
-                    if (typeof lucide !== 'undefined') {
-                        lucide.createIcons();
-                    } else {
-                        console.warn("Lucide library not loaded.");
-                    }
-                } catch(e) { console.warn("Icon render error", e); }
+                // Set brand colors
+                const primaryColor = userData.custom_color || '#1e293b';
+                const accentColor = userData.custom_accent || '#fbbf24';
+                document.documentElement.style.setProperty('--brand-primary', primaryColor);
+                document.documentElement.style.setProperty('--brand-accent', accentColor);
 
-                // 8. Physics
-                initPhysics(userData.gamification?.physics_type || 'default');
+                // Render both views
+                renderSimpleView();
+                renderFullView();
+
+                // Show the card
+                hideLoader();
+
+                // Initialize icons
+                try { lucide.createIcons(); } catch(e) { console.warn('Icon render error', e); }
+
+                // Setup interactions
+                setupZoom();
+                setupPhysics();
+                setupResize();
+
+                // Log scan event (fire-and-forget)
+                logScanEvent();
+
+                // Preload photo for vCard
+                preloadPhoto();
 
             } catch (error) {
                 console.error("Critical Load Error:", error);
-                showError("Connection Failed. Please check your internet.");
+                showError("Connection failed. Please check your internet.");
             }
         }
 
@@ -245,157 +444,476 @@
             document.getElementById('error-screen').style.display = 'flex';
             document.getElementById('error-screen').classList.remove('hidden');
             document.getElementById('error-message').innerText = msg;
-            
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+            try { lucide.createIcons(); } catch(e) {}
         }
 
-        // --- RENDER ENGINE ---
-        function renderCard(brand) {
-            document.documentElement.style.setProperty('--brand-primary', brand.primary_color);
-            document.documentElement.style.setProperty('--brand-accent', userData.custom_accent || brand.accent_color);
+        function hideLoader() {
+            const loader = document.getElementById('loader');
+            loader.classList.add('opacity-0');
+            setTimeout(() => {
+                loader.style.display = 'none';
+                document.getElementById('simple-view-container').classList.remove('hidden');
+                document.getElementById('full-view').classList.remove('hidden');
+                document.getElementById('toggle-view-btn').classList.remove('hidden');
+            }, 400);
+        }
 
-            document.title = `${userData.full_name} | Simpli-FI`;
-            document.getElementById('user-name').innerText = userData.full_name;
-            document.getElementById('user-title').innerText = userData.title;
-            document.getElementById('bio-text').innerText = userData.bio || "Building my digital legacy.";
-            document.getElementById('mission-text').innerText = userData.mission || "Building connections.";
-            document.getElementById('avatar').src = userData.avatar_url;
+        // --- RENDER: SIMPLE VIEW (Business Card) ---
+        function renderSimpleView() {
+            const d = userData;
+            const avatarUrl = d.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(d.full_name)}`;
 
-            // Tier Logic
-            if (userData.tier !== 'free') {
-                document.getElementById('badge').classList.remove('hidden');
-            } else {
+            document.getElementById('sv-name').textContent = d.full_name || 'User';
+            document.getElementById('sv-title').textContent = d.title || '';
+            document.getElementById('sv-avatar').src = avatarUrl;
+            document.getElementById('sv-avatar').alt = d.full_name;
+
+            // Company name
+            document.getElementById('sv-company').textContent = d.company || 'Simpli-FI ID';
+            document.getElementById('sv-tagline').textContent = d.tagline || d.title || '';
+
+            // Logo
+            if (d.logo_url) {
+                document.getElementById('sv-logo').innerHTML = `<img src="${sanitizeUrl(d.logo_url)}" alt="Logo" class="w-10 h-10 object-contain drop-shadow-sm opacity-90">`;
+            }
+
+            // Badge (paid tiers)
+            if (tierConfig.adFree) {
+                document.getElementById('sv-badge').classList.remove('hidden');
+            }
+
+            // Contact buttons
+            const contacts = document.getElementById('sv-contacts');
+            contacts.innerHTML = '';
+            if (d.phone) {
+                contacts.innerHTML += `<a href="tel:${sanitizePhone(d.phone)}" onclick="logEvent('click_phone')" class="px-2 py-3.5 rounded-xl shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent transition-colors cursor-pointer group" style="background-color: #F0EFEB;"><i data-lucide="phone" class="w-3.5 h-3.5 shrink-0" style="color: var(--brand-primary);"></i><span class="text-[11px] font-bold whitespace-nowrap" style="color: var(--brand-primary);">${escapeHtml(d.phone)}</span></a>`;
+            }
+            if (d.social_links?.website) {
+                const displayUrl = d.social_links.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+                contacts.innerHTML += `<a href="${sanitizeUrl(d.social_links.website)}" target="_blank" onclick="logEvent('click_website')" class="px-2 py-3.5 rounded-xl shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent transition-colors cursor-pointer group" style="background-color: #F0EFEB;"><i data-lucide="globe" class="w-3.5 h-3.5 shrink-0" style="color: var(--brand-primary);"></i><span class="text-[11px] font-bold whitespace-nowrap" style="color: var(--brand-primary);">${escapeHtml(displayUrl)}</span></a>`;
+            }
+
+            // Update page title and OG
+            document.title = `${d.full_name} | ${d.company || 'Simpli-FI ID'}`;
+            document.getElementById('og-title').content = `${d.full_name} | ${d.company || 'Simpli-FI ID'}`;
+            document.getElementById('og-desc').content = d.mission || d.bio || `Connect with ${d.full_name}`;
+            if (d.avatar_url) document.getElementById('og-image').content = d.avatar_url;
+        }
+
+        // --- RENDER: FULL VIEW (Scrollable Card) ---
+        function renderFullView() {
+            const d = userData;
+            const avatarUrl = d.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(d.full_name)}`;
+
+            // Header
+            document.getElementById('fv-name').textContent = d.full_name || 'User';
+            document.getElementById('fv-title').textContent = d.title || '';
+            document.getElementById('fv-company-sub').textContent = d.company || '';
+            document.getElementById('fv-avatar').src = avatarUrl;
+            document.getElementById('fv-avatar').alt = d.full_name;
+
+            // Company in header
+            document.getElementById('fv-company').textContent = d.company || 'Simpli-FI ID';
+
+            // Logo
+            if (d.logo_url) {
+                document.getElementById('fv-logo').innerHTML = `<img src="${sanitizeUrl(d.logo_url)}" alt="Logo" class="w-full h-full object-contain drop-shadow-md">`;
+            }
+
+            // Badge
+            if (tierConfig.adFree) {
+                document.getElementById('fv-badge').classList.remove('hidden');
+            }
+
+            // Action buttons
+            const actions = [];
+            if (d.phone) actions.push({ icon: 'phone', label: 'Call', href: `tel:${sanitizePhone(d.phone)}`, event: 'click_phone' });
+            if (d.email) actions.push({ icon: 'mail', label: 'Email', href: `mailto:${encodeURIComponent(d.email)}`, event: 'click_email' });
+            if (d.social_links?.website) actions.push({ icon: 'globe', label: 'Site', href: sanitizeUrl(d.social_links.website), event: 'click_website', target: '_blank' });
+            if (d.social_links?.primary?.url) {
+                const platform = d.social_links.primary.platform || 'link';
+                const iconMap = { linkedin: 'linkedin', twitter: 'twitter', instagram: 'instagram', github: 'github', youtube: 'youtube', tiktok: 'music' };
+                actions.push({ icon: iconMap[platform] || 'link', label: platform.charAt(0).toUpperCase() + platform.slice(1), href: sanitizeUrl(d.social_links.primary.url), event: 'click_social', target: '_blank' });
+            }
+
+            // Save contact button (always shown, but gated by tier for actual download)
+            actions.push({ icon: 'contact', label: 'Save', onclick: 'downloadVCard()', event: null });
+
+            const actionsGrid = document.getElementById('fv-actions');
+            actionsGrid.style.gridTemplateColumns = `repeat(${Math.min(actions.length, 5)}, 1fr)`;
+            actionsGrid.innerHTML = actions.map(a => {
+                if (a.onclick) {
+                    return `<button onclick="${a.onclick}" class="flex flex-col items-center gap-1 group">
+                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center transition shadow-sm border" style="background-color: #FBF9F7; border-color: #F0EFEB; color: var(--brand-primary);">
+                            <i data-lucide="${a.icon}" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[10px] text-slate-500 font-medium">${a.label}</span>
+                    </button>`;
+                }
+                return `<a href="${a.href}" ${a.target ? `target="${a.target}"` : ''} onclick="logEvent('${a.event}')" class="flex flex-col items-center gap-1 group">
+                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center transition shadow-sm border" style="background-color: #FBF9F7; border-color: #F0EFEB; color: var(--brand-primary);">
+                        <i data-lucide="${a.icon}" class="w-5 h-5"></i>
+                    </div>
+                    <span class="text-[10px] text-slate-500 font-medium">${a.label}</span>
+                </a>`;
+            }).join('');
+
+            // Mission
+            if (d.mission) {
+                document.getElementById('fv-mission-wrap').classList.remove('hidden');
+                document.getElementById('fv-mission').textContent = `"${d.mission}"`;
+            }
+
+            // Tagline (Founder+)
+            if (d.tagline && tierConfig.tagline) {
+                document.getElementById('fv-tagline-wrap').classList.remove('hidden');
+                document.getElementById('fv-tagline').textContent = d.tagline;
+            }
+
+            // Bio
+            if (d.bio) {
+                document.getElementById('fv-bio-wrap').classList.remove('hidden');
+                document.getElementById('fv-bio').textContent = d.bio;
+            }
+
+            // Contact details list
+            const contactList = document.getElementById('fv-contact-details');
+            contactList.innerHTML = '';
+            if (d.phone) {
+                contactList.innerHTML += `<a href="tel:${sanitizePhone(d.phone)}" onclick="logEvent('click_phone')" class="flex items-center p-3 rounded-xl hover:bg-slate-50 transition group" style="background-color: #FBF9F7;">
+                    <i data-lucide="smartphone" class="w-5 h-5" style="color: var(--brand-primary);"></i>
+                    <div class="ml-4"><p class="text-[10px] text-slate-400 uppercase tracking-wide">Phone</p><p class="text-sm font-medium text-slate-900">${escapeHtml(d.phone)}</p></div>
+                </a>`;
+            }
+            if (d.email) {
+                contactList.innerHTML += `<a href="mailto:${encodeURIComponent(d.email)}" onclick="logEvent('click_email')" class="flex items-center p-3 rounded-xl hover:bg-slate-50 transition group" style="background-color: #FBF9F7;">
+                    <i data-lucide="at-sign" class="w-5 h-5" style="color: var(--brand-primary);"></i>
+                    <div class="ml-4"><p class="text-[10px] text-slate-400 uppercase tracking-wide">Email</p><p class="text-sm font-medium text-slate-900">${escapeHtml(d.email)}</p></div>
+                </a>`;
+            }
+            if (d.social_links?.website) {
+                const displayUrl = d.social_links.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+                contactList.innerHTML += `<a href="${sanitizeUrl(d.social_links.website)}" target="_blank" onclick="logEvent('click_website')" class="flex items-center p-3 rounded-xl hover:bg-slate-50 transition group" style="background-color: #FBF9F7;">
+                    <i data-lucide="globe" class="w-5 h-5" style="color: var(--brand-primary);"></i>
+                    <div class="ml-4"><p class="text-[10px] text-slate-400 uppercase tracking-wide">Website</p><p class="text-sm font-medium text-slate-900">${escapeHtml(displayUrl)}</p></div>
+                </a>`;
+            }
+            if (d.location) {
+                contactList.innerHTML += `<div class="flex items-center p-3 rounded-xl" style="background-color: #FBF9F7;">
+                    <i data-lucide="map-pin" class="w-5 h-5" style="color: var(--brand-primary);"></i>
+                    <div class="ml-4"><p class="text-[10px] text-slate-400 uppercase tracking-wide">Location</p><p class="text-sm font-medium text-slate-900">${escapeHtml(d.location)}</p></div>
+                </div>`;
+            }
+
+            // Social links footer
+            const socialPlatforms = [];
+            if (d.social_links?.primary?.url) {
+                socialPlatforms.push({ platform: d.social_links.primary.platform, url: d.social_links.primary.url });
+            }
+            if (d.social_links?.website) {
+                socialPlatforms.push({ platform: 'globe', url: d.social_links.website });
+            }
+            if (d.email) {
+                socialPlatforms.push({ platform: 'mail', url: `mailto:${d.email}` });
+            }
+            if (socialPlatforms.length > 0) {
+                const socialWrap = document.getElementById('fv-social-wrap');
+                socialWrap.classList.remove('hidden');
+                const iconMap = { linkedin: 'linkedin', twitter: 'twitter', instagram: 'instagram', github: 'github', youtube: 'youtube', tiktok: 'music', globe: 'globe', mail: 'mail' };
+                socialWrap.innerHTML = socialPlatforms.map(s => {
+                    const icon = iconMap[s.platform] || 'link';
+                    return `<a href="${sanitizeUrl(s.url)}" target="_blank" onclick="logEvent('click_social')" aria-label="${s.platform}" class="transition transform hover:scale-110" style="color: var(--brand-accent);"><i data-lucide="${icon}" class="w-5 h-5"></i></a>`;
+                }).join('');
+            }
+
+            // Payment link (Founder+)
+            if (d.payment_link && tierConfig.commerce) {
+                document.getElementById('fv-payment-wrap').classList.remove('hidden');
+                document.getElementById('fv-payment-link').href = sanitizeUrl(d.payment_link);
+                document.getElementById('fv-payment-link').onclick = function() { logEvent('click_payment'); };
+            }
+
+            // Powered by footer (Ambassador only)
+            if (!tierConfig.adFree) {
+                document.getElementById('fv-powered-by').classList.remove('hidden');
+                // Ad banner after delay
                 setTimeout(() => {
                     const adBanner = document.getElementById('ad-banner');
                     adBanner.classList.remove('hidden');
-                    void adBanner.offsetWidth; 
+                    void adBanner.offsetWidth;
                     adBanner.firstElementChild.classList.remove('translate-y-full');
-                }, 1500);
+                }, 2000);
             }
 
-            // Actions Grid (Quick Actions)
-            const grid = document.getElementById('actions-grid');
-            grid.innerHTML = '';
-            
-            // Note: We use the same Quick Action logic as the Intake Preview
-            const actions = [
-                { icon: 'phone', label: 'Call', action: `tel:${userData.phone || ''}`, isLink: true, visible: !!userData.phone },
-                { icon: 'mail', label: 'Email', action: `mailto:${userData.email || ''}`, isLink: true, visible: !!userData.email },
-                { icon: 'globe', label: 'Site', action: userData.social_links?.website || '#', isLink: true, visible: !!userData.social_links?.website },
-                { icon: 'contact', label: 'Save', action: 'saveContact', isLink: false, visible: true }
-            ];
-
-            actions.forEach(act => {
-                if (!act.visible) return;
-                
-                let html = '';
-                if (act.isLink) {
-                    html = `<a href="${act.action}" class="flex flex-col items-center gap-1 group"><div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-sm border border-slate-200 group-hover:bg-[${brand.primary_color}] group-hover:text-white transition"><i data-lucide="${act.icon}" class="w-5 h-5"></i></div><span class="text-[10px] text-slate-500 font-medium">${act.label}</span></a>`;
-                } else {
-                    html = `<button onclick="${act.action}()" class="flex flex-col items-center gap-1 group w-full"><div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-sm border border-slate-200 group-hover:bg-[${brand.primary_color}] group-hover:text-white transition"><i data-lucide="${act.icon}" class="w-5 h-5"></i></div><span class="text-[10px] text-slate-500 font-medium">${act.label}</span></button>`;
-                }
-                grid.innerHTML += html;
-            });
-
-            // Contact Details List (Below Bio)
-            const contactList = document.getElementById('contact-details');
-            if (userData.email) {
-                contactList.innerHTML += `<div class="flex items-center p-3 rounded-xl bg-white shadow-sm border border-slate-100"><i data-lucide="mail" class="w-4 h-4 text-[${brand.primary_color}]"></i><a href="mailto:${userData.email}" class="ml-3 text-xs text-slate-600 truncate flex-1">${userData.email}</a></div>`;
-            }
-            if (userData.phone) {
-                contactList.innerHTML += `<div class="flex items-center p-3 rounded-xl bg-white shadow-sm border border-slate-100"><i data-lucide="phone" class="w-4 h-4 text-[${brand.primary_color}]"></i><a href="tel:${userData.phone}" class="ml-3 text-xs text-slate-600 truncate flex-1">${userData.phone}</a></div>`;
-            }
-            if (userData.social_links?.website) {
-                contactList.innerHTML += `<div class="flex items-center p-3 rounded-xl bg-white shadow-sm border border-slate-100"><i data-lucide="globe" class="w-4 h-4 text-[${brand.primary_color}]"></i><a href="${userData.social_links.website}" target="_blank" class="ml-3 text-xs text-slate-600 truncate flex-1">${userData.social_links.website.replace('https://','')}</a></div>`;
-            }
-
-            document.getElementById('loader').classList.add('opacity-0');
-            setTimeout(() => {
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('card-body').classList.remove('opacity-0', 'translate-y-4');
-            }, 500);
+            // QR code
+            const cardUrl = `https://id.simpli-fi-os.com/card.html?u=${encodeURIComponent(slug)}`;
+            const qrColor = (userData.custom_color || '#1e293b').replace('#', '');
+            document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(cardUrl)}&color=${qrColor}`;
+            document.getElementById('qr-brand-name').textContent = d.company || 'Simpli-FI ID';
         }
 
-        // --- TRACKING ---
-        function saveContact() {
-            logEvent('save_contact');
-            const vCardData = `BEGIN:VCARD\nVERSION:3.0\nFN:${userData.full_name}\nTEL:${userData.phone}\nEMAIL:${userData.email}\nEND:VCARD`;
-            const blob = new Blob([vCardData], { type: 'text/vcard' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${userData.full_name.replace(' ', '_')}.vcf`;
-            a.click();
-        }
+        // --- EVENT LOGGING ---
+        function logScanEvent() {
+            // Log scan event
+            db.collection('events').add({
+                type: 'scan',
+                card_id: slug,
+                card_owner: userData.full_name || '',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                visitor_data: { user_agent: navigator.userAgent, referrer: document.referrer || 'direct' }
+            }).catch(e => console.warn('Event log failed:', e));
 
-        function handleAdClick() {
-            logEvent('click_viral_offer');
-            window.open("https://id.simpli-fi-os.com", "_blank"); 
-        }
-
-        function trackMothershipClick() {
-            logEvent('click_mothership');
+            // Increment scan_count
+            db.collection('users').doc(slug).update({
+                scan_count: firebase.firestore.FieldValue.increment(1),
+                last_active: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(e => console.warn('Scan count update failed:', e));
         }
 
         function logEvent(type) {
-            if (db && userData) {
-                db.collection('events').add({
-                    type: type,
-                    referrer_user_id: userData.doc_id || 'unknown',
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    visitor_data: { user_agent: navigator.userAgent }
-                }).catch(e => console.warn("Analytics error", e));
+            if (!db || !slug) return;
+            db.collection('events').add({
+                type: type,
+                card_id: slug,
+                card_owner: userData?.full_name || '',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                visitor_data: { user_agent: navigator.userAgent, referrer: document.referrer || 'direct' }
+            }).catch(e => console.warn('Event log failed:', e));
+        }
+
+        // --- VCARD ---
+        function downloadVCard() {
+            // Tier gate: Ambassador can't save contact
+            if (!tierConfig.saveContact) {
+                logEvent('save_contact_blocked');
+                alert('Save Contact is available on Professional and above tiers. Visit id.simpli-fi-os.com to upgrade!');
+                return;
+            }
+            logEvent('save_contact');
+            document.getElementById('confirmModal').classList.remove('hidden');
+        }
+
+        function handleLocationChoice(includeLocation) {
+            document.getElementById('confirmModal').classList.add('hidden');
+
+            const generate = (locationNote = "") => {
+                const d = userData;
+                const today = new Date().toISOString().replace(/[-:.]/g, '').split('T')[0];
+                const nameParts = (d.full_name || 'User').split(' ');
+                const firstName = nameParts[0] || '';
+                const lastName = nameParts.slice(1).join(' ') || '';
+
+                let vcard = `BEGIN:VCARD\nVERSION:3.0\n`;
+                vcard += `N:${lastName};${firstName};;;\n`;
+                vcard += `FN:${d.full_name}\n`;
+                if (d.company) vcard += `ORG:${d.company}\n`;
+                if (d.title) vcard += `TITLE:${d.title}\n`;
+                if (d.phone) vcard += `TEL;TYPE=WORK,VOICE:${d.phone}\n`;
+                if (d.email) vcard += `EMAIL:${d.email}\n`;
+                if (d.social_links?.website) vcard += `URL:${d.social_links.website}\n`;
+                if (d.location) vcard += `ADR;TYPE=WORK:;;${d.location};;;;\n`;
+
+                let note = '';
+                if (d.mission) note += `Mission: ${d.mission}`;
+                if (locationNote) note += ` ${locationNote}`;
+                if (note) vcard += `NOTE:${note}\n`;
+
+                vcard += `REV:${today}\n`;
+                if (photoBase64) vcard += `PHOTO;ENCODING=b;TYPE=PNG:${photoBase64}\n`;
+                vcard += `END:VCARD`;
+
+                const blob = new Blob([vcard], { type: 'text/vcard' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${(d.full_name || 'contact').replace(/\s+/g, '_')}.vcf`;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+            };
+
+            if (includeLocation) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => generate(`| Met at: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`),
+                    () => generate("")
+                );
+            } else {
+                generate("");
             }
         }
 
-        function initPhysics(type) {
+        async function preloadPhoto() {
+            const avatarUrl = userData?.avatar_url;
+            if (!avatarUrl) return;
+            try {
+                const res = await fetch(avatarUrl);
+                if (res.ok) {
+                    const blob = await res.blob();
+                    const reader = new FileReader();
+                    reader.onloadend = () => { photoBase64 = reader.result.split(',')[1]; };
+                    reader.readAsDataURL(blob);
+                }
+            } catch(e) { console.log('Photo preload error:', e); }
+        }
+
+        // --- VIEW TOGGLE ---
+        function toggleView() { document.body.classList.toggle('show-full'); }
+        function toggleQR() { document.getElementById('qrModal').classList.toggle('hidden'); }
+
+        // --- RESIZE ---
+        function setupResize() {
+            function resizeCard() {
+                const w = window.innerWidth - 40;
+                const h = window.innerHeight - 40;
+                const scaleX = w / 650;
+                const scaleY = h / 370;
+                baseScale = Math.min(scaleX, scaleY, 1);
+                updateTransform();
+            }
+            window.addEventListener('resize', resizeCard);
+            resizeCard();
+        }
+
+        function updateTransform() {
+            const wrapper = document.getElementById('card-wrapper');
+            if (wrapper) wrapper.style.transform = `scale(${baseScale * userZoom})`;
+            const mainCard = document.getElementById('main-card');
+            if (mainCard) mainCard.style.transform = `scale(${fullViewZoom})`;
+        }
+
+        // --- ZOOM ---
+        function setupZoom() {
+            const svc = document.getElementById('simple-view-container');
+            const fvc = document.getElementById('scroll-container');
+
+            // Simple view: scroll to zoom
+            svc.addEventListener('wheel', e => {
+                e.preventDefault();
+                userZoom = Math.min(Math.max(userZoom - e.deltaY * ZOOM_SENSITIVITY, MIN_ZOOM), MAX_ZOOM);
+                updateTransform();
+            }, { passive: false });
+
+            // Simple view: pinch
+            let pinchDistS = 0, startZoomS = 1;
+            svc.addEventListener('touchstart', e => {
+                if (e.touches.length === 2) {
+                    e.preventDefault();
+                    pinchDistS = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                    startZoomS = userZoom;
+                }
+            }, { passive: false });
+            svc.addEventListener('touchmove', e => {
+                if (e.touches.length === 2 && pinchDistS > 0) {
+                    e.preventDefault();
+                    const d = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                    userZoom = Math.min(Math.max(startZoomS * (d / pinchDistS), MIN_ZOOM), MAX_ZOOM);
+                    updateTransform();
+                }
+            }, { passive: false });
+            svc.addEventListener('touchend', () => { pinchDistS = 0; });
+
+            // Full view: ctrl+scroll to zoom
+            fvc.addEventListener('wheel', e => {
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                    fullViewZoom = Math.min(Math.max(fullViewZoom - e.deltaY * ZOOM_SENSITIVITY, MIN_ZOOM), MAX_ZOOM);
+                    updateTransform();
+                }
+            }, { passive: false });
+
+            // Full view: pinch
+            let pinchDistF = 0, startZoomF = 1;
+            fvc.addEventListener('touchstart', e => {
+                if (e.touches.length === 2) {
+                    e.preventDefault();
+                    pinchDistF = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                    startZoomF = fullViewZoom;
+                }
+            }, { passive: false });
+            fvc.addEventListener('touchmove', e => {
+                if (e.touches.length === 2 && pinchDistF > 0) {
+                    e.preventDefault();
+                    const d = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                    fullViewZoom = Math.min(Math.max(startZoomF * (d / pinchDistF), MIN_ZOOM), MAX_ZOOM);
+                    updateTransform();
+                }
+            }, { passive: false });
+            fvc.addEventListener('touchend', () => { pinchDistF = 0; });
+        }
+
+        // --- PHYSICS ---
+        function setupPhysics() {
             const container = document.getElementById('scroll-container');
             const physicsLayer = document.getElementById('physics-layer');
-            let startY = 0;
+            const card = document.getElementById('main-card');
+            let startY = 0, pulling = false;
 
             container.addEventListener('touchstart', e => {
-                if (container.scrollTop === 0) startY = e.touches[0].pageY;
+                if (e.touches.length === 1 && container.scrollTop === 0) {
+                    startY = e.touches[0].pageY;
+                    pulling = true;
+                }
             }, { passive: true });
 
             container.addEventListener('touchmove', e => {
+                if (!pulling || e.touches.length !== 1) return;
                 const delta = e.touches[0].pageY - startY;
                 if (delta > 0 && container.scrollTop <= 0) {
-                    document.getElementById('card-body').style.transform = `translateY(${delta * 0.4}px)`;
-                    if (Math.random() < 0.2) spawnItem(type);
+                    e.preventDefault();
+                    card.style.transform = `translateY(${delta * 0.4}px) scale(${fullViewZoom})`;
+                    if (Math.random() < 0.2) spawnPhysicsItem(delta);
                 }
             }, { passive: false });
 
             container.addEventListener('touchend', () => {
-                document.getElementById('card-body').style.transform = '';
+                if (pulling) {
+                    pulling = false;
+                    card.style.transform = `scale(${fullViewZoom})`;
+                    setTimeout(() => { physicsLayer.innerHTML = ''; }, 800);
+                }
             });
 
-            function spawnItem(type) {
+            function spawnPhysicsItem(offset) {
                 const el = document.createElement('div');
                 el.className = 'physics-element';
                 el.style.left = Math.random() * window.innerWidth + 'px';
                 el.style.top = '-50px';
-                if (type === 'finance') {
-                    el.innerText = '💵';
-                    el.style.fontSize = '24px';
-                } else if (type === 'organizer') {
-                    el.innerText = '✅';
-                    el.style.fontSize = '20px';
-                } else {
-                    el.style.width = '10px';
-                    el.style.height = '10px';
-                    el.style.background = getComputedStyle(document.documentElement).getPropertyValue('--brand-accent');
-                    el.style.borderRadius = '50%';
-                }
+                el.style.width = '10px';
+                el.style.height = '10px';
+                el.style.background = getComputedStyle(document.documentElement).getPropertyValue('--brand-accent');
+                el.style.borderRadius = '50%';
                 physicsLayer.appendChild(el);
                 const duration = 1000 + Math.random() * 1000;
                 el.animate([
-                    { transform: `translateY(0) rotate(0deg)`, opacity: 1 },
+                    { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
                     { transform: `translateY(${window.innerHeight}px) rotate(${Math.random() * 360}deg)`, opacity: 0 }
-                ], { duration: duration, fill: 'forwards' });
+                ], { duration, fill: 'forwards' });
                 setTimeout(() => el.remove(), duration);
             }
         }
 
+        // --- SECURITY HELPERS ---
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str || '';
+            return div.innerHTML;
+        }
+
+        function sanitizeUrl(url) {
+            if (!url) return '#';
+            try {
+                const parsed = new URL(url);
+                if (['http:', 'https:', 'mailto:', 'tel:'].includes(parsed.protocol)) return url;
+            } catch(e) {}
+            if (url.startsWith('mailto:') || url.startsWith('tel:')) return url;
+            return '#';
+        }
+
+        function sanitizePhone(phone) {
+            return (phone || '').replace(/[^\d+()-\s]/g, '');
+        }
+
+        // --- GO ---
         window.onload = init;
     </script>
 </body>
