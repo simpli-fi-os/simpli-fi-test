@@ -1,0 +1,14 @@
+# AIRLOCK DOCKER IGNORE
+# Critical for security and build speed
+
+# 1. Dependency Junk
+node_modules
+npm-debug.log
+
+# 2. Local Configs
+.env
+.DS_Store
+
+# 3. Docker itself (Don't copy the recipe into the cake)
+Dockerfile
+.dockerignore

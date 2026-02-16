@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI | COMMAND_V1</title>
+    
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <!-- Fonts: The Voice of the Machine -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs (Compat 11.6.1) -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/tiers.js"></script>
+
+    <style>
+        :root {
+            --crt-amber: #ffb000;
+            --crt-green: #33ff00;
+            --crt-red: #ff3300;
+            --panel-bg: #1a1a1a;
+            --panel-border: #444;
+            --screen-bg: #0a0a0a;
+        }
+
+        body {
+            background-color: #050505;
+            color: var(--crt-amber);
+            font-family: 'Share Tech Mono', monospace;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- CRT EFFECTS --- */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.2) 50%,
+                rgba(0,0,0,0.2)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 50;
+            animation: scanline 0.2s linear infinite;
+            opacity: 0.6;
+        }
+        
+        .screen-glow {
+            position: fixed;
+            inset: 0;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+            pointer-events: none;
+            z-index: 51;
+        }
+
+        /* --- UI COMPONENTS --- */
+        .retro-panel {
+            background: var(--panel-bg);
+            border: 2px solid var(--panel-border);
+            box-shadow: 
+                inset 1px 1px 0px rgba(255,255,255,0.1),
+                inset -1px -1px 0px rgba(0,0,0,0.5),
+                4px 4px 0px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .retro-panel::after {
+            /* Screw head effect */
+            content: '+';
+            position: absolute;
+            top: 4px; right: 4px;
+            color: #555;
+            font-size: 12px;
+        }
+        .retro-panel::before {
+            /* Screw head effect */
+            content: '+';
+            position: absolute;
+            top: 4px; left: 4px;
+            color: #555;
+            font-size: 12px;
+        }
+
+        .retro-screen {
+            background: var(--screen-bg);
+            border: 2px solid #333;
+            border-radius: 4px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blink { animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* --- BUTTONS --- */
+        .retro-btn {
+            background: #333;
+            border: 2px solid #555;
+            border-bottom: 4px solid #555;
+            border-right: 4px solid #555;
+            color: #ccc;
+            text-transform: uppercase;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .retro-btn:active {
+            border-width: 2px;
+            transform: translate(2px, 2px);
+        }
+        .retro-btn.active {
+            background: var(--crt-amber);
+            color: #000;
+            border-color: #cc8c00;
+            box-shadow: 0 0 10px var(--crt-amber);
+        }
+        .retro-btn.emergency {
+            background: #500;
+            color: var(--crt-red);
+            border-color: #800;
+        }
+        .retro-btn.emergency:hover {
+            background: var(--crt-red);
+            color: #000;
+            box-shadow: 0 0 15px var(--crt-red);
+        }
+
+        /* --- STATUS LIGHTS --- */
+        .led {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: #222;
+            border: 1px solid #000;
+            box-shadow: inset 2px 2px 2px rgba(0,0,0,0.5);
+        }
+        .led.on-green {
+            background: #0f0;
+            box-shadow: 0 0 5px #0f0, inset -2px -2px 5px rgba(255,255,255,0.5);
+        }
+        .led.on-red {
+            background: #f00;
+            box-shadow: 0 0 5px #f00, inset -2px -2px 5px rgba(255,255,255,0.5);
+        }
+
+        /* --- DATA TABLES --- */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        th { 
+            background: #222; 
+            color: #888; 
+            padding: 8px; 
+            border-bottom: 1px solid var(--crt-amber); 
+            text-align: left;
+        }
+        td { 
+            border-bottom: 1px solid #222; 
+            padding: 8px; 
+            color: var(--crt-amber); 
+        }
+        tr:hover td { background: rgba(255, 176, 0, 0.1); }
+
+        /* --- SCROLLBAR --- */
+        ::-webkit-scrollbar { width: 12px; background: #111; }
+        ::-webkit-scrollbar-thumb { background: #444; border: 2px solid #111; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--crt-amber); }
+
+        /* --- MAP FIX --- */
+        .leaflet-container { background: #050505 !important; }
+        .leaflet-control-attribution { display: none; }
+    </style>
+</head>
+<body class="h-screen flex flex-col p-4">
+
+    <!-- CRT OVERLAYS -->
+    <div class="scanlines"></div>
+    <div class="screen-glow"></div>
+
+    <!-- TOP PANEL: HEADER & NAV -->
+    <header class="retro-panel p-4 mb-4 flex justify-between items-end shrink-0 z-40">
+        <div class="flex items-center gap-6">
+            <div class="border-2 border-amber-500/50 p-2 relative">
+                <div class="w-12 h-12 bg-black flex items-center justify-center border border-amber-500/30">
+                    <i data-lucide="aperture" class="w-8 h-8 text-amber-500 animate-spin-slow" style="animation-duration: 10s;"></i>
+                </div>
+                <div class="absolute -top-1 -left-1 w-2 h-2 bg-amber-500"></div>
+                <div class="absolute -bottom-1 -right-1 w-2 h-2 bg-amber-500"></div>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold tracking-widest leading-none text-white">SIMPLI-FI <span style="color: var(--crt-amber)">COMMAND</span></h1>
+                <p class="text-xs text-gray-500 mt-1">SYS.OP.MODE: <span class="blink text-green-500">NOMINAL</span> // V.4.0</p>
+            </div>
+        </div>
+
+        <!-- PHYSICAL TABS -->
+        <div class="flex items-end gap-2">
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="retro-btn active px-6 py-2 text-sm font-bold">1_DASHBOARD</button>
+            <button onclick="switchTab('infra')" id="tab-infra" class="retro-btn px-6 py-2 text-sm font-bold">2_INFRA</button>
+            <button onclick="switchTab('ecosystem')" id="tab-ecosystem" class="retro-btn px-6 py-2 text-sm font-bold">3_MAP</button>
+            <button onclick="switchTab('crm')" id="tab-crm" class="retro-btn px-6 py-2 text-sm font-bold">4_CRM</button>
+            <button onclick="switchTab('alerts')" id="tab-alerts" class="retro-btn px-6 py-2 text-sm font-bold text-red-500">5_ALERTS</button>
+        </div>
+
+        <div class="flex flex-col items-end gap-2">
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500">AIRLOCK</span>
+                <div class="led on-green"></div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500">DB LINK</span>
+                <div class="led on-green"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN VIEWPORT -->
+    <div class="retro-screen flex-1 relative z-30 p-1">
+        <!-- GRID OVERLAY -->
+        <div class="absolute inset-0 pointer-events-none" style="background-image: linear-gradient(rgba(50,50,50,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(50,50,50,0.1) 1px, transparent 1px); background-size: 40px 40px; opacity: 0.3;"></div>
+
+        <!-- TAB 1: DASHBOARD -->
+        <div id="view-dashboard" class="tab-content active h-full p-6 overflow-y-auto">
+            <div class="grid grid-cols-4 gap-6 mb-8">
+                <!-- METRIC CARD -->
+                <div class="retro-panel p-4 bg-black/50">
+                    <p class="text-xs text-gray-500 mb-1">TOTAL_IDENTITIES</p>
+                    <h3 class="text-4xl text-white tracking-tighter" id="total-users">1,248</h3>
+                    <div class="h-1 w-full bg-gray-800 mt-2"><div class="h-full bg-green-500" style="width: 75%"></div></div>
+                </div>
+                <div class="retro-panel p-4 bg-black/50">
+                    <p class="text-xs text-gray-500 mb-1">LIFETIME_REV</p>
+                    <h3 class="text-4xl text-amber-500 tracking-tighter" id="lifetime-rev">$28,500</h3>
+                    <div class="h-1 w-full bg-gray-800 mt-2"><div class="h-full bg-amber-500" style="width: 45%"></div></div>
+                </div>
+                <div class="retro-panel p-4 bg-black/50">
+                    <p class="text-xs text-gray-500 mb-1">TOTAL_SCANS</p>
+                    <h3 class="text-4xl text-white tracking-tighter" id="total-scans">---</h3>
+                    <p class="text-xs text-green-500 mt-1" id="scan-status">LOADING...</p>
+                </div>
+                <div class="retro-panel p-4 bg-black/50">
+                    <p class="text-xs text-gray-500 mb-1">PROJ_MRR</p>
+                    <h3 class="text-4xl text-blue-400 tracking-tighter" id="proj-mrr">$0</h3>
+                    <div class="flex gap-1 mt-2">
+                        <div class="w-2 h-2 bg-blue-500"></div>
+                        <div class="w-2 h-2 bg-blue-500"></div>
+                        <div class="w-2 h-2 bg-blue-900"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 h-96">
+                <div class="retro-panel p-4">
+                    <h3 class="text-sm text-gray-400 border-b border-gray-700 pb-2 mb-4">TIER_DISTRIBUTION</h3>
+                    <div class="h-64 flex items-center justify-center">
+                        <canvas id="tierChart"></canvas>
+                    </div>
+                </div>
+                <div class="retro-panel p-4 flex flex-col">
+                    <h3 class="text-sm text-gray-400 border-b border-gray-700 pb-2 mb-4">GLOBAL_DEPLOYMENT_MAP</h3>
+                    <div id="global-map" class="flex-1 bg-black border border-gray-800 opacity-80 filter grayscale sepia"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: INFRASTRUCTURE -->
+        <div id="view-infra" class="tab-content hidden h-full p-6 overflow-y-auto">
+            <div class="grid grid-cols-3 gap-6 mb-6">
+                <div class="retro-panel p-4">
+                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>AIRLOCK_LATENCY</span><span class="text-green-500">OPTIMAL</span></div>
+                    <div class="text-5xl text-white mb-2">42<span class="text-sm text-gray-600">ms</span></div>
+                    <canvas id="latencyChart" class="h-16 w-full"></canvas>
+                </div>
+                <div class="retro-panel p-4">
+                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>DB_READS_SEC</span><span>---</span></div>
+                    <div class="text-5xl text-white mb-2">840</div>
+                    <div class="flex gap-1 h-4 items-end">
+                        <div class="w-1 bg-green-500 h-[40%]"></div>
+                        <div class="w-1 bg-green-500 h-[60%]"></div>
+                        <div class="w-1 bg-green-500 h-[80%]"></div>
+                        <div class="w-1 bg-green-500 h-[30%]"></div>
+                        <div class="w-1 bg-green-500 h-[50%]"></div>
+                    </div>
+                </div>
+                <div class="retro-panel p-4">
+                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>PAYMENT_GATEWAY</span><span class="text-green-500">CONNECTED</span></div>
+                    <div class="text-5xl text-white mb-2">99.9%</div>
+                    <p class="text-xs text-gray-600">STRIPE API: HEALTHY</p>
+                </div>
+            </div>
+
+            <div class="retro-panel p-4 h-96 flex flex-col">
+                <h3 class="text-sm text-gray-400 border-b border-gray-700 pb-2 mb-2">EVENT_LOG_STREAM // REAL_TIME</h3>
+                <div id="log-stream" class="flex-1 overflow-y-auto font-mono text-xs space-y-1 p-2 bg-black border border-gray-800">
+                    <!-- Logs injected via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: ECOSYSTEM -->
+        <div id="view-ecosystem" class="tab-content hidden h-full p-6">
+            <div class="retro-panel w-full h-full p-0 relative overflow-hidden flex items-center justify-center bg-black">
+                <svg id="ecosystem-svg"></svg>
+                <div class="absolute bottom-4 left-4 text-xs text-gray-600 border border-gray-700 p-2">
+                    NODE_GRAPH_VISUALIZER<br>
+                    RENDER_MODE: VECTOR
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: CRM -->
+        <div id="view-crm" class="tab-content hidden h-full p-6 flex gap-6">
+            <div class="flex-1 retro-panel flex flex-col overflow-hidden">
+                <div class="p-3 border-b border-gray-700 bg-[#222] flex justify-between items-center">
+                    <h3 class="text-sm font-bold">CLIENT_ROSTER_DB</h3>
+                    <input type="text" placeholder="QUERY_USER_ID..." class="bg-black border border-gray-600 text-amber-500 px-2 py-1 text-xs w-64 focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="flex-1 overflow-auto">
+                    <table class="w-full">
+                        <thead class="sticky top-0 z-10">
+                            <tr>
+                                <th>IDENTITY</th>
+                                <th>ACCESS_LEVEL</th>
+                                <th>STATUS</th>
+                                <th>LAST_PING</th>
+                                <th class="text-right">CMD</th>
+                            </tr>
+                        </thead>
+                        <tbody id="crm-table-body">
+                            <!-- Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="w-80 retro-panel p-4 flex flex-col bg-black/40">
+                <h3 class="text-sm text-amber-500 border-b border-gray-700 pb-2 mb-4">INSPECTOR_MODULE</h3>
+                <div id="god-mode-panel" class="flex-1 space-y-4">
+                    <p class="text-xs text-gray-600 text-center mt-10">[ NO_TARGET_SELECTED ]</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: ALERTS -->
+        <div id="view-alerts" class="tab-content hidden h-full p-6">
+            <div class="retro-panel p-6 max-w-3xl mx-auto bg-black/20">
+                <h2 class="text-lg text-red-500 mb-6 border-b border-red-900 pb-2 flex items-center gap-2">
+                    <i data-lucide="siren" class="w-5 h-5 animate-pulse"></i> ALERT_CONFIGURATION
+                </h2>
+                <div class="space-y-4" id="alert-list">
+                    <!-- Alerts Injected -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        lucide.createIcons();
+
+        // --- CACHED DATA ---
+        let allUsers = [];
+        let tierChart = null;
+
+        // --- TAB SWITCHING ---
+        function switchTab(tab) {
+            document.querySelectorAll('.retro-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+
+            document.getElementById('tab-' + tab).classList.add('active');
+            document.getElementById('view-' + tab).classList.remove('hidden');
+
+            if (tab === 'dashboard') initMap();
+            if (tab === 'ecosystem') initEcosystemMap();
+            if (tab === 'crm') renderCRM();
+            if (tab === 'alerts') loadAlerts();
+        }
+
+        // --- DASHBOARD: Real Stats ---
+        async function loadDashboard() {
+            try {
+                // Fetch all users
+                const usersSnapshot = await db.collection('users').get();
+                allUsers = [];
+                const tierCounts = { ambassador: 0, professional: 0, founder: 0, enterprise: 0 };
+                let totalScansFromUsers = 0;
+
+                usersSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    data._id = doc.id;
+                    allUsers.push(data);
+                    const tier = normalizeTier(data.tier);
+                    tierCounts[tier] = (tierCounts[tier] || 0) + 1;
+                    totalScansFromUsers += (data.scan_count || 0);
+                });
+
+                // Update metrics
+                document.getElementById('total-users').textContent = allUsers.length.toLocaleString();
+
+                // Calculate revenue estimate
+                let revenue = 0;
+                revenue += tierCounts.professional * 19;
+                revenue += tierCounts.founder * 49;
+                document.getElementById('lifetime-rev').textContent = '$' + revenue.toLocaleString();
+
+                // Update tier chart
+                const ctx = document.getElementById('tierChart').getContext('2d');
+                if (tierChart) tierChart.destroy();
+                Chart.defaults.color = '#555';
+                Chart.defaults.font.family = "'Share Tech Mono', monospace";
+                tierChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['AMBASSADOR', 'PROFESSIONAL', 'FOUNDER', 'ENTERPRISE'],
+                        datasets: [{
+                            data: [tierCounts.ambassador, tierCounts.professional, tierCounts.founder, tierCounts.enterprise],
+                            backgroundColor: ['#f87171', '#1e293b', '#0d9488', '#7c3aed'],
+                            borderColor: '#1a1a1a',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'right', labels: { color: '#888', boxWidth: 10 } } },
+                        cutout: '70%'
+                    }
+                });
+
+                // Fetch total scan events
+                const eventsSnapshot = await db.collection('events').where('type', '==', 'scan').get();
+                const totalScans = eventsSnapshot.size;
+                document.getElementById('total-scans').textContent = totalScans.toLocaleString();
+                document.getElementById('scan-status').textContent = totalScans > 0 ? 'TRACKING_ACTIVE' : 'NO_SCANS_YET';
+
+                // MRR estimate (Founder = $5/mo)
+                const mrr = tierCounts.founder * 5;
+                document.getElementById('proj-mrr').textContent = '$' + mrr.toLocaleString();
+
+                // Update DB link LED
+                document.querySelectorAll('.led')[1].classList.add('on-green');
+
+            } catch (e) {
+                console.error('Dashboard load error:', e);
+                document.querySelectorAll('.led')[1].classList.remove('on-green');
+                document.querySelectorAll('.led')[1].classList.add('on-red');
+            }
+        }
+
+        // --- MAP: Real user locations ---
+        function initMap() {
+            if (window.mapInstance) return;
+            const map = L.map('global-map', { zoomControl: false, attributionControl: false }).setView([33.2, -97.1], 4);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+            window.mapInstance = map;
+
+            // Add marker for Denton, TX (HQ)
+            L.circleMarker([33.2148, -97.1331], {
+                color: '#ffb000', fillColor: '#ffb000', fillOpacity: 0.8, radius: 6
+            }).bindPopup('<b style="color:#ffb000">DENTON_HQ</b>').addTo(map);
+
+            // Add markers for users with location data
+            allUsers.forEach(u => {
+                if (u.location) {
+                    // Simple geocoding approximation for US cities
+                    const coords = getApproxCoords(u.location);
+                    if (coords) {
+                        L.circleMarker(coords, {
+                            color: '#ffb000', fillColor: '#ffb000', fillOpacity: 0.4, radius: 3
+                        }).bindPopup(`<b style="color:#ffb000">${(u.full_name || u._id).toUpperCase()}</b><br><span style="color:#888">${u.location}</span>`).addTo(map);
+                    }
+                }
+            });
+        }
+
+        function getApproxCoords(location) {
+            if (!location) return null;
+            const loc = location.toLowerCase();
+            // Simple lookup for common locations
+            const cities = {
+                'denton': [33.21, -97.13], 'dallas': [32.78, -96.80], 'fort worth': [32.75, -97.33],
+                'austin': [30.27, -97.74], 'houston': [29.76, -95.37], 'san antonio': [29.42, -98.49],
+                'new york': [40.71, -74.01], 'los angeles': [34.05, -118.24], 'chicago': [41.88, -87.63],
+                'miami': [25.76, -80.19], 'seattle': [47.61, -122.33], 'denver': [39.74, -104.99],
+            };
+            for (const [city, coords] of Object.entries(cities)) {
+                if (loc.includes(city)) return coords;
+            }
+            return null;
+        }
+
+        // --- LIVE LOGS: Real Firestore events via onSnapshot ---
+        const logContainer = document.getElementById('log-stream');
+
+        function initLiveLogs() {
+            db.collection('events')
+                .orderBy('timestamp', 'desc')
+                .limit(20)
+                .onSnapshot(snapshot => {
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === 'added') {
+                            addRealLog(change.doc.data());
+                        }
+                    });
+                }, err => {
+                    console.warn('Live logs error:', err);
+                    // Fallback to simulated logs
+                    setInterval(addSimLog, 2000);
+                });
+        }
+
+        function addRealLog(event) {
+            const time = event.timestamp ? new Date(event.timestamp.toDate()).toLocaleTimeString('en-US', { hour12: false }) : new Date().toLocaleTimeString('en-US', { hour12: false });
+            const type = (event.type || 'unknown').toUpperCase();
+            const cardId = event.card_id || 'unknown';
+            const div = document.createElement('div');
+
+            if (type === 'SCAN') {
+                div.style.color = '#33ff00';
+                div.innerHTML = `[${time}] :: SCAN_EVENT >> ${cardId.toUpperCase()} // ${event.card_owner || ''}`;
+            } else if (type.startsWith('CLICK_')) {
+                div.style.color = '#ffb000';
+                div.innerHTML = `[${time}] :: ${type} >> ${cardId.toUpperCase()}`;
+            } else if (type === 'SAVE_CONTACT') {
+                div.style.color = '#0ff';
+                div.innerHTML = `[${time}] :: VCARD_DOWNLOAD >> ${cardId.toUpperCase()}`;
+            } else {
+                div.style.color = '#888';
+                div.innerHTML = `[${time}] :: ${type} >> ${cardId.toUpperCase()}`;
+            }
+            logContainer.prepend(div);
+            if (logContainer.children.length > 30) logContainer.lastElementChild.remove();
+        }
+
+        function addSimLog() {
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+            const div = document.createElement('div');
+            div.style.color = '#444';
+            div.innerHTML = `[${time}] :: HEARTBEAT // AWAITING_EVENTS`;
+            logContainer.prepend(div);
+            if (logContainer.children.length > 30) logContainer.lastElementChild.remove();
+        }
+
+        // --- CRM: Real User Table ---
+        function renderCRM() {
+            const tbody = document.getElementById('crm-table-body');
+            if (allUsers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-600 py-8">NO_USERS_FOUND // RUN_INTAKE_FIRST</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = allUsers.map(u => {
+                const tier = normalizeTier(u.tier);
+                const tierColors = { ambassador: 'text-red-400', professional: 'text-blue-400', founder: 'text-amber-500', enterprise: 'text-purple-400' };
+                const status = u.is_active !== false ? 'ACTIVE' : 'INACTIVE';
+                const statusColor = status === 'ACTIVE' ? 'text-green-500' : 'text-red-500';
+                const lastPing = u.last_active ? timeSince(u.last_active.toDate()) : (u.created_at ? timeSince(u.created_at.toDate()) : '---');
+                const slug = u._id || u.slug || 'unknown';
+
+                return `<tr>
+                    <td class="font-bold text-white">${(u.full_name || slug).toUpperCase()}</td>
+                    <td><span class="${tierColors[tier] || 'text-gray-500'}">[${tier.toUpperCase()}]</span></td>
+                    <td class="${statusColor}">${status}</td>
+                    <td>${lastPing}</td>
+                    <td class="text-right"><button class="text-blue-400 hover:text-white" onclick="inspectUser('${slug}')">[INSPECT]</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function timeSince(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return seconds + 's AGO';
+            if (seconds < 3600) return Math.floor(seconds / 60) + 'm AGO';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + 'h AGO';
+            return Math.floor(seconds / 86400) + 'd AGO';
+        }
+
+        function inspectUser(slug) {
+            const user = allUsers.find(u => (u._id || u.slug) === slug);
+            if (!user) {
+                document.getElementById('god-mode-panel').innerHTML = '<p class="text-xs text-red-500 text-center mt-10">[ USER_NOT_FOUND ]</p>';
+                return;
+            }
+            const tier = normalizeTier(user.tier);
+            const tierColors = { ambassador: '#f87171', professional: '#1e293b', founder: '#fbbf24', enterprise: '#7c3aed' };
+
+            document.getElementById('god-mode-panel').innerHTML = `
+                <div class="border border-amber-500/30 p-4 bg-black space-y-3">
+                    <h4 class="text-white font-bold">${(user.full_name || slug).toUpperCase()}</h4>
+                    <p class="text-xs text-gray-500">UID: ${slug}</p>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between"><span class="text-gray-500">TIER</span><span style="color:${tierColors[tier]}">${tier.toUpperCase()}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">EMAIL</span><span class="text-amber-500">${user.email || '---'}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">PHONE</span><span class="text-amber-500">${user.phone || '---'}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">COMPANY</span><span class="text-amber-500">${user.company || '---'}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">SCANS</span><span class="text-green-500">${user.scan_count || 0}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">LOCATION</span><span class="text-amber-500">${user.location || '---'}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">CREATED</span><span class="text-gray-400">${user.created_at ? user.created_at.toDate().toLocaleDateString() : '---'}</span></div>
+                    </div>
+                    <div class="border-t border-gray-700 pt-3 space-y-2">
+                        <a href="/card.html?u=${slug}" target="_blank" class="retro-btn block w-full py-2 text-xs text-center no-underline">VIEW_CARD</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- ECOSYSTEM D3 ---
+        function initEcosystemMap() {
+            const svg = d3.select("#ecosystem-svg");
+            svg.selectAll("*").remove();
+            const width = document.getElementById('view-ecosystem').clientWidth;
+            const height = document.getElementById('view-ecosystem').clientHeight;
+
+            const nodes = [
+                { id: "INTAKE", x: width * 0.2, y: height * 0.5 },
+                { id: "DB", x: width * 0.5, y: height * 0.5 },
+                { id: "CARD", x: width * 0.8, y: height * 0.5 },
+                { id: "AIRLOCK", x: width * 0.5, y: height * 0.2 },
+                { id: "ADMIN", x: width * 0.5, y: height * 0.8 }
+            ];
+
+            svg.selectAll("line")
+                .data([{ s: 0, t: 1 }, { s: 1, t: 2 }, { s: 3, t: 1 }, { s: 1, t: 4 }])
+                .enter().append("line")
+                .attr("x1", d => nodes[d.s].x).attr("y1", d => nodes[d.s].y)
+                .attr("x2", d => nodes[d.t].x).attr("y2", d => nodes[d.t].y)
+                .attr("stroke", "#333").attr("stroke-width", 2);
+
+            const g = svg.selectAll("g").data(nodes).enter().append("g")
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+            g.append("circle").attr("r", 30).attr("fill", "#000").attr("stroke", "#ffb000").attr("stroke-width", 2);
+            g.append("text").text(d => d.id).attr("text-anchor", "middle").attr("dy", 4).attr("fill", "#ffb000").attr("font-size", "10px");
+        }
+
+        // --- ALERTS (static for now) ---
+        function loadAlerts() {
+            const alertList = document.getElementById('alert-list');
+            const alerts = [];
+
+            // Check for real issues
+            const ambassadorCount = allUsers.filter(u => normalizeTier(u.tier) === 'ambassador').length;
+            if (ambassadorCount > 0 && allUsers.length > 0) {
+                const pct = Math.round((ambassadorCount / allUsers.length) * 100);
+                alerts.push({
+                    level: pct > 80 ? 'red' : 'yellow',
+                    title: 'CONVERSION_OPPORTUNITY',
+                    desc: `${pct}% of users are Ambassador (free) tier`
+                });
+            }
+
+            const noScanUsers = allUsers.filter(u => (u.scan_count || 0) === 0).length;
+            if (noScanUsers > 0) {
+                alerts.push({
+                    level: 'yellow',
+                    title: 'ZERO_SCAN_USERS',
+                    desc: `${noScanUsers} user(s) have never been scanned`
+                });
+            }
+
+            if (alerts.length === 0) {
+                alerts.push({ level: 'green', title: 'ALL_SYSTEMS_NOMINAL', desc: 'No alerts at this time' });
+            }
+
+            alertList.innerHTML = alerts.map(a => {
+                const borderColor = a.level === 'red' ? 'border-red-900 bg-red-900/10' : a.level === 'yellow' ? 'border-yellow-900 bg-yellow-900/10' : 'border-green-900 bg-green-900/10';
+                const textColor = a.level === 'red' ? 'text-red-500' : a.level === 'yellow' ? 'text-yellow-500' : 'text-green-500';
+                const ledClass = a.level === 'red' ? 'on-red animate-pulse' : a.level === 'yellow' ? '' : 'on-green';
+                const ledStyle = a.level === 'yellow' ? 'style="background: #aa0; box-shadow: 0 0 5px #aa0;"' : '';
+                return `<div class="border ${borderColor} p-4 flex justify-between items-center">
+                    <div><h3 class="${textColor} font-bold">${a.title}</h3><p class="text-xs text-gray-500">${a.desc}</p></div>
+                    <div class="led ${ledClass}" ${ledStyle}></div>
+                </div>`;
+            }).join('');
+        }
+
+        // --- INIT ---
+        async function boot() {
+            try {
+                await loadDashboard();
+                initLiveLogs();
+                switchTab('dashboard');
+                console.log('[OPS] System online. Users loaded:', allUsers.length);
+            } catch(e) {
+                console.error('[OPS] Boot error:', e);
+                switchTab('dashboard');
+            }
+        }
+
+        boot();
+    </script>
+</body>
+</html>

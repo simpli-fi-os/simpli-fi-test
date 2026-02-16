@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Updated Viewport: Allowed zooming -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow"> 
+    <meta name="apple-mobile-web-app-title" content="Simpli-FI Alpha"> 
+    
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="Hunter Lott | Simpli-FI Alpha LLC">
+    <meta property="og:description" content="Co-Founder & Managing Partner at Simpli-FI Alpha LLC. Investment Stewardship, For Legacy Building.">
+    <meta property="og:image" content="../assets/images/hunter-lott.png">
+    
+    <title>Hunter Lott | Simpli-FI Alpha LLC</title>
+    
+    <!-- Home Screen Icon & Favicon -->
+    <link rel="apple-touch-icon" href="../favicon.png">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    
+    <!-- UPDATED COLORS -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            primary: '#003b46',   /* Deep Teal */
+                            accent: '#fca311',    /* Bright Gold/Orange */
+                            pop: '#fca311',       /* Using accent color for pop */
+                            canvas: '#ebe9e5',    /* Warm Greige Background */
+                            surface: '#e1dfdb',   /* Slightly darker surface for contrast */
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    boxShadow: {
+                        'neu-flat': '9px 9px 18px #d1cfcb, -9px -9px 18px #ffffff',
+                        'neu-pressed': 'inset 6px 6px 12px #d1cfcb, inset -6px -6px 12px #ffffff',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            background-color: #ebe9e5; 
+            overflow: hidden; /* Handle zoom manually */
+        }
+        
+        a, button { -webkit-tap-highlight-color: transparent; }
+
+        /* --- VIEW TRANSITIONS --- */
+        #simple-view-container {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+            opacity: 1;
+            pointer-events: auto;
+            touch-action: none;
+        }
+
+        #full-view {
+            position: fixed;
+            inset: 0;
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* State: Expanded */
+        body.show-full #simple-view-container {
+            opacity: 0;
+            pointer-events: none;
+        }
+        body.show-full #full-view {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* --- CARD SCALING LOGIC --- */
+        #card-wrapper {
+            width: 650px; 
+            height: 370px;
+            position: relative;
+            transform-origin: center center;
+            transition: transform 0.1s ease-out;
+        }
+
+        #main-card {
+            transform-origin: top center;
+            transition: transform 0.1s ease-out;
+        }
+
+        /* --- UNIFIED FAB BUTTON --- */
+        .toggle-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .toggle-btn:active { transform: scale(0.95); }
+
+        /* Icon Transitions */
+        .fab-icon {
+            position: absolute;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #icon-plus {
+            opacity: 1;
+            transform: rotate(0deg) scale(1);
+        }
+        #icon-minus {
+            opacity: 0;
+            transform: rotate(-90deg) scale(0.5);
+        }
+
+        body.show-full #icon-plus {
+            opacity: 0;
+            transform: rotate(90deg) scale(0.5);
+        }
+        body.show-full #icon-minus {
+            opacity: 1;
+            transform: rotate(0deg) scale(1);
+        }
+
+        /* Physics Elements */
+        .dollar-bill {
+            position: absolute;
+            background-color: #85bb65;
+            border: 1px solid #6da04e;
+            width: 50px; 
+            height: 24px;
+            border-radius: 2px;
+            pointer-events: none;
+            z-index: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4a7036;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .dollar-bill::after { content: '$'; }
+        
+        .gold-coin {
+            position: absolute;
+            background-color: #fca311;
+            border: 2px solid #e08e00;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            box-shadow: inset -2px -2px 0px rgba(0,0,0,0.1);
+        }
+        .gold-coin::after {
+            content: '$';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #b37400;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        #scroll-container {
+            height: 100vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+            z-index: 10;
+            padding-bottom: 120px; 
+        }
+    </style>
+</head>
+<body class="fixed inset-0 bg-brand-canvas bg-[radial-gradient(#003b46_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.99]">
+
+    <!-- Physics Canvas Overlay -->
+    <div id="physics-layer" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
+
+    <!-- SIMPLE CARD VIEW -->
+    <div id="simple-view-container">
+        <div id="card-wrapper">
+            <div class="w-full h-full bg-brand-canvas rounded-[2.5rem] shadow-neu-flat flex items-center justify-between border border-stone-300/50 overflow-hidden relative">
+                
+                <!-- Left Side (Info) -->
+                <div class="flex flex-col justify-between h-full w-2/3 p-10">
+                     
+                    <!-- Header -->
+                    <div class="flex items-center gap-5">
+                        <div class="w-16 h-16 shrink-0 rounded-2xl bg-brand-surface shadow-neu-flat flex items-center justify-center text-brand-primary border border-white/20">
+                            <img src="../favicon.png" alt="Logo" class="w-10 h-10 object-contain drop-shadow-sm opacity-90">
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold tracking-tight text-brand-primary leading-none">Simpli-FI <span class="text-brand-accent">Alpha</span></h2>
+                            <p class="text-[11px] text-brand-accent font-bold uppercase tracking-[0.15em] mt-1.5">Investment Stewardship</p>
+                        </div>
+                    </div>
+
+                    <!-- Name Block -->
+                    <div>
+                        <h1 class="text-5xl font-black mb-1 text-brand-primary font-serif leading-none">Hunter Lott</h1>
+                        <p class="text-brand-accent font-extrabold text-sm tracking-[0.2em] uppercase pl-1">Co-Founder & Managing Partner</p>
+                    </div>
+
+                    <!-- Contact Grid -->
+                    <div class="grid grid-cols-2 gap-3 w-full">
+                        <a href="tel:9403730151" class="px-2 py-3.5 rounded-xl bg-brand-surface shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent hover:border-brand-primary/10 transition-colors cursor-pointer group">
+                            <i data-lucide="phone" class="w-3.5 h-3.5 text-brand-primary shrink-0"></i>
+                            <span class="text-[11px] font-bold text-brand-primary whitespace-nowrap">(940) 373-0151</span>
+                        </a>
+                        <a href="https://www.simpli-fi-alpha.com" target="_blank" class="px-2 py-3.5 rounded-xl bg-brand-surface shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent hover:border-brand-primary/10 transition-colors cursor-pointer group">
+                            <i data-lucide="globe" class="w-3.5 h-3.5 text-brand-primary shrink-0"></i>
+                            <span class="text-[11px] font-bold text-brand-primary whitespace-nowrap">simpli-fi-alpha.com</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right Side (Color Band) -->
+                <div class="w-1/3 h-full bg-brand-primary relative flex flex-col items-center justify-center pl-6 pr-4">
+                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#fca311_1px,transparent_1px)] [background-size:14px_14px]"></div>
+                     
+                    <!-- Profile Pic -->
+                    <div class="relative mb-6 group cursor-pointer z-20" onclick="toggleQR()">
+                        <div class="w-48 h-48 rounded-full p-2.5 bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-2xl">
+                            <div class="w-full h-full rounded-full overflow-hidden relative border-4 border-brand-accent">
+                                <img src="../assets/images/hunter-lott.png" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter&backgroundColor=003b46'" alt="Hunter Lott" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <div class="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-brand-accent shadow-lg flex items-center justify-center text-brand-primary border-2 border-white">
+                            <i data-lucide="shield-check" class="w-5 h-5 stroke-[2.5]"></i>
+                        </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <button onclick="downloadVCard()" class="w-full max-w-[180px] py-3.5 rounded-xl bg-black/20 backdrop-blur-md shadow-lg text-white font-extrabold text-xs uppercase tracking-wider hover:bg-brand-accent hover:text-brand-primary transition-all flex items-center justify-center gap-2 group z-20 border border-white/10">
+                        <span>Save Contact</span>
+                        <i data-lucide="arrow-down-to-line" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- FULL VIEW (Scrollable) -->
+    <div id="full-view">
+        <div id="scroll-container" class="w-full flex justify-center p-4">
+            
+            <main id="main-card" class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-brand-surface relative flex flex-col shrink-0 my-auto transition-transform duration-75 will-change-transform">
+                
+                <!-- Top Banner -->
+                <div class="h-32 bg-brand-primary relative overflow-hidden shrink-0">
+                    <div class="absolute top-4 left-4 z-10 flex items-center gap-3">
+                        <img src="../favicon.png" alt="Simpli-FI Alpha Logo" class="w-10 h-10 object-contain drop-shadow-md bg-white/10 rounded-full backdrop-blur-sm p-1">
+                        <span class="font-serif text-white font-bold tracking-tight text-sm opacity-90">Simpli-FI <span class="font-light text-brand-pop">Alpha</span></span>
+                    </div>
+
+                    <button onclick="toggleQR()" aria-label="Show QR Code" class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white transition-all border border-white/10 shadow-lg group">
+                        <i data-lucide="qr-code" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+                    </button>
+
+                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#fca311_1px,transparent_1px)] [background-size:14px_14px]"></div>
+                    <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-brand-accent rounded-full opacity-30 blur-3xl"></div>
+                    <div class="absolute top-0 right-10 w-24 h-24 bg-brand-pop rounded-full opacity-20 blur-2xl"></div>
+                </div>
+
+                <!-- Profile Image -->
+                <div class="relative px-8 -mt-16 mb-6 text-center shrink-0">
+                    <div class="inline-block relative">
+                        <div class="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-brand-surface mx-auto relative z-10">
+                            <img id="profile-photo" src="../assets/images/hunter-lott.png" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter&backgroundColor=003b46'" alt="Hunter Lott" class="w-full h-full object-cover object-center">
+                        </div>
+                        <div class="absolute bottom-1 right-1 z-20 bg-brand-accent text-brand-primary rounded-full p-1.5 border-2 border-white shadow-sm">
+                        <i data-lucide="shield-check" class="w-3 h-3 stroke-[4]"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h1 class="font-serif text-3xl font-bold text-brand-primary">Hunter Lott</h1>
+                        <p class="text-brand-accent font-bold text-xs tracking-widest uppercase mt-1">Co-Founder & Managing Partner</p>
+                        <p class="text-slate-400 text-xs mt-1">Simpli-FI Alpha LLC</p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-5 gap-2 px-4 mb-6 shrink-0">
+                    <a href="tel:9403730151" class="flex flex-col items-center gap-1 group">
+                        <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-slate-600 group-hover:bg-brand-primary group-hover:text-white transition shadow-sm border border-brand-surface">
+                            <i data-lucide="phone" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[10px] text-slate-500 font-medium">Call</span>
+                    </a>
+                    <a href="mailto:hunter.lott@simpli-fi-alpha.com" class="flex flex-col items-center gap-1 group">
+                        <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-slate-600 group-hover:bg-brand-primary group-hover:text-white transition shadow-sm border border-brand-surface">
+                            <i data-lucide="mail" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[10px] text-slate-500 font-medium">Email</span>
+                    </a>
+                    <a href="https://www.simpli-fi-alpha.com" target="_blank" class="flex flex-col items-center gap-1 group">
+                        <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-slate-600 group-hover:bg-brand-primary group-hover:text-white transition shadow-sm border border-brand-surface">
+                            <i data-lucide="globe" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[10px] text-slate-500 font-medium">Site</span>
+                    </a>
+                    <a href="https://calendar.app.google/ZBGrPEYJsonQmnwL8" target="_blank" class="flex flex-col items-center gap-1 group">
+                        <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-slate-600 group-hover:bg-brand-primary group-hover:text-white transition shadow-sm border border-brand-surface">
+                            <i data-lucide="calendar-check" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[10px] text-slate-500 font-medium">Meet</span>
+                    </a>
+                    <button id="save-btn" onclick="downloadVCard()" class="flex flex-col items-center gap-1 group">
+                        <div class="w-12 h-12 rounded-2xl bg-brand-accent/10 flex items-center justify-center text-brand-primary group-hover:bg-brand-primary group-hover:text-brand-accent transition shadow-sm border border-brand-accent/20">
+                            <i id="save-icon" data-lucide="contact" class="w-5 h-5"></i>
+                            <i id="loading-icon" data-lucide="loader-2" class="w-5 h-5 animate-spin hidden"></i>
+                        </div>
+                        <span id="save-text" class="text-[10px] text-brand-primary font-bold">Save</span>
+                    </button>
+                </div>
+
+                <!-- Current Mission Module -->
+                <div class="px-6 mb-6 shrink-0">
+                    <div class="relative bg-gradient-to-r from-brand-primary/5 to-transparent p-4 rounded-xl border-l-4 border-brand-primary overflow-hidden">
+                        <div class="absolute right-0 top-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
+                            <i data-lucide="trending-up" class="w-24 h-24 text-brand-primary"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-1">
+                                <i data-lucide="target" class="w-3 h-3 text-brand-primary"></i>
+                                <h3 class="text-[10px] font-bold text-brand-primary uppercase tracking-widest">Current Mission</h3>
+                            </div>
+                            <p class="text-slate-700 text-sm font-medium italic leading-relaxed">
+                                "Connecting with qualified partners to raise capital for the Simpli-FI Legacy Fund—delivering uncorrelated, income-generating returns for families and institutions."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ideal Partners Section -->
+                <div class="px-6 mb-6 shrink-0">
+                    <h3 class="text-xs font-bold text-brand-accent uppercase tracking-wider mb-3">Who We Serve</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
+                            <p class="text-xs text-slate-600"><strong class="text-brand-primary">HNW & Family Offices:</strong> Diversified hedges for large portfolios.</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
+                            <p class="text-xs text-slate-600"><strong class="text-brand-primary">Retirees:</strong> Consistent cash flow & peace of mind.</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
+                            <p class="text-xs text-slate-600"><strong class="text-brand-primary">Businesses:</strong> Passive income for resilience.</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
+                            <p class="text-xs text-slate-600"><strong class="text-brand-primary">Pensions & Non-Profits:</strong> Risk-adjusted returns for long-term goals.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bio Section -->
+                <div class="px-8 mb-6 shrink-0">
+                    <h3 class="text-xs font-bold text-brand-accent uppercase tracking-wider mb-2">About</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed font-light">
+                        My background in high-stakes leadership—as a Captain in the United States Marine Corps, Denton Fire Department Captain, and trustee on a firefighter pension fund board—has defined my approach to risk. Today, I apply that same institutional precision to financial stewardship, helping clients navigate market trends with confidence and discipline.
+                    </p>
+                </div>
+
+                <!-- Contact Details List -->
+                <div class="px-6 mb-8 space-y-3 shrink-0">
+                    <a href="tel:9403730151" class="flex items-center p-3 rounded-xl bg-brand-canvas hover:bg-brand-surface transition group">
+                        <i data-lucide="smartphone" class="w-5 h-5 text-brand-primary group-hover:text-brand-accent transition"></i>
+                        <div class="ml-4">
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Office</p>
+                            <p class="text-sm font-medium text-slate-900">(940) 373-0151</p>
+                        </div>
+                    </a>
+                    <a href="mailto:hunter.lott@simpli-fi-alpha.com" class="flex items-center p-3 rounded-xl bg-brand-canvas hover:bg-brand-surface transition group">
+                        <i data-lucide="at-sign" class="w-5 h-5 text-brand-primary group-hover:text-brand-accent transition"></i>
+                        <div class="ml-4">
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Email</p>
+                            <p class="text-sm font-medium text-slate-900">hunter.lott@simpli-fi-alpha.com</p>
+                        </div>
+                    </a>
+                    <a href="https://calendar.app.google/ZBGrPEYJsonQmnwL8" target="_blank" class="flex items-center p-3 rounded-xl bg-brand-canvas hover:bg-brand-surface transition group">
+                        <i data-lucide="calendar-clock" class="w-5 h-5 text-brand-primary group-hover:text-brand-accent transition"></i>
+                        <div class="ml-4">
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Meeting</p>
+                            <p class="text-sm font-medium text-slate-900">Schedule a 30-min Intro</p>
+                        </div>
+                    </a>
+                    <div class="flex items-center p-3 rounded-xl bg-brand-canvas transition group">
+                        <i data-lucide="map-pin" class="w-5 h-5 text-brand-primary"></i>
+                        <div class="ml-4">
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Location</p>
+                            <p class="text-sm font-medium text-slate-900">513 W Oak St, Ste 105<br>Denton, TX 76201</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social Footer -->
+                <div class="bg-brand-primary p-6 flex justify-center gap-6 border-t border-brand-primary mt-auto">
+                    <a href="https://www.simpli-fi-alpha.com" target="_blank" aria-label="Website" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="globe" class="w-5 h-5"></i></a>
+                    <a href="mailto:hunter.lott@simpli-fi-alpha.com" target="_blank" aria-label="Email" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="mail" class="w-5 h-5"></i></a>
+                </div>
+                
+                <!-- Branding Footer -->
+                <a href="https://id.simpli-fi-os.com" target="_blank" class="block bg-slate-900 py-3 text-center relative group cursor-pointer overflow-hidden decoration-0">
+                    <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition"></div>
+                    <div class="inline-flex items-center text-[10px] font-bold tracking-[0.2em] text-white/40 uppercase">
+                        <span class="mr-2 opacity-60">Powered by</span>
+                        <span class="transition-all duration-300 group-hover:scale-110 group-hover:text-brand-accent flex items-center gap-1">
+                            Simpli-FI <span class="text-brand-accent group-hover:text-white transition-colors duration-300">OS</span>
+                        </span>
+                    </div>
+                </a>
+            </main>
+        </div>
+    </div>
+
+    <!-- UNIFIED FAB BUTTON -->
+    <button id="toggle-view-btn" onclick="toggleView()" aria-label="Toggle View" class="toggle-btn">
+        <i data-lucide="plus" id="icon-plus" class="fab-icon w-8 h-8 text-brand-primary"></i>
+        <i data-lucide="minus" id="icon-minus" class="fab-icon w-8 h-8 text-brand-primary"></i>
+    </button>
+    
+    <!-- Confirm Modal for Location -->
+    <div id="confirmModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-xs w-full text-center scale-100 transition-transform">
+            <h3 class="text-lg font-bold text-brand-primary mb-2">Add Location?</h3>
+            <p class="text-sm text-gray-500 mb-6">Would you like to include your current location in the contact card?</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="handleLocationChoice(false)" class="px-5 py-2.5 rounded-full bg-brand-surface text-brand-primary font-bold text-xs uppercase tracking-wider hover:bg-gray-200 transition">No</button>
+                <button onclick="handleLocationChoice(true)" class="px-5 py-2.5 rounded-full bg-brand-primary text-white font-bold text-xs uppercase tracking-wider hover:bg-brand-primary/90 shadow-lg transition">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Modal -->
+    <div id="qrModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-primary/90 backdrop-blur-sm transition-opacity duration-300" onclick="toggleQR()">
+         <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center relative transform transition-transform duration-300 scale-95" onclick="event.stopPropagation()">
+            
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-brand-primary font-serif font-bold italic">Simpli-FI Alpha</span>
+                <button onclick="toggleQR()" class="text-slate-400 hover:text-brand-accent">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="bg-brand-canvas p-4 rounded-xl border border-brand-surface mb-4 shadow-inner">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://hunter.simpli-fi-alpha.com&color=003b46" alt="Scan QR Code" class="w-full h-auto rounded-lg mix-blend-multiply">
+            </div>
+
+            <p class="text-slate-500 text-xs uppercase tracking-widest font-medium mb-4">Scan to Connect</p>
+         </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // 1. Setup & Config
+        const container = document.getElementById('scroll-container');
+        const card = document.getElementById('main-card');
+        const physicsLayer = document.getElementById('physics-layer');
+        let photoBase64 = '';
+        const currentMission = "Raising capital for the Simpli-FI Legacy Fund to provide uncorrelated, income-generating returns for qualified families and institutions.";
+
+        // --- GLOBAL SCALING & ZOOM VARS ---
+        let baseScale = 1;
+        let userZoom = 1.0;     
+        let fullViewZoom = 1.0; 
+        
+        const ZOOM_SENSITIVITY = 0.001;
+        const MIN_ZOOM = 0.5;
+        const MAX_ZOOM = 4.0;
+
+        // --- RESIZE LOGIC (Auto-Fit Simple View) ---
+        function resizeCard() {
+            const availableWidth = window.innerWidth - 40;
+            const availableHeight = window.innerHeight - 40;
+            const cardWidth = 650;
+            const cardHeight = 370;
+            
+            const scaleX = availableWidth / cardWidth;
+            const scaleY = availableHeight / cardHeight;
+            
+            baseScale = Math.min(scaleX, scaleY, 1);
+            updateTransform();
+        }
+
+        function updateTransform() {
+            // Simple View
+            const wrapper = document.getElementById('card-wrapper');
+            const totalScale = baseScale * userZoom;
+            wrapper.style.transform = `scale(${totalScale})`;
+
+            // Full View
+            const mainCard = document.getElementById('main-card');
+            mainCard.style.transform = `scale(${fullViewZoom})`;
+        }
+
+        // --- ZOOM INTERACTION (SIMPLE VIEW) ---
+        const simpleViewContainer = document.getElementById('simple-view-container');
+        
+        simpleViewContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = -e.deltaY * ZOOM_SENSITIVITY;
+            userZoom = Math.min(Math.max(userZoom + delta, MIN_ZOOM), MAX_ZOOM);
+            updateTransform();
+        }, { passive: false });
+
+        // Touch Pinch (Simple View)
+        let initialPinchDistSimple = 0;
+        let startZoomLevelSimple = 1;
+
+        simpleViewContainer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                initialPinchDistSimple = Math.hypot(
+                    e.touches[0].pageX - e.touches[1].pageX,
+                    e.touches[0].pageY - e.touches[1].pageY
+                );
+                startZoomLevelSimple = userZoom;
+            }
+        }, { passive: false });
+
+        simpleViewContainer.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && initialPinchDistSimple > 0) {
+                e.preventDefault();
+                const currentDist = Math.hypot(
+                    e.touches[0].pageX - e.touches[1].pageX,
+                    e.touches[0].pageY - e.touches[1].pageY
+                );
+                const ratio = currentDist / initialPinchDistSimple;
+                userZoom = Math.min(Math.max(startZoomLevelSimple * ratio, MIN_ZOOM), MAX_ZOOM);
+                updateTransform();
+            }
+        }, { passive: false });
+        
+        simpleViewContainer.addEventListener('touchend', () => { initialPinchDistSimple = 0; });
+
+
+        // --- ZOOM INTERACTION (FULL VIEW) ---
+        // Mouse Wheel (Zoom with Ctrl)
+        container.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                const delta = -e.deltaY * ZOOM_SENSITIVITY;
+                fullViewZoom = Math.min(Math.max(fullViewZoom + delta, MIN_ZOOM), MAX_ZOOM);
+                updateTransform();
+            }
+        }, { passive: false });
+
+        // Touch Pinch (Full View)
+        let initialPinchDistFull = 0;
+        let startZoomLevelFull = 1;
+
+        container.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                initialPinchDistFull = Math.hypot(
+                    e.touches[0].pageX - e.touches[1].pageX,
+                    e.touches[0].pageY - e.touches[1].pageY
+                );
+                startZoomLevelFull = fullViewZoom;
+            } else if (e.touches.length === 1 && (container.scrollTop === 0 || container.scrollTop + container.clientHeight >= container.scrollHeight)) {
+                // Physics Start Logic
+                startY = e.touches[0].pageY;
+                pulling = true;
+            }
+        }, { passive: false });
+
+        container.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && initialPinchDistFull > 0) {
+                // Pinch Logic
+                e.preventDefault();
+                const currentDist = Math.hypot(
+                    e.touches[0].pageX - e.touches[1].pageX,
+                    e.touches[0].pageY - e.touches[1].pageY
+                );
+                const ratio = currentDist / initialPinchDistFull;
+                fullViewZoom = Math.min(Math.max(startZoomLevelFull * ratio, MIN_ZOOM), MAX_ZOOM);
+                updateTransform();
+            } else if (e.touches.length === 1 && pulling) {
+                // Physics Pull Logic
+                const y = e.touches[0].pageY;
+                const delta = y - startY;
+                
+                // Pull Down (Top) - DOLLARS
+                if (delta > 0 && container.scrollTop <= 0) {
+                    pullDirection = 'down';
+                    e.preventDefault(); 
+                    const resistance = 0.4;
+                    const translate = delta * resistance;
+                    card.style.transform = `translateY(${translate}px) scale(${fullViewZoom})`; // Maintain zoom
+                    
+                    if (Math.random() < 0.25) spawnDollar(translate); 
+                }
+                // Pull Up (Bottom) - COINS
+                else if (delta < 0 && (container.scrollTop + container.clientHeight >= container.scrollHeight - 5)) {
+                    pullDirection = 'up';
+                    e.preventDefault();
+                    const resistance = 0.4;
+                    const translate = delta * resistance;
+                    card.style.transform = `translateY(${translate}px) scale(${fullViewZoom})`; // Maintain zoom
+                    
+                    if (Math.random() < 0.3) spawnCoin(Math.abs(translate));
+                }
+            }
+        }, { passive: false });
+
+        container.addEventListener('touchend', () => { 
+            initialPinchDistFull = 0;
+            // Physics Reset
+            if (pulling) {
+                pulling = false;
+                pullDirection = null;
+                card.style.transform = `scale(${fullViewZoom})`; // Snap back retaining zoom
+                setTimeout(() => {
+                    physicsLayer.innerHTML = '';
+                }, 800);
+            }
+        });
+
+
+        // --- PHYSICS ANIMATION HELPERS ---
+        let startY = 0;
+        let pulling = false;
+        let pullDirection = null; 
+
+        function spawnDollar(offset) {
+            const bill = document.createElement('div');
+            bill.className = 'dollar-bill';
+            const width = 40 + Math.random() * 20;
+            bill.style.width = `${width}px`;
+            bill.style.height = `${width * 0.4}px`;
+            const x = Math.random() * window.innerWidth;
+            bill.style.left = `${x}px`;
+            bill.style.top = `-50px`;
+            const rotation = Math.random() * 360;
+            bill.style.transform = `rotate(${rotation}deg)`;
+            physicsLayer.appendChild(bill);
+            const duration = 500 + Math.random() * 500;
+            const targetY = offset + 20 + (Math.random() * 80);
+            bill.animate([
+                { top: '-50px', transform: `rotate(${rotation}deg)` },
+                { top: `${targetY}px`, transform: `rotate(${rotation + 180}deg)` }
+            ], { duration: duration, easing: 'cubic-bezier(0.25, 1, 0.5, 1)', fill: 'forwards' });
+        }
+
+        function spawnCoin(offset) {
+            const coin = document.createElement('div');
+            coin.className = 'gold-coin';
+            const size = 15 + Math.random() * 20;
+            coin.style.width = `${size}px`;
+            coin.style.height = `${size}px`;
+            const x = Math.random() * window.innerWidth;
+            coin.style.left = `${x}px`;
+            coin.style.bottom = `-50px`;
+            physicsLayer.appendChild(coin);
+            const duration = 600 + Math.random() * 600;
+            const targetY = offset + 20 + (Math.random() * 100);
+            coin.animate([
+                { bottom: '-50px', transform: `translateY(0) scale(1)` },
+                { bottom: `${targetY}px`, transform: `translateY(0) scale(1)` }
+            ], { duration: duration, easing: 'ease-out', fill: 'forwards' });
+        }
+
+        // --- VIEW TOGGLING ---
+        function toggleView() {
+            document.body.classList.toggle('show-full');
+        }
+
+        window.addEventListener('resize', resizeCard);
+        window.addEventListener('load', resizeCard);
+
+
+        // --- MODAL & VCARD LOGIC ---
+        window.addEventListener('load', async () => {
+            const imgElement = document.getElementById('profile-photo');
+            const imgSrc = imgElement.src;
+            try {
+                const response = await fetch(imgSrc);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const reader = new FileReader();
+                    reader.onloadend = () => { photoBase64 = reader.result.split(',')[1]; };
+                    reader.readAsDataURL(blob);
+                }
+            } catch (e) { console.log("Image load error:", e); }
+        });
+
+        function toggleQR() {
+            document.getElementById('qrModal').classList.toggle('hidden');
+        }
+
+        function setLoading(isLoading) {
+            const icon = document.getElementById('save-icon');
+            const loader = document.getElementById('loading-icon');
+            const text = document.getElementById('save-text');
+            if (isLoading) {
+                icon.classList.add('hidden');
+                loader.classList.remove('hidden');
+                text.innerText = "Saving...";
+            } else {
+                icon.classList.remove('hidden');
+                loader.classList.add('hidden');
+                text.innerText = "Save";
+            }
+        }
+        
+        function downloadVCard() {
+             const modal = document.getElementById('confirmModal');
+             modal.classList.remove('hidden');
+        }
+
+        function handleLocationChoice(includeLocation) {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.add('hidden');
+            
+            const generateFile = (locationNote = "") => {
+                setLoading(true);
+                const today = new Date().toISOString().replace(/[-:.]/g, '').split('T')[0];
+                let vcard = `BEGIN:VCARD
+VERSION:3.0
+N:Lott;Hunter;;;
+FN:Hunter Lott
+ORG:Simpli-FI Alpha LLC
+TITLE:Co-Founder & Managing Partner
+TEL;TYPE=WORK,VOICE:(940) 373-0151
+EMAIL:hunter.lott@simpli-fi-alpha.com
+URL:https://www.simpli-fi-alpha.com
+ADR;TYPE=WORK:;;513 W Oak St Ste 105;Denton;TX;76201;USA
+NOTE:Mission: ${currentMission} ${locationNote}
+REV:${today}
+`;
+                if (photoBase64) vcard += `PHOTO;ENCODING=b;TYPE=PNG:${photoBase64}\n`;
+                vcard += `END:VCARD`;
+
+                const blob = new Blob([vcard], { type: 'text/vcard' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'Hunter_Lott_Simpli-FI_Alpha.vcf');
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                    setLoading(false);
+                }, 100);
+            };
+
+            if (includeLocation) {
+                setLoading(true);
+                navigator.geolocation.getCurrentPosition(
+                    pos => generateFile(`| Met at: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`),
+                    () => generateFile("")
+                );
+            } else {
+                generateFile("");
+            }
+        }
+    </script>
+</body>
+</html>

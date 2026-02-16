@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI ID | Your Digital Command Center</title>
+    <meta name="description" content="Claim your Simpli-FI ID. The professional digital identity for the Simpli-FI Operating System.">
+    
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Simpli-FI ID | Your Digital Command Center">
+    <meta property="og:description" content="Stop handing out dead links. The Simpli-FI ID is a dynamic portal to your business, your calendar, and your current mission.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-test/490a8adb4228319c67b5626a1d5c8931d2ec46bd/social-preview.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:url" content="https://simpli-fi-os.github.io/simpli-fi-id/">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Simpli-FI ID | Your Digital Command Center">
+    <meta name="twitter:description" content="Stop handing out dead links. The Simpli-FI ID is a dynamic portal to your business, your calendar, and your current mission.">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-test/490a8adb4228319c67b5626a1d5c8931d2ec46bd/social-preview.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Custom Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        navy: '#1e293b',
+                        gold: '#fbbf24',
+                        teal: '#0d9488', 
+                        emerald: '#059669',
+                        coral: '#E27D60',
+                        offwhite: '#F8FAFC',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 1s ease-out forwards',
+                        'slide-up': 'slideUp 0.8s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .grid-bg {
+            background-color: #F8FAFC;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+        .mesh-overlay {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(13, 148, 136, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(251, 191, 36, 0.08) 0px, transparent 50%);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .info-popup {
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: bottom center;
+        }
+        .info-popup.hidden {
+            opacity: 0;
+            transform: scale(0.95) translateY(10px);
+            pointer-events: none;
+        }
+        .info-popup.visible {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+        }
+        /* Normalized Card Hover for all tiers */
+        .tier-card {
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease-out;
+            cursor: pointer;
+        }
+        .tier-card:hover {
+            transform: translateY(-12px);
+            z-index: 10;
+        }
+        /* Focus states for accessibility */
+        a:focus-visible, button:focus-visible {
+            outline: 2px solid #fbbf24;
+            outline-offset: 2px;
+        }
+        .tier-card:focus-visible {
+            outline: 3px solid #fbbf24;
+            outline-offset: 4px;
+        }
+    </style>
+</head>
+<body class="bg-offwhite text-navy font-sans antialiased min-h-screen flex flex-col relative selection:bg-gold selection:text-navy">
+    
+    <!-- Background Elements -->
+    <div class="fixed inset-0 grid-bg z-[-2]"></div>
+    <div class="fixed inset-0 mesh-overlay z-[-1]"></div>
+
+    <!-- NAVIGATION -->
+    <nav class="w-full py-5 sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+            <a href="#" class="flex items-center gap-3 group" aria-label="Simpli-FI ID Home">
+                <img src="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png" class="w-8 h-8 rounded-lg shadow-sm group-hover:scale-105 transition duration-300" alt="Simpli-FI ID logo">
+                <span class="font-bold text-navy text-lg tracking-tight">Simpli-FI <span class="text-gold">ID</span></span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="#pricing" class="hidden md:block text-sm font-medium text-gray-600 hover:text-navy transition">Pricing</a>
+                <a href="#preview" class="hidden md:block text-sm font-medium text-gray-600 hover:text-navy transition">Examples</a>
+                <a href="/account/login.html" class="hidden md:block text-sm font-medium text-gray-600 hover:text-navy transition">Log In</a>
+                <a href="/intake/" class="ml-2 px-5 py-2.5 bg-navy text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-teal transition shadow-lg hover:shadow-teal/20 transform hover:-translate-y-0.5">
+                    Claim Your ID
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <header class="pt-20 pb-24 text-center px-6 relative overflow-hidden">
+        <div class="max-w-4xl mx-auto animate-slide-up relative z-10">
+            
+            <h1 class="text-5xl md:text-7xl font-serif text-navy mb-8 tracking-tight leading-[1.1]">
+                Your Digital <br><span class="italic text-teal">Command Center.</span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
+                Stop handing out dead links. The Simpli-FI ID is a dynamic portal to your business, your calendar, and your current mission—for individuals and agencies alike.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-6 justify-center text-left max-w-3xl mx-auto mt-12 bg-white/70 backdrop-blur-md p-8 rounded-2xl shadow-sm border border-white/60">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i data-lucide="x-circle" class="w-4 h-4 text-coral" aria-hidden="true"></i>
+                        <h3 class="text-xs font-bold text-navy uppercase tracking-wide">The Friction</h3>
+                    </div>
+                    <p class="text-sm text-gray-500 leading-relaxed">
+                        Paper cards get lost. Linktrees look generic. Neither tells people <em>how</em> to transact with you right now.
+                    </p>
+                </div>
+                <div class="w-full h-px sm:w-px sm:h-auto bg-gray-200" aria-hidden="true"></div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-teal" aria-hidden="true"></i>
+                        <h3 class="text-xs font-bold text-navy uppercase tracking-wide">The Fix</h3>
+                    </div>
+                    <p class="text-sm text-gray-500 leading-relaxed">
+                        A Tiered Identity System. Showcase your brand, sync your goals, and direct traffic with authority.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- PRICING TIERS -->
+    <section id="pricing" class="max-w-7xl mx-auto px-6 mb-24">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-serif text-navy mb-4">Select Your Tier</h2>
+            <p class="text-gray-500">Scalable solutions for solo agents and enterprise teams.</p>
+            <p class="text-xs text-gray-400 mt-2 italic">(Tap or hover over the cards for a surprise!)</p>
+        </div>
+        
+        <!-- Pricing Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20 items-stretch">
+            
+            <!-- Tier 1: Ambassador (Coral/Stone Theme) -->
+            <div id="ambassador-card" class="tier-card bg-white p-6 rounded-2xl border border-coral/20 shadow-sm hover:shadow-md hover:border-coral/40 flex flex-col group h-full relative overflow-hidden" tabindex="0" role="article" aria-label="Ambassador tier - Free">
+                <div class="mb-4">
+                    <span class="text-[10px] font-bold bg-coral/10 text-coral px-2 py-1 rounded uppercase tracking-wider group-hover:bg-coral group-hover:text-white transition-colors">Ambassador</span>
+                </div>
+                <div class="flex items-baseline gap-1 mb-2"><span class="text-3xl font-bold text-navy">Free</span></div>
+                <p class="text-xs text-gray-400 border-b border-gray-100 pb-4 mb-4">Perfect for digital networking.</p>
+                <ul class="space-y-3 text-xs text-gray-600 flex-grow">
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-coral mt-0.5" aria-hidden="true"></i> <span>Mobile-Optimized ID</span></li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-coral mt-0.5" aria-hidden="true"></i> <span>Standard Hosting</span></li>
+                    <li class="flex items-start gap-2 text-gray-400"><i data-lucide="minus" class="w-3.5 h-3.5 mt-0.5" aria-hidden="true"></i> <span>Ad-Supported Footer</span></li>
+                    <li class="flex items-start gap-2 text-gray-400"><i data-lucide="x" class="w-3.5 h-3.5 text-red-300 mt-0.5" aria-hidden="true"></i> <span>No "Save Contact"</span></li>
+                </ul>
+                <a href="/intake/?tier=ambassador" class="mt-6 w-full py-2.5 bg-white text-coral text-xs font-bold rounded-lg border border-coral hover:bg-coral hover:text-white transition text-center block">
+                    Start Free
+                </a>
+            </div>
+
+            <!-- Tier 2: Professional (Navy/Gold Theme) -->
+            <div id="professional-card" class="tier-card bg-navy p-6 rounded-2xl border border-navy shadow-xl flex flex-col h-full relative overflow-hidden z-0" tabindex="0" role="article" aria-label="Professional tier - $19 one-time">
+                <div class="absolute top-0 right-0 bg-gold text-navy text-[10px] font-bold px-3 py-1 rounded-bl-xl rounded-tr-xl uppercase tracking-wider">Popular</div>
+                <div class="mb-4">
+                    <span class="text-[10px] font-bold bg-white/10 text-white px-2 py-1 rounded uppercase tracking-wider">Professional</span>
+                </div>
+                <div class="flex items-baseline gap-1 mb-2"><span class="text-3xl font-bold text-white">$19</span> <span class="text-xs text-gray-400">/ one-time</span></div>
+                <p class="text-xs text-gray-300 border-b border-white/10 pb-4 mb-4">Clean, functional, and ad-free.</p>
+                <ul class="space-y-3 text-xs text-gray-300 flex-grow">
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-gold mt-0.5" aria-hidden="true"></i> <span class="font-semibold text-white">Save to Contacts Button</span></li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-gold mt-0.5" aria-hidden="true"></i> <span>No Ad Banner</span></li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-gold mt-0.5" aria-hidden="true"></i> <span>1 Free Update / Year</span></li>
+                    <li class="flex items-start gap-2 text-gray-500"><i data-lucide="minus" class="w-3.5 h-3.5 mt-0.5" aria-hidden="true"></i> <span>Standard Hosting</span></li>
+                </ul>
+                <a href="/intake/?tier=professional" class="mt-6 w-full py-2.5 bg-gold hover:bg-amber-400 text-navy text-xs font-bold rounded-lg transition text-center block shadow-lg">
+                    Get Professional
+                </a>
+            </div>
+
+            <!-- Tier 3: Founder (Solid Simpli-FI Teal Theme) -->
+            <div id="founder-card" class="tier-card bg-teal p-6 rounded-2xl border border-teal shadow-xl hover:shadow-2xl hover:border-teal/80 flex flex-col relative overflow-hidden group h-full" tabindex="0" role="article" aria-label="Founder tier - $49 plus $5 per month">
+                <div class="absolute top-0 left-0 w-full h-1 bg-white/30" aria-hidden="true"></div>
+                <div class="mb-4">
+                    <span class="text-[10px] font-bold bg-white/20 text-white px-2 py-1 rounded uppercase tracking-wider group-hover:bg-white group-hover:text-teal transition-colors">Founder</span>
+                </div>
+                <div class="flex items-baseline gap-1 mb-2"><span class="text-3xl font-bold text-white">$49</span> <span class="text-xs text-teal-100 font-medium">+ $5/mo</span></div>
+                <p class="text-xs text-teal-50/70 border-b border-white/20 pb-4 mb-4">Total control and prestige.</p>
+                <ul class="space-y-3 text-xs text-teal-50 flex-grow">
+                    <li class="flex items-start gap-2"><i data-lucide="star" class="w-3.5 h-3.5 text-gold mt-0.5" aria-hidden="true"></i> <span class="font-bold text-white">Custom Domain</span></li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-white mt-0.5" aria-hidden="true"></i> <span>Unlimited Updates</span></li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-white mt-0.5" aria-hidden="true"></i> <span>Verified Gold Badge</span></li>
+                    <li class="flex items-start gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-white mt-0.5" aria-hidden="true"></i> <span>Priority Support</span></li>
+                </ul>
+                <a href="/intake/?tier=founder" class="mt-6 w-full py-2.5 bg-white hover:bg-teal-50 text-teal text-xs font-bold rounded-lg transition text-center block shadow-lg">
+                    Go Founder
+                </a>
+            </div>
+
+            <!-- Tier 4: Enterprise (Royal Purple & Gold Theme) -->
+            <div id="enterprise-card" class="tier-card bg-violet-900 p-6 rounded-2xl border border-amber-500/50 shadow-2xl hover:shadow-violet-500/30 flex flex-col group h-full relative overflow-hidden" tabindex="0" role="article" aria-label="Enterprise tier - Custom pricing">
+                <!-- Royal Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-br from-violet-800 to-indigo-950 pointer-events-none" aria-hidden="true"></div>
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-amber-300 to-amber-600" aria-hidden="true"></div>
+                
+                <div class="relative z-10">
+                    <div class="mb-4">
+                        <span class="text-[10px] font-bold bg-amber-500 text-violet-900 px-2 py-1 rounded uppercase tracking-wider group-hover:bg-white group-hover:text-violet-900 transition-colors">Enterprise</span>
+                    </div>
+                    <div class="flex items-baseline gap-1 mb-2"><span class="text-3xl font-bold text-white tracking-tight">Custom</span></div>
+                    <p class="text-xs text-violet-200 border-b border-white/10 pb-4 mb-4">For teams & agencies.</p>
+                    <ul class="space-y-3 text-xs text-violet-100 flex-grow">
+                        <li class="flex items-start gap-2"><i data-lucide="building-2" class="w-3.5 h-3.5 text-amber-400 mt-0.5" aria-hidden="true"></i> <span class="font-semibold text-white">Central Admin</span></li>
+                        <li class="flex items-start gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 mt-0.5" aria-hidden="true"></i> <span>Bulk Provisioning</span></li>
+                        <li class="flex items-start gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 mt-0.5" aria-hidden="true"></i> <span>Brand Lock</span></li>
+                        <li class="flex items-start gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 mt-0.5" aria-hidden="true"></i> <span>Account Manager</span></li>
+                    </ul>
+                    <a href="#" id="enterprise-contact-btn" class="mt-6 w-full py-2.5 bg-transparent hover:bg-amber-500 text-amber-400 hover:text-white text-xs font-bold rounded-lg border border-amber-500/70 transition text-center block shadow-[0_0_15px_rgba(245,158,11,0.1)] group-hover:shadow-[0_0_20px_rgba(245,158,11,0.4)]">
+                        Contact Sales
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparative View Table -->
+        <div class="mt-24">
+            <h3 class="text-2xl font-serif text-navy mb-8 text-center">Detailed Feature Comparison</h3>
+            <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
+                <table class="w-full text-left border-collapse min-w-[800px]">
+                    <thead>
+                        <tr>
+                            <th class="p-5 border-b border-gray-100 bg-gray-50/80 text-xs font-bold text-gray-500 uppercase tracking-wider w-1/4" scope="col">Feature</th>
+                            <th class="p-5 border-b border-coral/20 bg-orange-50/30 text-center w-[18%]" scope="col">
+                                <span class="block text-[10px] font-bold text-coral uppercase tracking-wider">Ambassador</span>
+                                <span class="block font-bold text-navy text-sm mt-0.5">Free</span>
+                            </th>
+                            <th class="p-5 border-b border-navy bg-navy/5 text-center w-[18%]" scope="col">
+                                <span class="block text-[10px] font-bold text-navy uppercase tracking-wider">Professional</span>
+                                <span class="block font-bold text-navy text-sm mt-0.5">$19</span>
+                            </th>
+                            <th class="p-5 border-b border-teal bg-teal/10 text-center w-[18%]" scope="col">
+                                <span class="block text-[10px] font-bold text-teal uppercase tracking-wider">Founder</span>
+                                <span class="block font-bold text-teal-800 text-sm mt-0.5">$49 + $5/mo</span>
+                            </th>
+                            <th class="p-5 border-b border-violet-800 bg-violet-900 text-center w-[18%]" scope="col">
+                                <span class="block text-[10px] font-bold text-amber-400 uppercase tracking-wider">Enterprise</span>
+                                <span class="block font-bold text-white text-sm mt-0.5">Custom</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-xs text-gray-600">
+                        <!-- Feature 1 -->
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="p-4 border-b border-gray-100 font-medium text-navy">Simpli-FI Hosting</td>
+                            <td class="p-4 border-b border-gray-100 text-center text-coral font-medium">Standard</td>
+                            <td class="p-4 border-b border-gray-100 text-center text-navy font-medium bg-navy/5">Standard</td>
+                            <td class="p-4 border-b border-gray-100 text-center text-teal font-bold bg-teal/5">Custom Domain</td>
+                            <td class="p-4 border-b border-gray-100 text-center text-amber-700 font-medium bg-violet-50/10">Agency Subdomain</td>
+                        </tr>
+                        <!-- Feature 2 -->
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="p-4 border-b border-gray-100 font-medium text-navy">Ad-Free Experience</td>
+                            <td class="p-4 border-b border-gray-100 text-center"><i data-lucide="minus" class="w-4 h-4 text-gray-300 mx-auto" aria-label="Not included"></i></td>
+                            <td class="p-4 border-b border-gray-100 text-center bg-navy/5"><i data-lucide="check" class="w-4 h-4 text-navy mx-auto" aria-label="Included"></i></td>
+                            <td class="p-4 border-b border-gray-100 text-center bg-teal/5"><i data-lucide="check" class="w-4 h-4 text-teal mx-auto" aria-label="Included"></i></td>
+                            <td class="p-4 border-b border-gray-100 text-center bg-violet-50/10"><i data-lucide="check" class="w-4 h-4 text-violet-700 mx-auto" aria-label="Included"></i></td>
+                        </tr>
+                        <!-- Feature 3 -->
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="p-4 border-b border-gray-100 font-medium text-navy">"Save Contact" Button</td>
+                            <td class="p-4 border-b border-gray-100 text-center"><i data-lucide="x" class="w-4 h-4 text-red-300 mx-auto" aria-label="Not included"></i></td>
+                            <td class="p-4 border-b border-gray-100 text-center bg-navy/5"><i data-lucide="check" class="w-4 h-4 text-navy mx-auto" aria-label="Included"></i></td>
+                            <td class="p-4 border-b border-gray-100 text-center bg-teal/5"><i data-lucide="check" class="w-4 h-4 text-teal mx-auto" aria-label="Included"></i></td>
+                            <td class="p-4 border-b border-gray-100 text-center bg-violet-50/10"><i data-lucide="check" class="w-4 h-4 text-violet-700 mx-auto" aria-label="Included"></i></td>
+                        </tr>
+                        <!-- Feature 4 -->
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="p-4 border-b border-gray-100 font-medium text-navy">Profile Updates</td>
+                            <td class="p-4 border-b border-gray-100 text-center">Locked</td>
+                            <td class="p-4 border-b border-gray-100 text-center bg-navy/5">1 per Year</td>
+                            <td class="p-4 border-b border-gray-100 text-center font-bold text-teal bg-teal/5">Unlimited</td>
+                            <td class="p-4 border-b border-gray-100 text-center font-bold text-amber-700 bg-violet-50/10">Unlimited</td>
+                        </tr>
+                        <!-- Feature 5 -->
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="p-4 border-b border-gray-100 font-medium text-navy">Verified Gold Badge</td>
+                            <td class="p-4 border-b border-gray-100 text-center"><i data-lucide="minus" class="w-4 h-4 text-gray-300 mx-auto" aria-label="Not included"></i></td>
+                            <td class="p-4 border-b border-gray-100 text-center bg-navy/5"><i data-lucide="minus" class="w-4 h-4 text-gray-300 mx-auto" aria-label="Not included"></i></td>
+                            <td class="p-4 border-b border-gray-100 text-center bg-teal/5"><i data-lucide="check" class="w-4 h-4 text-teal mx-auto" aria-label="Included"></i></td>
+                            <td class="p-4 border-b border-gray-100 text-center bg-violet-50/10"><i data-lucide="check" class="w-4 h-4 text-violet-700 mx-auto" aria-label="Included"></i></td>
+                        </tr>
+                        <!-- Feature 6 -->
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="p-4 border-b border-gray-100 font-medium text-navy">Admin Dashboard</td>
+                            <td class="p-4 border-b border-gray-100 text-center"><i data-lucide="minus" class="w-4 h-4 text-gray-300 mx-auto" aria-label="Not included"></i></td>
+                            <td class="p-4 border-b border-gray-100 text-center bg-navy/5"><i data-lucide="minus" class="w-4 h-4 text-gray-300 mx-auto" aria-label="Not included"></i></td>
+                            <td class="p-4 border-b border-gray-100 text-center bg-teal/5">Personal</td>
+                            <td class="p-4 border-b border-gray-100 text-center font-bold text-violet-700 bg-violet-50/10">Organization Level</td>
+                        </tr>
+                        <!-- Feature 7 -->
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="p-4 font-medium text-navy">Priority Support</td>
+                            <td class="p-4 text-center">Standard</td>
+                            <td class="p-4 text-center bg-navy/5">Standard</td>
+                            <td class="p-4 text-center bg-teal/5 text-teal font-medium">Priority Email</td>
+                            <td class="p-4 text-center text-amber-700 font-bold bg-violet-50/10">Dedicated Manager</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- LIVE PREVIEW SECTION -->
+    <section id="preview" class="max-w-6xl mx-auto px-6 mb-24">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-serif text-navy mb-4">See It In Action</h2>
+            <p class="text-gray-500">Real examples of Simpli-FI Digital IDs deployed in the field.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start mb-16">
+            <div class="rounded-3xl shadow-xl overflow-hidden border-[6px] border-navy/5 bg-white hover:scale-[1.02] transition duration-500">
+                <img src="https://files.constantcontact.com/3720c3fd901/040f4544-8335-483d-80b4-b42f8d718fba.png" alt="Example Simpli-FI ID card for Hunter Lott showing professional profile with contact links and social media" class="w-full h-auto">
+            </div>
+            <div class="rounded-3xl shadow-xl overflow-hidden border-[6px] border-navy/5 bg-white hover:scale-[1.02] transition duration-500 md:-mt-8">
+                <img src="https://files.constantcontact.com/3720c3fd901/42685625-3892-4ec3-9b96-7c607b0f4086.png" alt="Example Simpli-FI ID card for Lindsey Lott showing professional organizer profile with booking links" class="w-full h-auto">
+            </div>
+            <div class="rounded-3xl shadow-xl overflow-hidden border-[6px] border-navy/5 bg-white hover:scale-[1.02] transition duration-500">
+                <img src="https://files.constantcontact.com/3720c3fd901/ac004f7a-83a8-40ca-b26e-828958065be2.png" alt="Example Simpli-FI ID card for Colby showing professional profile with custom branding" class="w-full h-auto">
+            </div>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-gray-200 p-8 shadow-lg max-w-4xl mx-auto relative group">
+            <!-- Background Container for clipping decoration -->
+            <div class="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none" aria-hidden="true">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-gold/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+            </div>
+            
+            <!-- Content (No overflow hidden) -->
+            <div class="relative z-10">
+                <h3 class="text-center text-xs font-bold text-navy uppercase tracking-widest mb-8 relative z-10">Interactive Command Features</h3>
+                
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-y-8 gap-x-4 text-center relative z-10">
+                    <div class="flex flex-col items-center gap-2 group">
+                        <div class="w-12 h-12 rounded-2xl bg-offwhite group-hover:bg-navy group-hover:text-white transition duration-300 flex items-center justify-center text-navy shadow-sm border border-gray-100"><i data-lucide="phone" class="w-5 h-5" aria-hidden="true"></i></div>
+                        <span class="text-xs font-medium text-gray-500">Instant Call</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 group">
+                        <div class="w-12 h-12 rounded-2xl bg-offwhite group-hover:bg-navy group-hover:text-white transition duration-300 flex items-center justify-center text-navy shadow-sm border border-gray-100"><i data-lucide="mail" class="w-5 h-5" aria-hidden="true"></i></div>
+                        <span class="text-xs font-medium text-gray-500">Email Direct</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 group">
+                        <div class="w-12 h-12 rounded-2xl bg-offwhite group-hover:bg-navy group-hover:text-white transition duration-300 flex items-center justify-center text-navy shadow-sm border border-gray-100"><i data-lucide="globe" class="w-5 h-5" aria-hidden="true"></i></div>
+                        <span class="text-xs font-medium text-gray-500">Visit Website</span>
+                    </div>
+                    
+                    <!-- Interactive Tooltip 1 -->
+                    <div class="relative flex flex-col items-center gap-2 group cursor-pointer" onclick="togglePopup('popup-calendar', event)" onkeydown="handlePopupKeydown(event, 'popup-calendar')">
+                        <div class="w-12 h-12 rounded-2xl bg-offwhite group-hover:bg-navy group-hover:text-white transition duration-300 flex items-center justify-center text-navy shadow-sm border border-gray-100 animate-pulse" tabindex="0" role="button" aria-expanded="false" aria-controls="popup-calendar"><i data-lucide="calendar" class="w-5 h-5" aria-hidden="true"></i></div>
+                        <span class="text-xs font-medium text-navy border-b border-dashed border-gray-300 group-hover:border-navy transition">Book Meeting</span>
+                        <div id="popup-calendar" class="info-popup hidden absolute bottom-full mb-4 w-64 bg-navy text-white p-5 rounded-xl shadow-2xl z-50 text-left pointer-events-none ring-1 ring-white/10" role="tooltip">
+                            <h4 class="text-gold font-bold text-xs uppercase tracking-wider mb-2">Frictionless Scheduling</h4>
+                            <p class="text-[11px] leading-relaxed text-gray-300">Connects seamlessly with Calendly, Google, or Outlook. Prospects book time instantly without the back-and-forth email tag.</p>
+                            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-4 h-4 bg-navy" aria-hidden="true"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Interactive Tooltip 2 -->
+                    <div class="relative flex flex-col items-center gap-2 group cursor-pointer" onclick="togglePopup('popup-save', event)" onkeydown="handlePopupKeydown(event, 'popup-save')">
+                        <div class="w-12 h-12 rounded-2xl bg-gold/10 group-hover:bg-gold group-hover:text-navy transition duration-300 flex items-center justify-center text-gold shadow-sm border border-gold/20" tabindex="0" role="button" aria-expanded="false" aria-controls="popup-save"><i data-lucide="save" class="w-5 h-5" aria-hidden="true"></i></div>
+                        <span class="text-xs font-bold text-navy border-b border-dashed border-navy/30 group-hover:border-navy transition">Save Contact</span>
+                        <div id="popup-save" class="info-popup hidden absolute bottom-full mb-4 w-64 bg-navy text-white p-5 rounded-xl shadow-2xl z-50 text-left pointer-events-none ring-1 ring-white/10" role="tooltip">
+                            <h4 class="text-gold font-bold text-xs uppercase tracking-wider mb-2">One-Tap Magic</h4>
+                            <p class="text-[11px] leading-relaxed text-gray-300">Instantly downloads your vCard file. Saves your photo, bio, website, and social links directly into their phone contacts.</p>
+                            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-4 h-4 bg-navy" aria-hidden="true"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="text-center text-[10px] text-gray-400 mt-8 italic">* Tap the <span class="font-bold text-navy">Book Meeting</span> or <span class="font-bold text-navy">Save Contact</span> icons above to explore.</p>
+        </div>
+    </section>
+
+    <!-- INTAKE ENGINE (Restored) -->
+    <section id="claim" class="flex-grow pb-24 scroll-mt-24">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200 text-center py-16 px-8 relative group">
+                <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-teal via-navy to-gold" aria-hidden="true"></div>
+                
+                <!-- Animated background blobs -->
+                <div class="absolute -top-12 -right-12 w-48 h-48 bg-gold/10 rounded-full blur-3xl group-hover:bg-gold/20 transition duration-700" aria-hidden="true"></div>
+                <div class="absolute -bottom-12 -left-12 w-48 h-48 bg-teal/10 rounded-full blur-3xl group-hover:bg-teal/20 transition duration-700" aria-hidden="true"></div>
+                
+                <div class="w-20 h-20 bg-offwhite rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-gray-100 relative z-10 group-hover:scale-110 transition duration-300">
+                    <i data-lucide="file-check" class="w-9 h-9 text-navy" aria-hidden="true"></i>
+                </div>
+                
+                <div class="relative z-10">
+                    <h2 class="text-3xl font-serif text-navy mb-4">Ready to Launch?</h2>
+                    <p class="text-gray-500 max-w-md mx-auto mb-10 leading-relaxed">
+                        Click below to open the secure intake portal and claim your Simpli-FI ID. Setup takes less than 5 minutes.
+                    </p>
+                    
+                    <a href="/intake/" class="inline-flex items-center gap-3 px-8 py-4 bg-navy text-white font-bold rounded-xl shadow-xl hover:bg-teal hover:-translate-y-1 transition-all duration-300 group">
+                        <span>Launch Secure Intake Form</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform" aria-hidden="true"></i>
+                    </a>
+                    
+                    <div class="mt-8 flex justify-center gap-6 text-[10px] text-gray-400 uppercase tracking-widest font-medium">
+                        <span class="flex items-center gap-1.5"><i data-lucide="shield" class="w-3.5 h-3.5" aria-hidden="true"></i> Encrypted</span>
+                        <span class="flex items-center gap-1.5"><i data-lucide="zap" class="w-3.5 h-3.5" aria-hidden="true"></i> Instant Delivery</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-navy py-12 mt-auto border-t border-white/5 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6 relative z-10">
+            <div class="flex items-center gap-3">
+                 <img src="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png" class="w-6 h-6 rounded opacity-50 grayscale" alt="Simpli-FI ID logo">
+                <div class="text-white/40 text-xs">
+                    &copy; <span id="current-year"></span> Simpli-FI ID. All rights reserved.
+                </div>
+            </div>
+            
+            <div class="flex gap-8 text-xs text-gray-400 font-medium">
+                <a href="https://www.simpli-fi-os.com" class="hover:text-white transition">Return to Mothership</a>
+                <a href="/intake/" class="hover:text-white transition">Get Support</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Set current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        /* --- Bot-Protected Email for Enterprise --- */
+        (function() {
+            // Obfuscated email parts to prevent scraping
+            const emailParts = ['hunter', '.', 'lott', '@', 'simpli-fi-os', '.', 'com'];
+            const email = emailParts.join('');
+            
+            const subject = encodeURIComponent('Enterprise Inquiry - Simpli-FI ID');
+            const body = encodeURIComponent(
+`Hi Hunter,
+
+I'm interested in learning more about the Simpli-FI ID Enterprise tier for my organization.
+
+Company Name: 
+Team Size: 
+Primary Use Case: 
+
+I'd love to schedule a brief call to discuss how Simpli-FI ID can work for our team.
+
+Best regards,`
+            );
+            
+            const enterpriseBtn = document.getElementById('enterprise-contact-btn');
+            if (enterpriseBtn) {
+                enterpriseBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Build mailto dynamically on click (bot protection)
+                    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+                });
+            }
+        })();
+
+        /* --- Popup Toggle Logic --- */
+        function togglePopup(id, event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const allPopups = document.querySelectorAll('.info-popup');
+            allPopups.forEach(p => { 
+                if (p.id !== id) { 
+                    p.classList.add('hidden'); 
+                    p.classList.remove('visible');
+                    // Update aria-expanded on associated button
+                    const btn = document.querySelector(`[aria-controls="${p.id}"]`);
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                } 
+            });
+            
+            const popup = document.getElementById(id);
+            const triggerBtn = document.querySelector(`[aria-controls="${id}"]`);
+            
+            if (popup.classList.contains('hidden')) {
+                popup.classList.remove('hidden');
+                requestAnimationFrame(() => { popup.classList.add('visible'); });
+                if (triggerBtn) triggerBtn.setAttribute('aria-expanded', 'true');
+            } else {
+                popup.classList.remove('visible');
+                setTimeout(() => popup.classList.add('hidden'), 200);
+                if (triggerBtn) triggerBtn.setAttribute('aria-expanded', 'false');
+            }
+        }
+        
+        // Keyboard support for popups
+        function handlePopupKeydown(event, popupId) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                togglePopup(popupId, event);
+            }
+        }
+        
+        // Close popups on click outside or Escape key
+        document.addEventListener('click', (e) => {
+            const popups = document.querySelectorAll('.info-popup');
+            popups.forEach(p => {
+                if (p.classList.contains('visible') && !e.target.closest('.group')) {
+                    p.classList.remove('visible');
+                    setTimeout(() => p.classList.add('hidden'), 200);
+                    const btn = document.querySelector(`[aria-controls="${p.id}"]`);
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                }
+            });
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const popups = document.querySelectorAll('.info-popup.visible');
+                popups.forEach(p => {
+                    p.classList.remove('visible');
+                    setTimeout(() => p.classList.add('hidden'), 200);
+                    const btn = document.querySelector(`[aria-controls="${p.id}"]`);
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                });
+            }
+        });
+
+        /* --- Confetti Animations with Cooldown --- */
+        const confettiCooldowns = {};
+        const COOLDOWN_MS = 2000; // 2 second cooldown between confetti bursts
+        
+        function canFireConfetti(cardId) {
+            const now = Date.now();
+            if (!confettiCooldowns[cardId] || now - confettiCooldowns[cardId] > COOLDOWN_MS) {
+                confettiCooldowns[cardId] = now;
+                return true;
+            }
+            return false;
+        }
+
+        // 1. Ambassador: Happy Confetti (Normal Gravity, Bright Colors, From Top)
+        document.getElementById('ambassador-card').addEventListener('mouseenter', (e) => {
+            if (!canFireConfetti('ambassador')) return;
+            
+            const rect = e.target.getBoundingClientRect();
+            const x = (rect.left + rect.width / 2) / window.innerWidth;
+            const y = (rect.top) / window.innerHeight;
+            
+            confetti({
+                particleCount: 25,
+                spread: 50,
+                startVelocity: 20,
+                gravity: 0.8,
+                origin: { x, y },
+                colors: ['#E27D60', '#fbbf24', '#ffffff'],
+                disableForReducedMotion: true
+            });
+        });
+
+        // 2. Professional: Standard Burst
+        document.getElementById('professional-card').addEventListener('mouseenter', (e) => {
+            if (!canFireConfetti('professional')) return;
+            
+            const rect = e.target.getBoundingClientRect();
+            const x = (rect.left + rect.width / 2) / window.innerWidth;
+            const y = (rect.top + rect.height / 3) / window.innerHeight;
+            
+            confetti({
+                particleCount: 50,
+                spread: 60,
+                origin: { x, y },
+                colors: ['#fbbf24', '#1e293b', '#ffffff'],
+                disableForReducedMotion: true
+            });
+        });
+
+        // 3. Founder: Fireworks
+        document.getElementById('founder-card').addEventListener('mouseenter', (e) => {
+            if (!canFireConfetti('founder')) return;
+            
+            const rect = e.target.getBoundingClientRect();
+            const x = (rect.left + rect.width / 2) / window.innerWidth;
+            const y = (rect.top) / window.innerHeight;
+
+            const duration = 1000;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: x - 0.05, y: y },
+                    colors: ['#0d9488', '#ffffff'],
+                    disableForReducedMotion: true
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: x + 0.05, y: y },
+                    colors: ['#fbbf24', '#ffffff'],
+                    disableForReducedMotion: true
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        });
+
+        // 4. Enterprise: Grand Confetti Burst
+        document.getElementById('enterprise-card').addEventListener('mouseenter', (e) => {
+            if (!canFireConfetti('enterprise')) return;
+            
+            const rect = e.target.getBoundingClientRect();
+            const x = (rect.left + rect.width / 2) / window.innerWidth;
+            const y = (rect.top + rect.height / 2) / window.innerHeight;
+
+            confetti({
+                particleCount: 400,
+                spread: 160,
+                origin: { x, y },
+                scalar: 1.2,
+                gravity: 0.6,
+                colors: ['#fbbf24', '#f59e0b', '#ffffff', '#1e293b'],
+                disableForReducedMotion: true
+            });
+        });
+    </script>
+</body>
+</html>

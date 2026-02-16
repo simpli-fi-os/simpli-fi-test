@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI ID | Edit Profile</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase SDKs (Compat 11.6.1) -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-storage-compat.js"></script>
+    <script>window._suppressAnonymousAuth = true;</script>
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/tiers.js"></script>
+    <script src="/js/auth-guard.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { background-color: #F3F4F6; font-family: 'Inter', sans-serif; }
+        .preview-scroll::-webkit-scrollbar { width: 0px; background: transparent; }
+        .changed { border-color: #fbbf24 !important; box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row relative">
+
+    <!-- SUCCESS MODAL -->
+    <div id="success-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-500 to-yellow-400"></div>
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
+                <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl font-serif text-slate-800 font-bold mb-2">Profile Updated!</h2>
+            <p class="text-slate-500 text-sm mb-6">Your changes have been applied successfully.</p>
+            <a href="/account/" class="w-full py-3 bg-[#1e293b] text-white font-bold rounded-xl hover:bg-slate-800 transition flex items-center justify-center gap-2 block">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Back to Portal
+            </a>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-state" class="min-h-screen w-full flex items-center justify-center">
+        <div class="text-center">
+            <div class="w-12 h-12 border-4 border-slate-200 border-t-[#1e293b] rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-sm text-slate-500">Loading your profile...</p>
+        </div>
+    </div>
+
+    <!-- LEFT PANEL: THE FORM -->
+    <div id="form-panel" class="hidden w-full md:w-1/2 bg-white flex flex-col h-screen overflow-y-auto relative">
+
+        <!-- HEADER -->
+        <div class="p-8 border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur z-30">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <a href="/account/" class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center hover:bg-slate-200 transition">
+                        <i data-lucide="arrow-left" class="w-4 h-4 text-slate-600"></i>
+                    </a>
+                    <span class="font-serif text-[#1e293b] font-bold tracking-tight text-lg" style="font-family: 'Playfair Display', serif;">Edit Profile</span>
+                </div>
+                <div id="tier-display" class="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-3 py-1 rounded-full"></div>
+            </div>
+            <p class="text-[10px] text-slate-400">Fields with a <span class="inline-block w-2 h-2 rounded-full bg-[#fbbf24] align-middle"></span> gold border have been changed.</p>
+        </div>
+
+        <div class="flex-1 p-8 space-y-8">
+
+            <!-- Section 1: Essentials -->
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Identity Essentials</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-medium text-slate-600 mb-1">First Name</label><input type="text" id="edit-fname" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="trackChange(this, 'first_name'); updatePreview()"></div>
+                    <div><label class="block text-xs font-medium text-slate-600 mb-1">Last Name</label><input type="text" id="edit-lname" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="trackChange(this, 'last_name'); updatePreview()"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-medium text-slate-600 mb-1">Professional Title</label><input type="text" id="edit-title" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="trackChange(this, 'title'); updatePreview()"></div>
+                    <div><label class="block text-xs font-medium text-slate-600 mb-1">Company / Employer</label><input type="text" id="edit-company" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="trackChange(this, 'company'); updatePreview()"></div>
+                </div>
+                <div id="tagline-row" class="hidden">
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Tag Line / Motto</label>
+                    <input type="text" id="edit-tagline" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="trackChange(this, 'tagline'); updatePreview()">
+                </div>
+            </div>
+
+            <!-- Section 2: Mission -->
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="target" class="w-4 h-4"></i> The Mission</h3>
+                <div><label class="block text-xs font-medium text-slate-600 mb-1">Current 90-Day Goal</label><textarea id="edit-mission" rows="3" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition resize-none" oninput="trackChange(this, 'mission'); updatePreview()"></textarea></div>
+                <div><label class="block text-xs font-medium text-slate-600 mb-1">About / Bio</label><textarea id="edit-bio" rows="3" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition resize-none" oninput="trackChange(this, 'bio'); updatePreview()"></textarea></div>
+            </div>
+
+            <!-- Section 3: Visuals -->
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="image" class="w-4 h-4"></i> Visual Brand</h3>
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden border border-slate-200 shrink-0">
+                        <img id="thumb-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block w-full cursor-pointer group">
+                            <div class="flex items-center justify-center w-full p-2 border-2 border-dashed border-slate-200 rounded-xl group-hover:border-[#1e293b] transition bg-white">
+                                <span class="text-[10px] text-slate-500 font-medium group-hover:text-[#1e293b]">Change Headshot</span>
+                            </div>
+                            <input type="file" id="edit-photo" accept="image/*" class="hidden" onchange="handleImageChange(this)">
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Brand Color</label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="edit-color" class="w-8 h-8 rounded-full cursor-pointer border-0" onchange="trackChange(this, 'custom_color'); updatePreview()" style="-webkit-appearance: none; border: none; padding: 0;">
+                        <input type="text" id="edit-color-hex" placeholder="#1e293b" class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono uppercase focus:outline-none focus:border-[#1e293b] transition" oninput="syncColorFromHex()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4: Contact -->
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="link" class="w-4 h-4"></i> Contact Details</h3>
+                <div><label class="block text-xs font-medium text-slate-600 mb-1">Email (on card)</label><input type="email" id="edit-email" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition text-sm" oninput="trackChange(this, 'email')"></div>
+                <div><label class="block text-xs font-medium text-slate-600 mb-1">Phone</label><input type="tel" id="edit-phone" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition text-sm" oninput="trackChange(this, 'phone')"></div>
+                <div><label class="block text-xs font-medium text-slate-600 mb-1">Website</label><input type="url" id="edit-website" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition text-sm" oninput="trackChange(this, 'website')"></div>
+                <div><label class="block text-xs font-medium text-slate-600 mb-1">Location</label><input type="text" id="edit-location" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition text-sm" oninput="trackChange(this, 'location')"></div>
+            </div>
+
+            <!-- Section 5: Commerce (Founder only) -->
+            <div id="commerce-row" class="space-y-4 hidden">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="dollar-sign" class="w-4 h-4"></i> Commerce</h3>
+                <div><label class="block text-xs font-medium text-slate-600 mb-1">Payment Link</label><input type="url" id="edit-payment" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition text-sm" oninput="trackChange(this, 'payment_link')"></div>
+            </div>
+
+            <div class="h-12"></div>
+        </div>
+
+        <!-- Submit Bar -->
+        <div class="p-6 border-t border-gray-100 bg-white sticky bottom-0 z-20">
+            <div class="flex items-center justify-between mb-3">
+                <p class="text-[10px] text-slate-400"><span id="change-count">0</span> field(s) changed</p>
+            </div>
+            <button onclick="submitChangeOrder()" id="btn-submit" disabled class="w-full py-4 bg-slate-300 text-white font-bold rounded-2xl transition flex items-center justify-center gap-2 cursor-not-allowed">
+                <span>No Changes to Submit</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL: LIVE PREVIEW -->
+    <div id="preview-panel" class="hidden md:flex w-1/2 bg-slate-100 items-center justify-center p-12 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-5 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:20px_20px]"></div>
+
+        <div class="relative w-full max-w-[380px] h-[750px] bg-white rounded-[40px] shadow-2xl border-8 border-slate-900 overflow-hidden ring-1 ring-white/20">
+            <div class="w-full h-full overflow-y-auto preview-scroll bg-[#FBF9F7] relative">
+                <div class="h-32 bg-[#1e293b] relative overflow-hidden transition-colors duration-500" id="preview-header">
+                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#fbbf24_1px,transparent_1px)] [background-size:10px_10px]"></div>
+                </div>
+                <div class="relative px-6 -mt-16 text-center">
+                    <div class="inline-block relative">
+                        <div class="w-28 h-28 rounded-full border-4 border-white shadow-lg overflow-hidden bg-slate-200">
+                            <img id="preview-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h2 id="preview-name" class="font-serif text-2xl font-bold text-[#1e293b]" style="font-family: 'Playfair Display', serif;">Your Name</h2>
+                        <p id="preview-title-text" class="text-[#fbbf24] font-bold text-[10px] tracking-widest uppercase mt-1">Professional Title</p>
+                        <p id="preview-tagline" class="text-slate-500 text-[10px] mt-1 font-medium hidden"></p>
+                    </div>
+                </div>
+
+                <div id="preview-mission-block" class="px-4 mt-6 hidden">
+                    <div class="bg-white p-4 rounded-xl border-l-4 border-[#1e293b] shadow-sm">
+                        <div class="flex items-center gap-2 mb-1">
+                            <i data-lucide="target" class="w-3 h-3 text-[#1e293b]"></i>
+                            <span class="text-[8px] font-bold uppercase tracking-widest text-[#1e293b]">Mission</span>
+                        </div>
+                        <p id="preview-mission" class="text-slate-600 text-xs italic"></p>
+                    </div>
+                </div>
+
+                <div class="px-4 mt-4 space-y-2">
+                    <div id="preview-email-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100"><i data-lucide="mail" class="w-3 h-3 text-[#1e293b]"></i><span id="preview-email" class="ml-3 text-[10px] text-slate-600 truncate"></span></div>
+                    <div id="preview-phone-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100"><i data-lucide="phone" class="w-3 h-3 text-[#1e293b]"></i><span id="preview-phone" class="ml-3 text-[10px] text-slate-600 truncate"></span></div>
+                    <div id="preview-website-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100"><i data-lucide="globe" class="w-3 h-3 text-[#1e293b]"></i><span id="preview-website" class="ml-3 text-[10px] text-slate-600 truncate"></span></div>
+                    <div id="preview-location-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100"><i data-lucide="map-pin" class="w-3 h-3 text-[#1e293b]"></i><span id="preview-location" class="ml-3 text-[10px] text-slate-600 truncate"></span></div>
+                </div>
+
+                <div class="mt-8 px-4 pb-8">
+                    <p class="text-[8px] text-slate-400 uppercase tracking-widest font-bold text-center">Powered by Simpli-FI</p>
+                </div>
+            </div>
+            <div class="absolute top-0 left-0 -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-xl z-50 left-1/2"></div>
+        </div>
+        <div class="absolute bottom-8 text-slate-400 text-xs font-mono">Live Preview</div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        let originalData = {};
+        let currentUserData = null;
+        let changedFields = {};
+        let newPhotoFile = null;
+
+        // Load user data
+        auth.onAuthStateChanged(async function(user) {
+            if (!user || user.isAnonymous) return;
+
+            try {
+                const userData = await getUserByAuthUid(user.uid);
+                if (!userData) {
+                    window.location.href = '/intake/';
+                    return;
+                }
+
+                currentUserData = userData;
+                const tier = normalizeTier(userData.tier);
+                const tierConfig = getTierConfig(tier);
+
+                // Check tier limits
+                if (!canSubmitChangeOrder(tier, userData.change_order_count || 0)) {
+                    alert('You have used all available profile updates for your tier.');
+                    window.location.href = '/account/';
+                    return;
+                }
+
+                // Populate form
+                populateForm(userData, tier);
+
+                // Show panels
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('form-panel').classList.remove('hidden');
+                document.getElementById('preview-panel').classList.remove('hidden');
+                lucide.createIcons();
+                updatePreview();
+            } catch (error) {
+                console.error('Load error:', error);
+                alert('Error loading profile: ' + error.message);
+                window.location.href = '/account/';
+            }
+        });
+
+        function populateForm(data, tier) {
+            const tierConfig = getTierConfig(tier);
+            document.getElementById('tier-display').textContent = tierConfig.name + ' Tier';
+
+            // Store originals for diff
+            originalData = {
+                first_name: data.first_name || '',
+                last_name: data.last_name || '',
+                title: data.title || '',
+                company: data.company || '',
+                tagline: data.tagline || '',
+                mission: data.mission || '',
+                bio: data.bio || '',
+                email: data.email || '',
+                phone: data.phone || '',
+                website: (data.social_links && data.social_links.website) || '',
+                location: data.location || '',
+                custom_color: data.custom_color || '#1e293b',
+                payment_link: data.payment_link || ''
+            };
+
+            // Fill inputs
+            document.getElementById('edit-fname').value = originalData.first_name;
+            document.getElementById('edit-lname').value = originalData.last_name;
+            document.getElementById('edit-title').value = originalData.title;
+            document.getElementById('edit-company').value = originalData.company;
+            document.getElementById('edit-tagline').value = originalData.tagline;
+            document.getElementById('edit-mission').value = originalData.mission;
+            document.getElementById('edit-bio').value = originalData.bio;
+            document.getElementById('edit-email').value = originalData.email;
+            document.getElementById('edit-phone').value = originalData.phone;
+            document.getElementById('edit-website').value = originalData.website;
+            document.getElementById('edit-location').value = originalData.location;
+            document.getElementById('edit-color').value = originalData.custom_color;
+            document.getElementById('edit-color-hex').value = originalData.custom_color;
+            document.getElementById('edit-payment').value = originalData.payment_link;
+
+            // Avatar
+            if (data.avatar_url) {
+                document.getElementById('thumb-preview').src = data.avatar_url;
+                document.getElementById('preview-avatar').src = data.avatar_url;
+            }
+
+            // Founder-only fields
+            if (tier === 'founder' || tier === 'enterprise') {
+                document.getElementById('tagline-row').classList.remove('hidden');
+                document.getElementById('commerce-row').classList.remove('hidden');
+            }
+        }
+
+        function trackChange(input, fieldName) {
+            const currentVal = input.value.trim();
+            const originalVal = originalData[fieldName] || '';
+
+            if (currentVal !== originalVal) {
+                changedFields[fieldName] = { before: originalVal, after: currentVal };
+                input.classList.add('changed');
+            } else {
+                delete changedFields[fieldName];
+                input.classList.remove('changed');
+            }
+            updateSubmitButton();
+        }
+
+        function handleImageChange(input) {
+            if (input.files && input.files[0]) {
+                newPhotoFile = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('thumb-preview').src = e.target.result;
+                    document.getElementById('preview-avatar').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+                changedFields['avatar'] = { before: '(previous)', after: '(new upload)' };
+                updateSubmitButton();
+            }
+        }
+
+        function syncColorFromHex() {
+            const hex = document.getElementById('edit-color-hex').value.trim();
+            if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+                document.getElementById('edit-color').value = hex;
+                trackChange(document.getElementById('edit-color-hex'), 'custom_color');
+                updatePreview();
+            }
+        }
+
+        function updateSubmitButton() {
+            const count = Object.keys(changedFields).length;
+            document.getElementById('change-count').textContent = count;
+            const btn = document.getElementById('btn-submit');
+            if (count > 0) {
+                btn.disabled = false;
+                btn.className = 'w-full py-4 bg-[#1e293b] text-white font-bold rounded-2xl shadow-xl hover:bg-slate-800 transition flex items-center justify-center gap-2 cursor-pointer';
+                btn.innerHTML = '<span>Submit ' + count + ' Change' + (count !== 1 ? 's' : '') + '</span><i data-lucide="check" class="w-5 h-5"></i>';
+                lucide.createIcons();
+            } else {
+                btn.disabled = true;
+                btn.className = 'w-full py-4 bg-slate-300 text-white font-bold rounded-2xl transition flex items-center justify-center gap-2 cursor-not-allowed';
+                btn.innerHTML = '<span>No Changes to Submit</span>';
+            }
+        }
+
+        function updatePreview() {
+            const fname = document.getElementById('edit-fname').value || 'Your';
+            const lname = document.getElementById('edit-lname').value || 'Name';
+            document.getElementById('preview-name').textContent = fname + ' ' + lname;
+            document.getElementById('preview-title-text').textContent = document.getElementById('edit-title').value || 'Professional Title';
+
+            // Color
+            const color = document.getElementById('edit-color').value || '#1e293b';
+            document.getElementById('preview-header').style.backgroundColor = color;
+            document.getElementById('preview-name').style.color = color;
+
+            // Tagline
+            const tagline = document.getElementById('edit-tagline').value;
+            const taglineEl = document.getElementById('preview-tagline');
+            if (tagline) {
+                taglineEl.textContent = '"' + tagline + '"';
+                taglineEl.classList.remove('hidden');
+            } else {
+                taglineEl.classList.add('hidden');
+            }
+
+            // Mission
+            const mission = document.getElementById('edit-mission').value;
+            if (mission) {
+                document.getElementById('preview-mission').textContent = mission;
+                document.getElementById('preview-mission-block').classList.remove('hidden');
+            } else {
+                document.getElementById('preview-mission-block').classList.add('hidden');
+            }
+
+            // Contact fields
+            setPreviewField('email', document.getElementById('edit-email').value);
+            setPreviewField('phone', document.getElementById('edit-phone').value);
+            setPreviewField('website', document.getElementById('edit-website').value);
+            setPreviewField('location', document.getElementById('edit-location').value);
+
+            lucide.createIcons();
+        }
+
+        function setPreviewField(field, value) {
+            const block = document.getElementById('preview-' + field + '-block');
+            const text = document.getElementById('preview-' + field);
+            if (value) {
+                text.textContent = value;
+                block.classList.remove('hidden');
+            } else {
+                block.classList.add('hidden');
+            }
+        }
+
+        async function submitChangeOrder() {
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Saving...';
+            lucide.createIcons();
+
+            try {
+                const slug = currentUserData.slug;
+                const updateData = {};
+
+                // Build update object from changed fields
+                for (const [field, diff] of Object.entries(changedFields)) {
+                    if (field === 'avatar') continue; // handled separately
+                    if (field === 'website') {
+                        updateData['social_links.website'] = diff.after;
+                    } else {
+                        updateData[field] = diff.after;
+                    }
+                }
+
+                // Rebuild full_name if name changed
+                if (changedFields.first_name || changedFields.last_name) {
+                    updateData.full_name = document.getElementById('edit-fname').value.trim() + ' ' + document.getElementById('edit-lname').value.trim();
+                }
+
+                // Upload new photo if changed
+                if (newPhotoFile) {
+                    const photoRef = storage.ref('avatars/' + slug);
+                    await photoRef.put(newPhotoFile);
+                    updateData.avatar_url = await photoRef.getDownloadURL();
+                }
+
+                updateData.updated_at = firebase.firestore.FieldValue.serverTimestamp();
+
+                // Update user doc
+                await db.collection('users').doc(slug).update(updateData);
+
+                // Increment change order count
+                await db.collection('users').doc(slug).update({
+                    change_order_count: firebase.firestore.FieldValue.increment(1),
+                    last_change_order_date: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Write change order record
+                await db.collection('change_orders').add({
+                    user_slug: slug,
+                    auth_uid: auth.currentUser.uid,
+                    changes: changedFields,
+                    tier: currentUserData.tier,
+                    submitted_at: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Show success
+                document.getElementById('success-modal').classList.remove('hidden');
+                document.getElementById('success-modal').classList.add('flex');
+                lucide.createIcons();
+            } catch (error) {
+                console.error('Change order error:', error);
+                alert('Error saving changes: ' + error.message);
+                btn.disabled = false;
+                updateSubmitButton();
+            }
+        }
+    </script>
+</body>
+</html>

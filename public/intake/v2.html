@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI ID | Redirecting...</title>
+    <!-- DEPRECATED: This form uses wrong SDK (9.22.0) and wrong tier names.
+         Canonical intake form is /intake/index.html -->
+    <script>window.location.replace('/intake/');</script>
+    <link rel="icon" href="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.294.0/dist/umd/lucide.min.js"></script>
+    
+    <!-- Firebase SDKs (v9.22.0 - widely used stable version) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <!-- Debug: Check what loaded -->
+    <script>
+        window.addEventListener('load', function() {
+            console.log('=== SCRIPT LOADING STATUS ===');
+            console.log('Tailwind:', typeof tailwind !== 'undefined' ? '✅ Loaded' : '❌ NOT LOADED');
+            console.log('Lucide:', typeof lucide !== 'undefined' ? '✅ Loaded' : '❌ NOT LOADED');
+            console.log('Firebase:', typeof firebase !== 'undefined' ? '✅ Loaded' : '❌ NOT LOADED');
+            console.log('Protocol:', window.location.protocol);
+            console.log('URL:', window.location.href);
+            
+            if (window.location.protocol === 'file:') {
+                document.body.innerHTML = '<div style="padding:40px;text-align:center;font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;"><h1 style="color:#ef4444;font-size:24px;">⚠️ Cannot Open File Directly</h1><p style="margin:20px 0;color:#475569;line-height:1.6;">You are opening this file with the <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;">file://</code> protocol. Browsers block CDN scripts for security reasons.</p><h2 style="color:#1e293b;font-size:18px;margin-top:30px;">Run a Local Server Instead:</h2><div style="background:#1e293b;color:#22c55e;padding:20px;border-radius:12px;text-align:left;font-family:monospace;margin:20px 0;"><p style="margin:0 0 10px 0;color:#94a3b8;"># Option 1: Python</p><p style="margin:0 0 20px 0;">python3 -m http.server 8000</p><p style="margin:0 0 10px 0;color:#94a3b8;"># Option 2: Node.js</p><p style="margin:0;">npx serve .</p></div><p style="color:#475569;">Then open: <a href="http://localhost:8000/intake_form_v2.html" style="color:#3b82f6;">http://localhost:8000/intake_form_v2.html</a></p></div>';
+            }
+        });
+    </script>
+
+    <style>
+        body { background-color: #F3F4F6; font-family: 'Inter', sans-serif; }
+        .preview-scroll::-webkit-scrollbar { width: 0px; background: transparent; }
+        .slide-in { animation: slideIn 0.5s ease-out forwards; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .toggle-checkbox:checked { right: 0; border-color: #1e293b; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #1e293b; }
+        .field-disabled { opacity: 0.4; pointer-events: none; filter: grayscale(1); }
+        .section-disabled { opacity: 0.6; pointer-events: none; filter: grayscale(1); }
+        
+        /* Velvet Rope Styling */
+        .velvet-rope { position: relative; opacity: 0.7; user-select: none; transition: all 0.3s; }
+        .velvet-rope.unlocked { opacity: 1; user-select: auto; pointer-events: auto; }
+        .velvet-rope::after { 
+            content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.4); 
+            backdrop-filter: blur(1px); z-index: 10; border-radius: 0.75rem; 
+            transition: opacity 0.3s;
+        }
+        .velvet-rope.unlocked::after { opacity: 0; pointer-events: none; }
+        
+        .lock-badge { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 20; 
+            background: #1e293b; color: #fbbf24; padding: 6px 12px; border-radius: 9999px; 
+            font-size: 10px; font-weight: bold; display: flex; align-items: center; gap: 6px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); white-space: nowrap; 
+            transition: opacity 0.3s; cursor: pointer;
+        }
+        .lock-badge:hover { transform: translate(-50%, -50%) scale(1.05); }
+        .velvet-rope.unlocked .lock-badge { opacity: 0; pointer-events: none; }
+
+        /* Preview Card */
+        .preview-card-container { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .preview-card-container.expanded { height: 100%; border-radius: 0; }
+        
+        /* Color Picker */
+        input[type="color"] {
+            -webkit-appearance: none; border: none; width: 32px; height: 32px; padding: 0; 
+            overflow: hidden; border-radius: 50%; cursor: pointer;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+        
+        /* Color Suggestion Palette */
+        .color-suggestion {
+            width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+            border: 2px solid transparent; transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .color-suggestion:hover { transform: scale(1.15); border-color: #fbbf24; }
+        .color-suggestion.selected { border-color: #1e293b; transform: scale(1.1); }
+        
+        /* Error state */
+        .input-error { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
+        
+        /* Payment Modal Styles */
+        .payment-option {
+            transition: all 0.2s;
+        }
+        .payment-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        }
+        .payment-option.selected {
+            border-color: #fbbf24;
+            background-color: #fefce8;
+        }
+        
+        /* Pulse animation for upgrade prompts */
+        @keyframes pulse-gold {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(251, 191, 36, 0); }
+        }
+        .pulse-upgrade { animation: pulse-gold 2s infinite; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row relative">
+
+    <!-- SUCCESS MODAL -->
+    <div id="success-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-500 to-yellow-400"></div>
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
+                <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl font-serif text-slate-800 font-bold mb-2">Identity Launched!</h2>
+            <p class="text-slate-500 text-sm mb-6">Your Simpli-FI ID has been successfully created.</p>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 text-left">
+                <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Your Card URL</p>
+                <input type="text" id="final-url" readonly class="w-full bg-transparent text-sm font-mono text-slate-700 focus:outline-none" value="">
+            </div>
+            <div class="flex gap-3">
+                <button onclick="copyFinalURL()" class="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition flex items-center justify-center gap-2"><i data-lucide="copy" class="w-4 h-4"></i> Copy</button>
+                <button onclick="openFinalURL()" class="flex-1 py-3 bg-[#1e293b] text-white font-bold rounded-xl hover:bg-slate-800 transition flex items-center justify-center gap-2">Open <i data-lucide="external-link" class="w-4 h-4"></i></button>
+            </div>
+            <button onclick="closeModal('success-modal')" class="mt-6 text-xs text-slate-400 hover:text-slate-600">Close</button>
+        </div>
+    </div>
+
+    <!-- PAYMENT/UPGRADE MODAL -->
+    <div id="payment-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 max-w-lg w-full relative overflow-hidden my-8">
+            <button onclick="closeModal('payment-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-[#fbbf24]/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="sparkles" class="w-6 h-6 text-[#fbbf24]"></i>
+                </div>
+                <h2 class="text-xl font-serif text-slate-800 font-bold">Unlock Your Full Potential</h2>
+                <p class="text-slate-500 text-sm mt-1">Choose the tier that matches your journey</p>
+            </div>
+
+            <!-- Tier Cards -->
+            <div class="space-y-3 mb-6">
+                <!-- Explorer (Current/Free) -->
+                <div class="payment-option p-4 rounded-xl border-2 border-slate-200 bg-slate-50">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-bold text-slate-600">Explorer</span>
+                                <span class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full uppercase font-bold">Current</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1">Basic profile • 3 links • Ad-supported</p>
+                        </div>
+                        <span class="text-lg font-bold text-slate-400">Free</span>
+                    </div>
+                </div>
+
+                <!-- Adventurer -->
+                <div onclick="selectTierForPayment('adventurer')" class="payment-option p-4 rounded-xl border-2 border-slate-200 bg-white cursor-pointer" id="payment-tier-adventurer">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-bold text-slate-800">Adventurer</span>
+                                <span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full uppercase font-bold">Popular</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">Full achievements • Company tagline • No ads</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xl font-bold text-slate-800">$49</span>
+                            <p class="text-[10px] text-slate-400">one-time</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional -->
+                <div onclick="selectTierForPayment('professional')" class="payment-option p-4 rounded-xl border-2 border-slate-200 bg-white cursor-pointer" id="payment-tier-professional">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-bold text-slate-800">Professional</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">Custom colors • Logo upload • Full analytics</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xl font-bold text-slate-800">$99</span>
+                            <p class="text-[10px] text-slate-400">one-time</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mentor -->
+                <div onclick="selectTierForPayment('mentor')" class="payment-option p-4 rounded-xl border-2 border-[#fbbf24] bg-[#fefce8] cursor-pointer" id="payment-tier-mentor">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-bold text-slate-800">Mentor</span>
+                                <span class="text-[10px] bg-[#fbbf24] text-slate-900 px-2 py-0.5 rounded-full uppercase font-bold">Best Value</span>
+                            </div>
+                            <p class="text-xs text-slate-600 mt-1">Everything + Payment link • Legacy tracking</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xl font-bold text-slate-800">$149</span>
+                            <p class="text-[10px] text-slate-400">one-time</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div id="payment-methods" class="hidden">
+                <div class="border-t border-slate-200 pt-4 mb-4">
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Choose Payment Method</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <a id="pay-lemon" href="#" target="_blank" class="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-slate-200 hover:border-[#fbbf24] hover:bg-[#fefce8] transition">
+                            <span class="text-lg">🍋</span>
+                            <span class="text-xs font-bold text-slate-700">Card (Secure)</span>
+                        </a>
+                        <a id="pay-paypal" href="#" target="_blank" class="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition">
+                            <span class="text-lg">💳</span>
+                            <span class="text-xs font-bold text-slate-700">PayPal</span>
+                        </a>
+                        <a id="pay-venmo" href="#" target="_blank" class="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition">
+                            <span class="text-lg">📱</span>
+                            <span class="text-xs font-bold text-slate-700">Venmo</span>
+                        </a>
+                        <a id="pay-cashapp" href="#" target="_blank" class="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-slate-200 hover:border-green-500 hover:bg-green-50 transition">
+                            <span class="text-lg">💵</span>
+                            <span class="text-xs font-bold text-slate-700">Cash App</span>
+                        </a>
+                    </div>
+                </div>
+                <p class="text-[10px] text-slate-400 text-center">After payment, email your receipt to <strong>support@simpli-fi-os.com</strong> with your card URL to unlock features.</p>
+            </div>
+
+            <!-- Continue Free Button -->
+            <div class="mt-4 pt-4 border-t border-slate-100">
+                <button onclick="continueWithFree()" class="w-full py-3 text-slate-500 text-sm font-medium hover:text-slate-700 transition">
+                    Continue with free Explorer tier →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LEFT PANEL: THE FORM -->
+    <div class="w-full md:w-1/2 bg-white flex flex-col h-screen overflow-y-auto relative">
+        
+        <!-- HEADER -->
+        <div class="p-8 border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur z-30">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-[#1e293b] text-[#fbbf24] rounded-lg flex items-center justify-center font-serif text-xl leading-none tracking-[0.25em] pl-1">ID</div>
+                    <span class="font-serif text-[#1e293b] font-bold tracking-tight text-lg">Simpli-FI <span class="font-light text-[#fbbf24]">Intake</span></span>
+                </div>
+            </div>
+
+            <!-- TIER DISPLAY (Read-only, shows current selection) -->
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span id="tier-badge" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                    <span id="tier-label" class="text-sm font-bold text-slate-700">Explorer</span>
+                    <span class="text-xs text-slate-400">• Free</span>
+                </div>
+                <button onclick="showPaymentModal()" class="text-[10px] font-bold text-[#fbbf24] hover:text-[#d4a520] uppercase tracking-wider flex items-center gap-1">
+                    <i data-lucide="sparkles" class="w-3 h-3"></i> Upgrade
+                </button>
+            </div>
+            
+            <!-- Generated URL Display -->
+            <div class="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <label class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Your Card URL</label>
+                <input type="text" id="generated-url" readonly class="w-full bg-transparent text-sm font-mono text-slate-600 focus:outline-none" value="id.simpli-fi-os.com/your.name.0000">
+            </div>
+        </div>
+
+        <div class="flex-1 p-8 space-y-8">
+            
+            <!-- Section 1: Identity Essentials -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.1s">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="user" class="w-4 h-4"></i> Identity Essentials
+                </h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">First Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="input-fname" placeholder="Hunter" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Last Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="input-lname" placeholder="Lott" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()" required>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Professional Title</label>
+                        <input type="text" id="input-title" placeholder="Founder & CEO" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Company / Employer</label>
+                        <input type="text" id="input-company" placeholder="Simpli-FI OS" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()">
+                    </div>
+                </div>
+                
+                <!-- Company Tagline (Adventurer+) -->
+                <div id="feature-tagline" class="velvet-rope">
+                    <div class="lock-badge" onclick="showPaymentModal('adventurer')"><i data-lucide="sparkles" class="w-3 h-3"></i> Adventurer</div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Company Tagline</label>
+                        <input disabled type="text" id="input-tagline" placeholder="Systems for Home & Business" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Visual Brand -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.2s">
+                <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="image" class="w-4 h-4"></i> Visual Brand
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Headshot Upload -->
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden border border-slate-200 shrink-0">
+                            <img id="thumb-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block w-full cursor-pointer group">
+                                <div class="flex items-center justify-center w-full p-2 border-2 border-dashed border-slate-200 rounded-xl group-hover:border-[#1e293b] transition bg-white">
+                                    <span class="text-[10px] text-slate-500 font-medium group-hover:text-[#1e293b]">Upload Headshot</span>
+                                </div>
+                                <input type="file" id="input-photo" accept="image/*" class="hidden" onchange="handleImage(this)">
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Logo Upload (Professional+) - Now extracts colors! -->
+                    <div id="feature-logo-upload" class="velvet-rope flex items-center gap-4">
+                        <div class="lock-badge" onclick="showPaymentModal('professional')"><i data-lucide="lock" class="w-3 h-3"></i> Professional</div>
+                        <div class="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden border border-slate-200 shrink-0 flex items-center justify-center">
+                            <i id="logo-placeholder" data-lucide="image" class="w-5 h-5 text-slate-300"></i>
+                            <img id="logo-thumb-preview" src="" class="w-full h-full object-contain hidden">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block w-full cursor-not-allowed">
+                                <div class="flex items-center justify-center w-full p-2 border-2 border-dashed border-slate-200 rounded-xl bg-white">
+                                    <span class="text-[10px] text-slate-500 font-medium">Upload Logo</span>
+                                </div>
+                                <input disabled type="file" id="input-logo" accept="image/*" class="hidden" onchange="handleLogo(this)">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Color Palette Section -->
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-2">Color Palette</label>
+                    
+                    <!-- Quick Theme Presets -->
+                    <div class="grid grid-cols-3 gap-2 mb-3">
+                        <button type="button" onclick="setTheme('finance')" class="p-3 rounded-xl border border-slate-200 hover:border-[#fbbf24] hover:bg-[#fbbf24]/5 transition flex items-center justify-center gap-2 bg-white text-xs font-medium">
+                            <span class="w-3 h-3 rounded-full bg-[#1e293b]"></span> Finance
+                        </button>
+                        <button type="button" onclick="setTheme('creative')" class="p-3 rounded-xl border border-slate-200 hover:border-[#fbbf24] hover:bg-[#fbbf24]/5 transition flex items-center justify-center gap-2 bg-white text-xs font-medium">
+                            <span class="w-3 h-3 rounded-full bg-[#214F4B]"></span> Creative
+                        </button>
+                        <button type="button" onclick="setTheme('stealth')" class="p-3 rounded-xl border border-slate-200 hover:border-[#fbbf24] hover:bg-[#fbbf24]/5 transition flex items-center justify-center gap-2 bg-white text-xs font-medium">
+                            <span class="w-3 h-3 rounded-full bg-[#000000]"></span> Stealth
+                        </button>
+                    </div>
+                    
+                    <!-- AI Color Suggestions (from logo) -->
+                    <div id="color-suggestions-container" class="hidden mb-3 p-3 rounded-xl border border-[#fbbf24]/30 bg-[#fefce8]">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="wand-2" class="w-3 h-3 text-[#fbbf24]"></i>
+                                <span class="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Suggested from your logo</span>
+                            </div>
+                            <button onclick="hideColorSuggestions()" class="text-slate-400 hover:text-slate-600">
+                                <i data-lucide="x" class="w-3 h-3"></i>
+                            </button>
+                        </div>
+                        <div id="color-suggestions" class="flex gap-2 flex-wrap">
+                            <!-- Color swatches injected here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Custom Color Picker (Professional+) -->
+                    <div id="feature-custom-hex" class="velvet-rope p-3 rounded-xl border border-slate-200 flex items-center justify-between bg-white">
+                        <div class="flex items-center gap-3 w-full">
+                            <input type="color" id="color-picker" disabled class="cursor-pointer hover:scale-110 transition" onchange="updateCustomColor(this.value)" value="#1e293b">
+                            <input type="text" id="hex-input" placeholder="#1e293b" class="text-xs font-medium text-slate-600 bg-transparent focus:outline-none w-full uppercase" disabled oninput="updateCustomColor(this.value)">
+                        </div>
+                        <div class="lock-badge" onclick="showPaymentModal('professional')"><i data-lucide="lock" class="w-3 h-3"></i> Pro</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: About / Bio -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.25s">
+                <div class="flex items-center justify-between border-t border-slate-100 pt-6">
+                    <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2">
+                        <i data-lucide="file-text" class="w-4 h-4"></i> About You
+                    </h3>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Bio / About</label>
+                    <textarea id="input-bio" rows="4" placeholder="Tell your story... What's your background? What drives you?" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition resize-none" oninput="updatePreview()"></textarea>
+                </div>
+            </div>
+
+            <!-- Section 4: Current Mission -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.3s">
+                <div class="flex items-center justify-between border-t border-slate-100 pt-6">
+                    <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2">
+                        <i data-lucide="target" class="w-4 h-4"></i> Current Mission
+                    </h3>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">90-Day Goal</label>
+                    <textarea id="input-mission" rows="3" placeholder="Example: Connecting 20 new business owners in the next 60 days..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition resize-none" oninput="updatePreview()"></textarea>
+                </div>
+            </div>
+
+            <!-- Section 5: Contact Details -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.4s">
+                <div class="flex items-center justify-between border-t border-slate-100 pt-6">
+                    <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2">
+                        <i data-lucide="link" class="w-4 h-4"></i> Contact Details
+                    </h3>
+                </div>
+                <div class="space-y-4">
+                    <!-- Email -->
+                    <div class="flex items-start gap-4">
+                        <div class="relative mt-2 shrink-0">
+                            <input type="checkbox" id="toggle-email" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-2 appearance-none cursor-pointer border-slate-300 left-0" onclick="toggleField('email')"/>
+                            <label for="toggle-email" class="toggle-label block overflow-hidden h-4 w-8 rounded-full bg-slate-300 cursor-pointer"></label>
+                        </div>
+                        <div id="field-email" class="w-full relative field-disabled transition-opacity">
+                            <i data-lucide="mail" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i>
+                            <input type="email" id="input-email" placeholder="you@example.com" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] text-sm" oninput="updatePreview()">
+                        </div>
+                    </div>
+                    <!-- Phone -->
+                    <div class="flex items-start gap-4">
+                        <div class="relative mt-2 shrink-0">
+                            <input type="checkbox" id="toggle-phone" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-2 appearance-none cursor-pointer border-slate-300 left-0" onclick="toggleField('phone')"/>
+                            <label for="toggle-phone" class="toggle-label block overflow-hidden h-4 w-8 rounded-full bg-slate-300 cursor-pointer"></label>
+                        </div>
+                        <div id="field-phone" class="w-full relative field-disabled transition-opacity">
+                            <i data-lucide="phone" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i>
+                            <input type="tel" id="input-phone" placeholder="(555) 123-4567" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] text-sm" oninput="updatePreview()">
+                        </div>
+                    </div>
+                    <!-- Website -->
+                    <div class="flex items-start gap-4">
+                        <div class="relative mt-2 shrink-0">
+                            <input type="checkbox" id="toggle-website" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-2 appearance-none cursor-pointer border-slate-300 left-0" onclick="toggleField('website')"/>
+                            <label for="toggle-website" class="toggle-label block overflow-hidden h-4 w-8 rounded-full bg-slate-300 cursor-pointer"></label>
+                        </div>
+                        <div id="field-website" class="w-full relative field-disabled transition-opacity">
+                            <i data-lucide="globe" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i>
+                            <input type="url" id="input-website" placeholder="https://yoursite.com" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] text-sm" oninput="updatePreview(); extractColorsFromWebsite()">
+                        </div>
+                    </div>
+                    <!-- Location -->
+                    <div class="flex items-start gap-4">
+                        <div class="relative mt-2 shrink-0">
+                            <input type="checkbox" id="toggle-location" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-2 appearance-none cursor-pointer border-slate-300 left-0" onclick="toggleField('location')"/>
+                            <label for="toggle-location" class="toggle-label block overflow-hidden h-4 w-8 rounded-full bg-slate-300 cursor-pointer"></label>
+                        </div>
+                        <div id="field-location" class="w-full relative field-disabled transition-opacity">
+                            <i data-lucide="map-pin" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i>
+                            <input type="text" id="input-location" placeholder="City, State" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] text-sm" oninput="updatePreview()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 6: Social Media -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.5s">
+                <div class="flex items-center justify-between border-t border-slate-100 pt-6">
+                    <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2">
+                        <i data-lucide="share-2" class="w-4 h-4"></i> Social Media
+                    </h3>
+                    <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                        <input type="checkbox" id="toggle-social" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300 left-0 transition-all duration-300" onclick="toggleSection('social')"/>
+                        <label for="toggle-social" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
+                    </div>
+                </div>
+                <div id="section-social" class="section-disabled transition-opacity duration-300">
+                    <div class="flex gap-2 mb-3">
+                        <div class="relative w-1/3 shrink-0">
+                            <select id="input-social-platform" onchange="updateSocialIcon()" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 appearance-none focus:outline-none focus:border-[#1e293b] transition">
+                                <option value="linkedin">LinkedIn</option>
+                                <option value="instagram">Instagram</option>
+                                <option value="facebook">Facebook</option>
+                                <option value="twitter">X (Twitter)</option>
+                                <option value="youtube">YouTube</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="absolute right-3 top-3.5 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                        </div>
+                        <div class="relative w-2/3">
+                            <input type="url" id="input-social-url" placeholder="Paste URL here..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#1e293b] transition" oninput="updatePreview()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 7: Commerce (Mentor) -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.55s">
+                <div class="flex items-center justify-between border-t border-slate-100 pt-6">
+                    <h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2">
+                        <i data-lucide="dollar-sign" class="w-4 h-4"></i> Commerce
+                    </h3>
+                </div>
+                <div id="feature-commerce" class="velvet-rope">
+                    <div class="lock-badge" onclick="showPaymentModal('mentor')" style="background: #fbbf24; color: #1e293b;">
+                        <i data-lucide="crown" class="w-3 h-3"></i> Mentor
+                    </div>
+                    <div class="space-y-2 opacity-50">
+                        <label class="block text-xs font-medium text-slate-600">Payment Link</label>
+                        <div class="relative">
+                            <i data-lucide="credit-card" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i>
+                            <input disabled type="url" id="input-payment" placeholder="PayPal, Venmo, or Cash App link" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm" oninput="updatePreview()">
+                        </div>
+                        <p class="text-[10px] text-slate-400">Let visitors pay you directly from your card.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-12"></div>
+        </div>
+
+        <!-- SUBMIT BUTTON -->
+        <div class="p-6 border-t border-gray-100 bg-white sticky bottom-0 z-20">
+            <div id="submit-error" class="hidden text-red-500 text-xs text-center mb-3"></div>
+            <button onclick="handleSubmit()" id="btn-submit" class="w-full py-4 bg-[#1e293b] text-white font-bold rounded-2xl shadow-xl hover:bg-slate-800 transition flex items-center justify-center gap-2 group">
+                <span id="btn-submit-text">Preview & Launch</span>
+                <i data-lucide="rocket" id="btn-submit-icon" class="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL: LIVE PREVIEW -->
+    <div class="hidden md:flex w-1/2 bg-slate-100 items-center justify-center p-12 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-5 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:20px_20px]"></div>
+        
+        <!-- Preview Controls -->
+        <div class="absolute right-12 bottom-12 flex flex-col gap-4 z-50">
+            <button type="button" onclick="togglePreviewMode('expand')" class="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-[#1e293b] hover:scale-110 transition">
+                <i data-lucide="maximize-2" class="w-5 h-5"></i>
+            </button>
+            <button type="button" onclick="togglePreviewMode('collapse')" class="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-[#1e293b] hover:scale-110 transition">
+                <i data-lucide="minimize-2" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <div id="preview-container" class="relative w-full max-w-[380px] h-[750px] bg-white rounded-[40px] shadow-2xl border-8 border-slate-900 overflow-hidden ring-1 ring-white/20 preview-card-container">
+            <div class="w-full h-full overflow-y-auto preview-scroll bg-[#FBF9F7] relative">
+                
+                <!-- Preview Header -->
+                <div class="h-32 bg-[#1e293b] relative overflow-hidden transition-colors duration-500" id="preview-header">
+                    <div class="absolute top-6 right-6 z-20 bg-white/20 backdrop-blur p-1.5 rounded-lg">
+                        <i data-lucide="qr-code" class="w-4 h-4 text-white"></i>
+                    </div>
+                    <div class="absolute top-6 left-6 z-10 flex items-center gap-2" id="preview-logo-area">
+                        <div id="default-logo-container" class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-white/10 backdrop-blur rounded flex items-center justify-center text-white font-bold font-serif leading-none">ID</div>
+                            <span id="preview-company-text" class="text-white font-serif text-xs font-bold opacity-80">Simpli-FI</span>
+                        </div>
+                        <div id="custom-logo-container" class="hidden items-center gap-2">
+                            <div class="w-8 h-8 bg-white/10 backdrop-blur rounded flex items-center justify-center overflow-hidden">
+                                <img id="preview-custom-logo" src="" class="w-full h-full object-contain">
+                            </div>
+                            <span id="preview-company" class="text-white font-serif text-xs font-bold opacity-80 truncate max-w-[150px]"></span>
+                        </div>
+                    </div>
+                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#fbbf24_1px,transparent_1px)] [background-size:10px_10px]"></div>
+                </div>
+                
+                <!-- Profile Section -->
+                <div class="relative px-6 -mt-16 text-center">
+                    <div class="inline-block relative">
+                        <div class="w-28 h-28 rounded-full border-4 border-white shadow-lg overflow-hidden bg-slate-200">
+                            <img id="preview-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="w-full h-full object-cover">
+                        </div>
+                        <div id="preview-badge" class="hidden absolute bottom-1 right-1 z-20 bg-[#fbbf24] rounded-full p-1.5 border-2 border-white shadow-sm">
+                            <i data-lucide="check" class="w-3 h-3 text-[#1e293b] stroke-[4]"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h2 id="preview-name" class="font-serif text-2xl font-bold text-[#1e293b]">Your Name</h2>
+                        <p id="preview-title" class="text-[#fbbf24] font-bold text-[10px] tracking-widest uppercase mt-1">Professional Title</p>
+                        <p id="preview-tagline" class="text-slate-500 text-[10px] mt-1 font-medium hidden"></p>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="px-6 mt-6 flex justify-center gap-3" id="quick-actions-row">
+                    <div id="quick-phone" class="hidden flex flex-col items-center gap-1">
+                        <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600 shadow-sm">
+                            <i data-lucide="phone" class="w-4 h-4"></i>
+                        </div>
+                        <span class="text-[9px] font-bold text-slate-400">Call</span>
+                    </div>
+                    <div id="quick-email" class="hidden flex flex-col items-center gap-1">
+                        <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600 shadow-sm">
+                            <i data-lucide="mail" class="w-4 h-4"></i>
+                        </div>
+                        <span class="text-[9px] font-bold text-slate-400">Email</span>
+                    </div>
+                    <div id="quick-website" class="hidden flex flex-col items-center gap-1">
+                        <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600 shadow-sm">
+                            <i data-lucide="globe" class="w-4 h-4"></i>
+                        </div>
+                        <span class="text-[9px] font-bold text-slate-400">Site</span>
+                    </div>
+                    <div id="quick-save" class="hidden flex flex-col items-center gap-1">
+                        <div class="w-10 h-10 rounded-xl bg-[#fbbf24]/10 border border-[#fbbf24]/20 flex items-center justify-center text-[#fbbf24] shadow-sm">
+                            <i data-lucide="contact" class="w-4 h-4"></i>
+                        </div>
+                        <span class="text-[9px] font-bold text-[#fbbf24]">Save</span>
+                    </div>
+                    <div id="quick-pay" class="hidden flex flex-col items-center gap-1">
+                        <div class="w-10 h-10 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center text-green-600 shadow-sm">
+                            <i data-lucide="dollar-sign" class="w-4 h-4"></i>
+                        </div>
+                        <span class="text-[9px] font-bold text-slate-400">Pay</span>
+                    </div>
+                </div>
+
+                <!-- Mission Block -->
+                <div id="preview-mission-block" class="px-4 mt-6 hidden">
+                    <div class="bg-white p-4 rounded-xl border-l-4 border-[#1e293b] shadow-sm">
+                        <div class="flex items-center gap-2 mb-1">
+                            <i data-lucide="target" class="w-3 h-3 text-[#1e293b]"></i>
+                            <span class="text-[8px] font-bold uppercase tracking-widest text-[#1e293b]">Current Mission</span>
+                        </div>
+                        <p id="preview-mission" class="text-slate-600 text-xs italic"></p>
+                    </div>
+                </div>
+                
+                <!-- Bio Block -->
+                <div id="preview-bio-block" class="px-4 mt-4 hidden">
+                    <h3 class="text-[10px] font-bold text-[#fbbf24] uppercase tracking-wider mb-2">About</h3>
+                    <p id="preview-bio" class="text-slate-600 text-xs leading-relaxed"></p>
+                </div>
+                
+                <!-- Contact Details -->
+                <div class="px-4 mt-4 space-y-2">
+                    <div id="preview-email-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100">
+                        <i data-lucide="mail" class="w-3 h-3 text-[#1e293b]"></i>
+                        <span id="preview-email" class="ml-3 text-[10px] text-slate-600 truncate"></span>
+                    </div>
+                    <div id="preview-phone-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100">
+                        <i data-lucide="phone" class="w-3 h-3 text-[#1e293b]"></i>
+                        <span id="preview-phone" class="ml-3 text-[10px] text-slate-600 truncate"></span>
+                    </div>
+                    <div id="preview-website-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100">
+                        <i data-lucide="globe" class="w-3 h-3 text-[#1e293b]"></i>
+                        <span id="preview-website" class="ml-3 text-[10px] text-slate-600 truncate"></span>
+                    </div>
+                    <div id="preview-location-block" class="hidden flex items-center p-2 rounded-lg bg-white shadow-sm border border-slate-100">
+                        <i data-lucide="map-pin" class="w-3 h-3 text-[#1e293b]"></i>
+                        <span id="preview-location" class="ml-3 text-[10px] text-slate-600 truncate"></span>
+                    </div>
+                </div>
+                
+                <!-- Social Block -->
+                <div id="preview-social-block" class="px-4 mt-4 flex justify-center hidden">
+                    <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-full shadow-sm border border-slate-100">
+                        <span id="social-icon-container"><i data-lucide="linkedin" class="w-4 h-4 text-[#1e293b]"></i></span>
+                        <span class="text-[10px] font-bold text-slate-600">Connect</span>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="mt-8 px-4 pb-8">
+                    <div id="preview-branding-ad" class="bg-slate-900 p-3 rounded-xl flex items-center justify-between shadow-lg">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 bg-[#fbbf24] rounded flex items-center justify-center text-[10px] font-bold font-serif leading-none">ID</div>
+                            <div class="flex flex-col">
+                                <span class="text-[8px] text-slate-400 uppercase">Powered By</span>
+                                <span class="text-[10px] font-bold text-white">Simpli-FI OS</span>
+                            </div>
+                        </div>
+                        <span class="text-[10px] bg-white text-slate-900 px-3 py-1 rounded font-bold">Get Yours</span>
+                    </div>
+                    <div id="preview-branding-pro" class="hidden text-center">
+                        <p class="text-[8px] text-slate-400 uppercase tracking-widest font-bold">Powered by Simpli-FI</p>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-xl z-50"></div>
+        </div>
+        <div class="absolute bottom-8 text-slate-400 text-xs font-mono">Live Preview</div>
+    </div>
+
+    <!-- Hidden canvas for color extraction -->
+    <canvas id="color-canvas" class="hidden"></canvas>
+
+    <script>
+        // --- FIREBASE INIT ---
+        let db, auth, storage;
+        let firebaseReady = false;
+        let lucideReady = false;
+        
+        function initFirebase() {
+            if (typeof firebase === 'undefined') {
+                console.warn('Firebase SDK not loaded yet...');
+                return false;
+            }
+            
+            try {
+                const firebaseConfig = {
+                    apiKey: "AIzaSyAnlmGZNwoPS-vBnK1AlHvNsB73q0UAkCU",
+                    authDomain: "simpli-fi-id.firebaseapp.com",
+                    projectId: "simpli-fi-id",
+                    storageBucket: "simpli-fi-id.firebasestorage.app",
+                    messagingSenderId: "97006103916",
+                    appId: "1:97006103916:web:631c876a6eb263caf81749"
+                };
+
+                // Check if already initialized
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                
+                db = firebase.firestore();
+                auth = firebase.auth();
+                storage = firebase.storage();
+                
+                // Sign in anonymously for write access
+                auth.signInAnonymously()
+                    .then(() => console.log('✅ Anonymous auth successful'))
+                    .catch(e => console.warn("Anonymous auth failed:", e.message));
+                
+                firebaseReady = true;
+                console.log('✅ Firebase initialized successfully');
+                return true;
+            } catch (error) {
+                console.error('Firebase init error:', error);
+                return false;
+            }
+        }
+        
+        function initLucide() {
+            if (typeof lucide === 'undefined') {
+                console.warn('Lucide not loaded yet...');
+                return false;
+            }
+            lucide.createIcons();
+            lucideReady = true;
+            console.log('✅ Lucide icons initialized');
+            return true;
+        }
+        
+        // Wait for DOM and libraries to load
+        function initializeApp() {
+            let attempts = 0;
+            const maxAttempts = 20;
+            
+            const checkAndInit = () => {
+                attempts++;
+                
+                if (!firebaseReady) initFirebase();
+                if (!lucideReady) initLucide();
+                
+                if (firebaseReady && lucideReady) {
+                    console.log('✅ All systems ready!');
+                    // Initialize UI
+                    currentTier = 'explorer';
+                    updateTierDisplay();
+                    updatePreview();
+                    return;
+                }
+                
+                if (attempts < maxAttempts) {
+                    setTimeout(checkAndInit, 250);
+                } else {
+                    console.error('❌ Failed to load required libraries after ' + maxAttempts + ' attempts');
+                    document.body.innerHTML = '<div style="padding:40px;text-align:center;font-family:sans-serif;"><h1>Loading Error</h1><p>Could not load required libraries. Please refresh the page.</p><button onclick="location.reload()" style="padding:10px 20px;margin-top:20px;cursor:pointer;">Refresh</button></div>';
+                }
+            };
+            
+            checkAndInit();
+        }
+        
+        // Start initialization when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+        
+        const uniqueId = Math.floor(1000 + Math.random() * 9000);
+        let finalSlug = "";
+        let currentTier = "explorer";
+        let selectedPaymentTier = null;
+        let extractedColors = [];
+
+        // --- PAYMENT LINKS (Update these with your actual links) ---
+        const PAYMENT_LINKS = {
+            // LemonSqueezy links (recommended - update when you have them)
+            lemon: {
+                adventurer: 'https://simpli-fi.lemonsqueezy.com/checkout/buy/adventurer',
+                professional: 'https://simpli-fi.lemonsqueezy.com/checkout/buy/professional',
+                mentor: 'https://simpli-fi.lemonsqueezy.com/checkout/buy/mentor'
+            },
+            // PayPal.me fallback (update with your PayPal username)
+            paypal: {
+                adventurer: 'https://paypal.me/hunterlott/49',
+                professional: 'https://paypal.me/hunterlott/99',
+                mentor: 'https://paypal.me/hunterlott/149'
+            },
+            // Venmo (update with your Venmo username)
+            venmo: {
+                adventurer: 'https://venmo.com/hunterlott?txn=pay&amount=49&note=SimpliFI-Adventurer',
+                professional: 'https://venmo.com/hunterlott?txn=pay&amount=99&note=SimpliFI-Professional',
+                mentor: 'https://venmo.com/hunterlott?txn=pay&amount=149&note=SimpliFI-Mentor'
+            },
+            // Cash App (update with your $cashtag)
+            cashapp: {
+                adventurer: 'https://cash.app/$hunterlott/49',
+                professional: 'https://cash.app/$hunterlott/99',
+                mentor: 'https://cash.app/$hunterlott/149'
+            }
+        };
+
+        // --- TIER CONFIG ---
+        const TIER_CONFIG = {
+            explorer: {
+                label: 'Explorer',
+                price: 'Free',
+                color: 'bg-slate-400',
+                features: [],
+                showBadge: false,
+                showAd: true,
+                showSaveButton: false
+            },
+            adventurer: {
+                label: 'Adventurer',
+                price: '$49',
+                color: 'bg-[#1e293b]',
+                features: ['feature-tagline'],
+                showBadge: true,
+                showAd: false,
+                showSaveButton: true
+            },
+            professional: {
+                label: 'Professional',
+                price: '$99',
+                color: 'bg-blue-600',
+                features: ['feature-tagline', 'feature-custom-hex', 'feature-logo-upload'],
+                showBadge: true,
+                showAd: false,
+                showSaveButton: true
+            },
+            mentor: {
+                label: 'Mentor',
+                price: '$149',
+                color: 'bg-[#fbbf24]',
+                features: ['feature-tagline', 'feature-custom-hex', 'feature-logo-upload', 'feature-commerce'],
+                showBadge: true,
+                showAd: false,
+                showSaveButton: true
+            }
+        };
+
+        // --- COLOR EXTRACTION (The Smart Feature!) ---
+        function extractColorsFromImage(imgSrc) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = function() {
+                    const canvas = document.getElementById('color-canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Scale down for performance
+                    const maxSize = 100;
+                    const scale = Math.min(maxSize / img.width, maxSize / img.height);
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+                    
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const pixels = imageData.data;
+                    
+                    // Color counting with buckets
+                    const colorCounts = {};
+                    
+                    for (let i = 0; i < pixels.length; i += 4) {
+                        const r = Math.round(pixels[i] / 32) * 32;
+                        const g = Math.round(pixels[i + 1] / 32) * 32;
+                        const b = Math.round(pixels[i + 2] / 32) * 32;
+                        const a = pixels[i + 3];
+                        
+                        // Skip transparent and near-white/black
+                        if (a < 128) continue;
+                        const brightness = (r + g + b) / 3;
+                        if (brightness > 240 || brightness < 15) continue;
+                        
+                        const key = `${r},${g},${b}`;
+                        colorCounts[key] = (colorCounts[key] || 0) + 1;
+                    }
+                    
+                    // Sort by frequency and get top colors
+                    const sortedColors = Object.entries(colorCounts)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 5)
+                        .map(([rgb]) => {
+                            const [r, g, b] = rgb.split(',').map(Number);
+                            return rgbToHex(r, g, b);
+                        });
+                    
+                    // Add complementary colors
+                    const allColors = [...sortedColors];
+                    if (sortedColors.length > 0) {
+                        allColors.push(getComplementaryColor(sortedColors[0]));
+                        if (sortedColors.length > 1) {
+                            allColors.push(getDarkerShade(sortedColors[1]));
+                        }
+                    }
+                    
+                    // Filter duplicates and limit
+                    const uniqueColors = [...new Set(allColors)].slice(0, 6);
+                    resolve(uniqueColors);
+                };
+                img.onerror = () => resolve([]);
+                img.src = imgSrc;
+            });
+        }
+        
+        function rgbToHex(r, g, b) {
+            return '#' + [r, g, b].map(x => {
+                const hex = x.toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            }).join('');
+        }
+        
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+        
+        function getComplementaryColor(hex) {
+            const rgb = hexToRgb(hex);
+            if (!rgb) return hex;
+            return rgbToHex(255 - rgb.r, 255 - rgb.g, 255 - rgb.b);
+        }
+        
+        function getDarkerShade(hex) {
+            const rgb = hexToRgb(hex);
+            if (!rgb) return hex;
+            return rgbToHex(
+                Math.max(0, rgb.r - 40),
+                Math.max(0, rgb.g - 40),
+                Math.max(0, rgb.b - 40)
+            );
+        }
+        
+        function showColorSuggestions(colors) {
+            extractedColors = colors;
+            const container = document.getElementById('color-suggestions-container');
+            const suggestions = document.getElementById('color-suggestions');
+            
+            if (colors.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            suggestions.innerHTML = colors.map((color, i) => `
+                <button 
+                    type="button"
+                    onclick="applySuggestedColor('${color}')" 
+                    class="color-suggestion" 
+                    style="background-color: ${color};"
+                    title="${color}"
+                    aria-label="Apply color ${color}"
+                ></button>
+            `).join('');
+            
+            container.classList.remove('hidden');
+        }
+        
+        function hideColorSuggestions() {
+            document.getElementById('color-suggestions-container').classList.add('hidden');
+        }
+        
+        function applySuggestedColor(hex) {
+            // Highlight selected
+            document.querySelectorAll('.color-suggestion').forEach(el => el.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            // Apply color
+            updateCustomColor(hex);
+        }
+
+        // --- TIER & PAYMENT LOGIC ---
+        function showPaymentModal(recommendedTier = null) {
+            // Reset selection states
+            document.querySelectorAll('.payment-option').forEach(el => {
+                el.classList.remove('selected', 'ring-2', 'ring-[#fbbf24]');
+            });
+            document.getElementById('payment-methods').classList.add('hidden');
+            selectedPaymentTier = null;
+            
+            // Pre-select recommended tier if specified
+            if (recommendedTier && TIER_CONFIG[recommendedTier]) {
+                selectTierForPayment(recommendedTier);
+            }
+            
+            document.getElementById('payment-modal').classList.remove('hidden');
+            document.getElementById('payment-modal').classList.add('flex');
+            lucide.createIcons();
+        }
+        
+        function selectTierForPayment(tier) {
+            selectedPaymentTier = tier;
+            
+            // Update visual selection
+            document.querySelectorAll('.payment-option').forEach(el => {
+                el.classList.remove('selected', 'ring-2', 'ring-[#fbbf24]');
+            });
+            const selected = document.getElementById(`payment-tier-${tier}`);
+            if (selected) {
+                selected.classList.add('selected', 'ring-2', 'ring-[#fbbf24]');
+            }
+            
+            // Update payment links
+            document.getElementById('pay-lemon').href = PAYMENT_LINKS.lemon[tier] || '#';
+            document.getElementById('pay-paypal').href = PAYMENT_LINKS.paypal[tier] || '#';
+            document.getElementById('pay-venmo').href = PAYMENT_LINKS.venmo[tier] || '#';
+            document.getElementById('pay-cashapp').href = PAYMENT_LINKS.cashapp[tier] || '#';
+            
+            // Show payment methods
+            document.getElementById('payment-methods').classList.remove('hidden');
+        }
+        
+        function continueWithFree() {
+            currentTier = 'explorer';
+            updateTierDisplay();
+            closeModal('payment-modal');
+            
+            // Actually submit the form as free
+            submitForm();
+        }
+        
+        function updateTierDisplay() {
+            const config = TIER_CONFIG[currentTier];
+            document.getElementById('tier-badge').className = `w-2 h-2 rounded-full ${config.color}`;
+            document.getElementById('tier-label').innerText = config.label;
+            
+            // Update preview elements based on tier
+            const badge = document.getElementById('preview-badge');
+            const quickSave = document.getElementById('quick-save');
+            const quickPay = document.getElementById('quick-pay');
+            const footerAd = document.getElementById('preview-branding-ad');
+            const footerPro = document.getElementById('preview-branding-pro');
+
+            if(config.showBadge) badge.classList.remove('hidden');
+            else badge.classList.add('hidden');
+
+            if(config.showSaveButton) quickSave.classList.remove('hidden');
+            else quickSave.classList.add('hidden');
+
+            if(currentTier === 'mentor') quickPay.classList.remove('hidden');
+            else quickPay.classList.add('hidden');
+
+            if(config.showAd) {
+                footerAd.classList.remove('hidden');
+                footerPro.classList.add('hidden');
+            } else {
+                footerAd.classList.add('hidden');
+                footerPro.classList.remove('hidden');
+            }
+            
+            // Unlock/lock features
+            const allFeatures = ['feature-tagline', 'feature-custom-hex', 'feature-logo-upload', 'feature-commerce'];
+            allFeatures.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    if(config.features.includes(id)) {
+                        el.classList.add('unlocked');
+                        el.querySelectorAll('input, textarea').forEach(i => i.disabled = false);
+                    } else {
+                        el.classList.remove('unlocked');
+                        el.querySelectorAll('input, textarea').forEach(i => i.disabled = true);
+                    }
+                }
+            });
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.getElementById(modalId).classList.remove('flex');
+        }
+
+        // --- PREVIEW LOGIC ---
+        function updatePreview() {
+            const fname = document.getElementById('input-fname').value || 'Your';
+            const lname = document.getElementById('input-lname').value || 'Name';
+            const title = document.getElementById('input-title').value || 'Professional Title';
+            const company = document.getElementById('input-company').value;
+            const tagline = document.getElementById('input-tagline').value;
+            const bio = document.getElementById('input-bio').value;
+            const mission = document.getElementById('input-mission').value;
+            const email = document.getElementById('input-email').value;
+            const phone = document.getElementById('input-phone').value;
+            const website = document.getElementById('input-website').value;
+            const location = document.getElementById('input-location').value;
+
+            document.getElementById('preview-name').innerText = `${fname} ${lname}`;
+            document.getElementById('preview-title').innerText = title;
+            
+            if(company) {
+                document.getElementById('preview-company-text').innerText = company;
+            }
+
+            const taglineEl = document.getElementById('preview-tagline');
+            if(tagline && currentTier !== 'explorer') {
+                taglineEl.innerText = tagline;
+                taglineEl.classList.remove('hidden');
+            } else {
+                taglineEl.classList.add('hidden');
+            }
+
+            const bioBlock = document.getElementById('preview-bio-block');
+            if(bio) {
+                document.getElementById('preview-bio').innerText = bio;
+                bioBlock.classList.remove('hidden');
+            } else {
+                bioBlock.classList.add('hidden');
+            }
+
+            const missionBlock = document.getElementById('preview-mission-block');
+            if(mission) {
+                document.getElementById('preview-mission').innerText = mission;
+                missionBlock.classList.remove('hidden');
+            } else {
+                missionBlock.classList.add('hidden');
+            }
+
+            if(document.getElementById('toggle-email').checked && email) {
+                document.getElementById('preview-email').innerText = email;
+            }
+            if(document.getElementById('toggle-phone').checked && phone) {
+                document.getElementById('preview-phone').innerText = phone;
+            }
+            if(document.getElementById('toggle-website').checked && website) {
+                document.getElementById('preview-website').innerText = website.replace(/^https?:\/\//, '');
+            }
+            if(document.getElementById('toggle-location').checked && location) {
+                document.getElementById('preview-location').innerText = location;
+            }
+
+            // Update URL
+            const cleanFname = fname.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const cleanLname = lname.toLowerCase().replace(/[^a-z0-9]/g, '');
+            finalSlug = `${cleanFname}.${cleanLname}.${uniqueId}`;
+            document.getElementById('generated-url').value = `id.simpli-fi-os.com/${finalSlug}`;
+        }
+        
+        function updateCustomColor(hex) {
+            // Validate hex
+            if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+                if (/^[0-9A-Fa-f]{6}$/.test(hex)) hex = '#' + hex;
+                else return;
+            }
+            
+            document.getElementById('hex-input').value = hex;
+            document.getElementById('color-picker').value = hex;
+            
+            const header = document.getElementById('preview-header');
+            const name = document.getElementById('preview-name');
+            const missionBorder = document.querySelector('#preview-mission-block > div');
+            
+            header.style.backgroundColor = hex;
+            name.style.color = hex;
+            if(missionBorder) missionBorder.style.borderColor = hex;
+        }
+
+        function handleImage(input) {
+            if(input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview-avatar').src = e.target.result;
+                    document.getElementById('thumb-preview').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        async function handleLogo(input) {
+            if(input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const imgSrc = e.target.result;
+                    
+                    // Update preview
+                    document.getElementById('logo-thumb-preview').src = imgSrc;
+                    document.getElementById('logo-thumb-preview').classList.remove('hidden');
+                    document.getElementById('logo-placeholder').classList.add('hidden');
+                    document.getElementById('preview-custom-logo').src = imgSrc;
+                    document.getElementById('custom-logo-container').classList.remove('hidden');
+                    document.getElementById('custom-logo-container').classList.add('flex');
+                    document.getElementById('default-logo-container').classList.add('hidden');
+                    
+                    // Extract colors from logo (the magic!)
+                    const colors = await extractColorsFromImage(imgSrc);
+                    showColorSuggestions(colors);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        function setTheme(theme) {
+            const title = document.getElementById('preview-title');
+            if(theme === 'creative') {
+                updateCustomColor('#214F4B');
+                title.style.color = '#E27D60';
+            } else if (theme === 'stealth') {
+                updateCustomColor('#000000');
+                title.style.color = '#64748b';
+            } else {
+                updateCustomColor('#1e293b');
+                title.style.color = '#fbbf24';
+            }
+        }
+        
+        function updateSocialIcon() {
+            const platform = document.getElementById('input-social-platform').value;
+            const container = document.getElementById('social-icon-container');
+            if(platform === 'twitter') {
+                container.innerHTML = `<svg viewBox="0 0 24 24" class="w-4 h-4 text-[#1e293b]" fill="currentColor"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>`;
+            } else {
+                container.innerHTML = `<i data-lucide="${platform}" class="w-4 h-4 text-[#1e293b]"></i>`;
+                lucide.createIcons();
+            }
+        }
+        
+        function toggleSection(section) {
+            const checkbox = document.getElementById(`toggle-${section}`);
+            const inputSection = document.getElementById(`section-${section}`);
+            const previewBlock = document.getElementById(`preview-${section}-block`);
+            if(checkbox.checked) {
+                inputSection.classList.remove('section-disabled');
+                if(previewBlock) previewBlock.classList.remove('hidden');
+            } else {
+                inputSection.classList.add('section-disabled');
+                if(previewBlock) previewBlock.classList.add('hidden');
+            }
+            updatePreview();
+        }
+        
+        function toggleField(field) {
+            const checkbox = document.getElementById(`toggle-${field}`);
+            const inputContainer = document.getElementById(`field-${field}`);
+            const previewBlock = document.getElementById(`preview-${field}-block`);
+            const quickIcon = document.getElementById(`quick-${field}`);
+            
+            if(checkbox.checked) {
+                inputContainer.classList.remove('field-disabled');
+                if(previewBlock) previewBlock.classList.remove('hidden');
+                if(quickIcon) quickIcon.classList.remove('hidden');
+            } else {
+                inputContainer.classList.add('field-disabled');
+                if(previewBlock) previewBlock.classList.add('hidden');
+                if(quickIcon) quickIcon.classList.add('hidden');
+            }
+            updatePreview();
+        }
+        
+        function togglePreviewMode(mode) {
+            const container = document.getElementById('preview-container');
+            if (mode === 'expand') {
+                container.classList.add('expanded');
+            } else {
+                container.classList.remove('expanded');
+            }
+        }
+
+        // --- SUBMISSION ---
+        function validateForm() {
+            const fname = document.getElementById('input-fname').value.trim();
+            const lname = document.getElementById('input-lname').value.trim();
+            const errors = [];
+            
+            document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+            
+            if(!fname) {
+                errors.push('First name is required');
+                document.getElementById('input-fname').classList.add('input-error');
+            }
+            if(!lname) {
+                errors.push('Last name is required');
+                document.getElementById('input-lname').classList.add('input-error');
+            }
+            
+            return errors;
+        }
+
+        function handleSubmit() {
+            const errors = validateForm();
+            if(errors.length > 0) {
+                document.getElementById('submit-error').innerText = errors.join('. ');
+                document.getElementById('submit-error').classList.remove('hidden');
+                return;
+            }
+            document.getElementById('submit-error').classList.add('hidden');
+            
+            // Show payment modal for tier selection
+            showPaymentModal();
+        }
+
+        async function submitForm() {
+            // Check if Firebase is ready
+            if (!db || !storage) {
+                if (!initFirebase()) {
+                    document.getElementById('submit-error').innerText = 'Firebase not ready. Please wait and try again.';
+                    document.getElementById('submit-error').classList.remove('hidden');
+                    return;
+                }
+            }
+            
+            const btn = document.getElementById('btn-submit');
+            const btnText = document.getElementById('btn-submit-text');
+            const btnIcon = document.getElementById('btn-submit-icon');
+            const errorDiv = document.getElementById('submit-error');
+
+            btnText.innerText = 'Generating ID...';
+            btnIcon.setAttribute('data-lucide', 'loader-2');
+            btnIcon.classList.add('animate-spin');
+            lucide.createIcons();
+            btn.disabled = true;
+
+            try {
+                const fname = document.getElementById('input-fname').value.trim();
+                const lname = document.getElementById('input-lname').value.trim();
+                const slug = `${fname.toLowerCase().replace(/[^a-z0-9]/g, '')}.${lname.toLowerCase().replace(/[^a-z0-9]/g, '')}.${uniqueId}`;
+                
+                const userData = {
+                    full_name: `${fname} ${lname}`,
+                    first_name: fname,
+                    last_name: lname,
+                    title: document.getElementById('input-title').value.trim() || '',
+                    company: document.getElementById('input-company').value.trim() || '',
+                    tagline: document.getElementById('input-tagline').value.trim() || '',
+                    bio: document.getElementById('input-bio').value.trim() || '',
+                    mission: document.getElementById('input-mission').value.trim() || '',
+                    email: document.getElementById('toggle-email').checked ? document.getElementById('input-email').value.trim() : null,
+                    phone: document.getElementById('toggle-phone').checked ? document.getElementById('input-phone').value.trim() : null,
+                    location: document.getElementById('toggle-location').checked ? document.getElementById('input-location').value.trim() : null,
+                    social_links: {
+                        website: document.getElementById('toggle-website').checked ? document.getElementById('input-website').value.trim() : null,
+                        primary: document.getElementById('toggle-social').checked ? {
+                            platform: document.getElementById('input-social-platform').value,
+                            url: document.getElementById('input-social-url').value.trim()
+                        } : null
+                    },
+                    payment_link: currentTier === 'mentor' ? document.getElementById('input-payment').value.trim() : null,
+                    custom_color: document.getElementById('hex-input').value || '#1e293b',
+                    tier: currentTier,
+                    slug: slug,
+                    doc_id: slug,
+                    avatar_url: document.getElementById('preview-avatar').src,
+                    created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                // Upload photo if selected
+                const photoInput = document.getElementById('input-photo');
+                if(photoInput.files && photoInput.files[0]) {
+                    const photoRef = storage.ref(`avatars/${slug}`);
+                    await photoRef.put(photoInput.files[0]);
+                    userData.avatar_url = await photoRef.getDownloadURL();
+                }
+
+                // Upload logo if selected (Professional+)
+                const logoInput = document.getElementById('input-logo');
+                if(logoInput.files && logoInput.files[0] && (currentTier === 'professional' || currentTier === 'mentor')) {
+                    const logoRef = storage.ref(`logos/${slug}`);
+                    await logoRef.put(logoInput.files[0]);
+                    userData.logo_url = await logoRef.getDownloadURL();
+                }
+
+                // Save to Firestore
+                await db.collection('users').doc(slug).set(userData);
+                
+                // Show success
+                document.getElementById('final-url').value = `https://id.simpli-fi-os.com/card.html?u=${slug}`;
+                closeModal('payment-modal');
+                document.getElementById('success-modal').classList.remove('hidden');
+                document.getElementById('success-modal').classList.add('flex');
+                lucide.createIcons();
+                
+            } catch (error) {
+                console.error('Submission error:', error);
+                errorDiv.innerText = `Error: ${error.message}`;
+                errorDiv.classList.remove('hidden');
+            } finally {
+                btnText.innerText = 'Preview & Launch';
+                btnIcon.setAttribute('data-lucide', 'rocket');
+                btnIcon.classList.remove('animate-spin');
+                lucide.createIcons();
+                btn.disabled = false;
+            }
+        }
+        
+        function copyFinalURL() {
+            const input = document.getElementById('final-url');
+            input.select();
+            navigator.clipboard.writeText(input.value).then(() => {
+                alert("URL copied!");
+            }).catch(() => {
+                document.execCommand('copy');
+                alert("Copied!");
+            });
+        }
+        
+        function openFinalURL() {
+            window.open(document.getElementById('final-url').value, '_blank');
+        }
+    </script>
+</body>
+</html>

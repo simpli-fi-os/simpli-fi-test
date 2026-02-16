@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI | Seed Test Data</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <!-- Firebase SDKs (Compat 11.6.1) -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/tiers.js"></script>
+</head>
+<body class="bg-slate-900 text-white font-mono p-8 min-h-screen">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold text-amber-400 mb-2">Seed Test Profiles</h1>
+        <p class="text-slate-400 text-sm mb-6">Creates 3 test profiles in Firestore (Ambassador, Professional, Founder) for end-to-end testing.</p>
+
+        <div id="status" class="space-y-2 mb-6">
+            <div class="text-slate-500 text-sm">Waiting for Firebase auth...</div>
+        </div>
+
+        <button id="seed-btn" disabled onclick="seedProfiles()" class="px-6 py-3 bg-amber-500 text-slate-900 font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-amber-400 transition">
+            Seed Test Profiles
+        </button>
+
+        <div class="mt-8 space-y-2" id="results"></div>
+    </div>
+
+    <script>
+        const statusEl = document.getElementById('status');
+        const resultsEl = document.getElementById('results');
+        const seedBtn = document.getElementById('seed-btn');
+
+        // Wait for auth
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                statusEl.innerHTML = `<div class="text-green-400 text-sm">Authenticated (uid: ${user.uid})</div>`;
+                seedBtn.disabled = false;
+            } else {
+                statusEl.innerHTML = `<div class="text-red-400 text-sm">Auth failed. Check console.</div>`;
+            }
+        });
+
+        const testProfiles = [
+            {
+                slug: 'test-ambassador.user.0001',
+                data: {
+                    full_name: 'Test Ambassador',
+                    first_name: 'Test',
+                    last_name: 'Ambassador',
+                    title: 'QA Tester',
+                    company: '',
+                    tagline: '',
+                    bio: 'A test profile for the Ambassador (free) tier.',
+                    mission: 'Testing the Simpli-FI ID pipeline end-to-end.',
+                    email: 'test-ambassador@simpli-fi-os.com',
+                    phone: '(940) 555-0001',
+                    location: 'Denton, TX',
+                    social_links: { website: '', primary: { platform: 'linkedin', url: 'https://linkedin.com/in/test-ambassador' } },
+                    payment_link: '',
+                    custom_color: '#1e293b',
+                    tier: 'ambassador',
+                    slug: 'test-ambassador.user.0001',
+                    doc_id: 'test-ambassador.user.0001',
+                    avatar_url: '',
+                    logo_url: '',
+                    is_active: true,
+                    scan_count: 0,
+                    created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                }
+            },
+            {
+                slug: 'test-jane.professional.0002',
+                data: {
+                    full_name: 'Jane Professional',
+                    first_name: 'Jane',
+                    last_name: 'Professional',
+                    title: 'Marketing Director',
+                    company: 'Acme Corp',
+                    tagline: '',
+                    bio: 'A test profile for the Professional ($19) tier.',
+                    mission: 'Connecting marketing professionals with growth opportunities.',
+                    email: 'jane@acme-corp.com',
+                    phone: '(214) 555-0002',
+                    location: 'Dallas, TX',
+                    social_links: { website: 'https://www.acme-corp.com', primary: { platform: 'linkedin', url: 'https://linkedin.com/in/jane-professional' } },
+                    payment_link: '',
+                    custom_color: '#003b46',
+                    tier: 'professional',
+                    slug: 'test-jane.professional.0002',
+                    doc_id: 'test-jane.professional.0002',
+                    avatar_url: '',
+                    logo_url: '',
+                    is_active: true,
+                    scan_count: 0,
+                    created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                }
+            },
+            {
+                slug: 'test-bob.founder.0003',
+                data: {
+                    full_name: 'Bob Founder',
+                    first_name: 'Bob',
+                    last_name: 'Founder',
+                    title: 'CEO',
+                    company: 'Startup Inc',
+                    tagline: 'Innovation meets execution. Building the future.',
+                    bio: 'A test profile for the Founder ($49+$5/mo) tier with all features enabled.',
+                    mission: 'Scaling a startup from zero to hero, one connection at a time.',
+                    email: 'bob@startup-inc.com',
+                    phone: '(512) 555-0003',
+                    location: 'Austin, TX',
+                    social_links: { website: 'https://www.startup-inc.com', primary: { platform: 'twitter', url: 'https://twitter.com/bobfounder' } },
+                    payment_link: 'https://venmo.com/bob-founder',
+                    custom_color: '#0d9488',
+                    tier: 'founder',
+                    slug: 'test-bob.founder.0003',
+                    doc_id: 'test-bob.founder.0003',
+                    avatar_url: '',
+                    logo_url: '',
+                    is_active: true,
+                    scan_count: 0,
+                    created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                }
+            }
+        ];
+
+        async function seedProfiles() {
+            seedBtn.disabled = true;
+            seedBtn.textContent = 'Seeding...';
+            resultsEl.innerHTML = '';
+
+            for (const profile of testProfiles) {
+                try {
+                    await db.collection('users').doc(profile.slug).set(profile.data);
+                    resultsEl.innerHTML += `<div class="text-green-400 text-sm">✓ Created: ${profile.data.full_name} (${profile.data.tier}) → <a href="/card.html?u=${profile.slug}" target="_blank" class="underline text-amber-400">${profile.slug}</a></div>`;
+                } catch (err) {
+                    resultsEl.innerHTML += `<div class="text-red-400 text-sm">✗ Failed: ${profile.slug} — ${err.message}</div>`;
+                }
+            }
+
+            resultsEl.innerHTML += `<div class="mt-4 text-slate-400 text-xs">Done. You can delete this page after testing.</div>`;
+            seedBtn.textContent = 'Done!';
+        }
+    </script>
+</body>
+</html>
