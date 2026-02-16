@@ -4,36 +4,35 @@
     <meta charset="UTF-8">
     <!-- Updated Viewport: Allowed zooming -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="robots" content="noindex, nofollow"> 
-    <meta name="apple-mobile-web-app-title" content="Simpli-FI Alpha"> 
-    
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="apple-mobile-web-app-title" content="Simpli-FI ID">
+
     <!-- Open Graph Tags -->
-    <meta property="og:title" content="Hunter Lott | Simpli-FI Alpha LLC">
-    <meta property="og:description" content="Co-Founder & Managing Partner at Simpli-FI Alpha LLC. Investment Stewardship, For Legacy Building.">
-    <meta property="og:image" content="../assets/images/hunter-lott.png">
-    
-    <title>Hunter Lott | Simpli-FI Alpha LLC</title>
-    
+    <meta property="og:title" content="Rich Goldstein | Goldstein Patent Law">
+    <meta property="og:description" content="Founding Partner at Goldstein Patent Law. 10,000+ inventors advised, nearly 2,000 patents obtained.">
+    <meta property="og:image" content="../assets/images/contacts/rich-goldstein.png">
+
+    <title>Rich Goldstein | Goldstein Patent Law</title>
+
     <!-- Home Screen Icon & Favicon -->
     <link rel="apple-touch-icon" href="../favicon.png">
     <link rel="icon" type="image/png" href="../favicon.png">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@0.294.0"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-    
-    <!-- UPDATED COLORS -->
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         brand: {
-                            primary: '#003b46',   /* Deep Teal */
-                            accent: '#fca311',    /* Bright Gold/Orange */
-                            pop: '#fca311',       /* Using accent color for pop */
-                            canvas: '#ebe9e5',    /* Warm Greige Background */
-                            surface: '#e1dfdb',   /* Slightly darker surface for contrast */
+                            primary: '#1a1a1a',   /* Near Black */
+                            accent: '#b8860b',    /* Dark Goldenrod */
+                            pop: '#b8860b',       /* Using accent color for pop */
+                            canvas: '#f5f2ed',    /* Warm Parchment Background */
+                            surface: '#e8e4dd',   /* Slightly darker surface for contrast */
                         }
                     },
                     fontFamily: {
@@ -41,19 +40,19 @@
                         serif: ['Playfair Display', 'serif'],
                     },
                     boxShadow: {
-                        'neu-flat': '9px 9px 18px #d1cfcb, -9px -9px 18px #ffffff',
-                        'neu-pressed': 'inset 6px 6px 12px #d1cfcb, inset -6px -6px 12px #ffffff',
+                        'neu-flat': '9px 9px 18px #d6d3ce, -9px -9px 18px #ffffff',
+                        'neu-pressed': 'inset 6px 6px 12px #d6d3ce, inset -6px -6px 12px #ffffff',
                     }
                 }
             }
         }
     </script>
     <style>
-        body { 
-            background-color: #ebe9e5; 
+        body {
+            background-color: #f5f2ed;
             overflow: hidden; /* Handle zoom manually */
         }
-        
+
         a, button { -webkit-tap-highlight-color: transparent; }
 
         /* --- VIEW TRANSITIONS --- */
@@ -94,7 +93,7 @@
 
         /* --- CARD SCALING LOGIC --- */
         #card-wrapper {
-            width: 650px; 
+            width: 650px;
             height: 370px;
             position: relative;
             transform-origin: center center;
@@ -156,7 +155,7 @@
             position: absolute;
             background-color: #85bb65;
             border: 1px solid #6da04e;
-            width: 50px; 
+            width: 50px;
             height: 24px;
             border-radius: 2px;
             pointer-events: none;
@@ -171,11 +170,11 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .dollar-bill::after { content: '$'; }
-        
+
         .gold-coin {
             position: absolute;
-            background-color: #fca311;
-            border: 2px solid #e08e00;
+            background-color: #b8860b;
+            border: 2px solid #9a7209;
             border-radius: 50%;
             pointer-events: none;
             z-index: 0;
@@ -186,7 +185,7 @@
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            color: #b37400;
+            color: #7a5b07;
             font-size: 12px;
             font-weight: bold;
         }
@@ -197,11 +196,11 @@
             -webkit-overflow-scrolling: touch;
             position: relative;
             z-index: 10;
-            padding-bottom: 120px; 
+            padding-bottom: 120px;
         }
     </style>
 </head>
-<body class="fixed inset-0 bg-brand-canvas bg-[radial-gradient(#003b46_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.99]">
+<body class="fixed inset-0 bg-brand-canvas bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.99]">
 
     <!-- Physics Canvas Overlay -->
     <div id="physics-layer" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
@@ -210,49 +209,49 @@
     <div id="simple-view-container">
         <div id="card-wrapper">
             <div class="w-full h-full bg-brand-canvas rounded-[2.5rem] shadow-neu-flat flex items-center justify-between border border-stone-300/50 overflow-hidden relative">
-                
+
                 <!-- Left Side (Info) -->
                 <div class="flex flex-col justify-between h-full w-2/3 p-10">
-                     
+
                     <!-- Header -->
                     <div class="flex items-center gap-5">
                         <div class="w-16 h-16 shrink-0 rounded-2xl bg-brand-surface shadow-neu-flat flex items-center justify-center text-brand-primary border border-white/20">
-                            <img src="../favicon.png" alt="Logo" class="w-10 h-10 object-contain drop-shadow-sm opacity-90">
+                            <span class="text-2xl font-bold font-serif text-brand-primary tracking-tight">GPL</span>
                         </div>
                         <div>
-                            <h2 class="text-2xl font-bold tracking-tight text-brand-primary leading-none">Simpli-FI <span class="text-brand-accent">Alpha</span></h2>
-                            <p class="text-[11px] text-brand-accent font-bold uppercase tracking-[0.15em] mt-1.5">Investment Stewardship</p>
+                            <h2 class="text-2xl font-bold tracking-tight text-brand-primary leading-none">Goldstein <span class="text-brand-accent">Patent Law</span></h2>
+                            <p class="text-[11px] text-brand-accent font-bold uppercase tracking-[0.15em] mt-1.5">Protecting Innovation, Powering Growth</p>
                         </div>
                     </div>
 
                     <!-- Name Block -->
                     <div>
-                        <h1 class="text-5xl font-black mb-1 text-brand-primary font-serif leading-none">Hunter Lott</h1>
-                        <p class="text-brand-accent font-extrabold text-sm tracking-[0.2em] uppercase pl-1">Co-Founder & Managing Partner</p>
+                        <h1 class="text-5xl font-black mb-1 text-brand-primary font-serif leading-none">Rich Goldstein</h1>
+                        <p class="text-brand-accent font-extrabold text-sm tracking-[0.2em] uppercase pl-1">Founding Partner</p>
                     </div>
 
                     <!-- Contact Grid -->
                     <div class="grid grid-cols-2 gap-3 w-full">
-                        <a href="tel:9403730151" class="px-2 py-3.5 rounded-xl bg-brand-surface shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent hover:border-brand-primary/10 transition-colors cursor-pointer group">
-                            <i data-lucide="phone" class="w-3.5 h-3.5 text-brand-primary shrink-0"></i>
-                            <span class="text-[11px] font-bold text-brand-primary whitespace-nowrap">(940) 373-0151</span>
-                        </a>
-                        <a href="https://www.simpli-fi-alpha.com" target="_blank" class="px-2 py-3.5 rounded-xl bg-brand-surface shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent hover:border-brand-primary/10 transition-colors cursor-pointer group">
+                        <a href="https://www.goldsteinpatentlaw.com" target="_blank" class="px-2 py-3.5 rounded-xl bg-brand-surface shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent hover:border-brand-primary/10 transition-colors cursor-pointer group">
                             <i data-lucide="globe" class="w-3.5 h-3.5 text-brand-primary shrink-0"></i>
-                            <span class="text-[11px] font-bold text-brand-primary whitespace-nowrap">simpli-fi-alpha.com</span>
+                            <span class="text-[11px] font-bold text-brand-primary whitespace-nowrap">goldsteinpatentlaw.com</span>
+                        </a>
+                        <a href="https://advisors.boardofadvisors.com/profile/rich+goldstein" target="_blank" class="px-2 py-3.5 rounded-xl bg-brand-surface shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent hover:border-brand-primary/10 transition-colors cursor-pointer group">
+                            <i data-lucide="award" class="w-3.5 h-3.5 text-brand-primary shrink-0"></i>
+                            <span class="text-[11px] font-bold text-brand-primary whitespace-nowrap">BA Profile</span>
                         </a>
                     </div>
                 </div>
 
                 <!-- Right Side (Color Band) -->
                 <div class="w-1/3 h-full bg-brand-primary relative flex flex-col items-center justify-center pl-6 pr-4">
-                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#fca311_1px,transparent_1px)] [background-size:14px_14px]"></div>
-                     
+                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#b8860b_1px,transparent_1px)] [background-size:14px_14px]"></div>
+
                     <!-- Profile Pic -->
                     <div class="relative mb-6 group cursor-pointer z-20" onclick="toggleQR()">
                         <div class="w-48 h-48 rounded-full p-2.5 bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-2xl">
                             <div class="w-full h-full rounded-full overflow-hidden relative border-4 border-brand-accent">
-                                <img src="../assets/images/hunter-lott.png" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter&backgroundColor=003b46'" alt="Hunter Lott" class="w-full h-full object-cover">
+                                <img src="../assets/images/contacts/rich-goldstein.png" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Rich&backgroundColor=1a1a1a'" alt="Rich Goldstein" class="w-full h-full object-cover object-[center_5%]">
                             </div>
                         </div>
                         <div class="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-brand-accent shadow-lg flex items-center justify-center text-brand-primary border-2 border-white">
@@ -274,21 +273,21 @@
     <!-- FULL VIEW (Scrollable) -->
     <div id="full-view">
         <div id="scroll-container" class="w-full flex justify-center p-4">
-            
+
             <main id="main-card" class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-brand-surface relative flex flex-col shrink-0 my-auto transition-transform duration-75 will-change-transform">
-                
+
                 <!-- Top Banner -->
                 <div class="h-32 bg-brand-primary relative overflow-hidden shrink-0">
                     <div class="absolute top-4 left-4 z-10 flex items-center gap-3">
-                        <img src="../favicon.png" alt="Simpli-FI Alpha Logo" class="w-10 h-10 object-contain drop-shadow-md bg-white/10 rounded-full backdrop-blur-sm p-1">
-                        <span class="font-serif text-white font-bold tracking-tight text-sm opacity-90">Simpli-FI <span class="font-light text-brand-pop">Alpha</span></span>
+                        <span class="text-xl font-bold font-serif text-white bg-white/10 rounded-full backdrop-blur-sm px-3 py-1 tracking-tight">GPL</span>
+                        <span class="font-serif text-white font-bold tracking-tight text-sm opacity-90">Goldstein <span class="font-light text-brand-pop">Patent Law</span></span>
                     </div>
 
                     <button onclick="toggleQR()" aria-label="Show QR Code" class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white transition-all border border-white/10 shadow-lg group">
                         <i data-lucide="qr-code" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
                     </button>
 
-                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#fca311_1px,transparent_1px)] [background-size:14px_14px]"></div>
+                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#b8860b_1px,transparent_1px)] [background-size:14px_14px]"></div>
                     <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-brand-accent rounded-full opacity-30 blur-3xl"></div>
                     <div class="absolute top-0 right-10 w-24 h-24 bg-brand-pop rounded-full opacity-20 blur-2xl"></div>
                 </div>
@@ -297,51 +296,33 @@
                 <div class="relative px-8 -mt-16 mb-6 text-center shrink-0">
                     <div class="inline-block relative">
                         <div class="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-brand-surface mx-auto relative z-10">
-                            <img id="profile-photo" src="../assets/images/hunter-lott.png" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter&backgroundColor=003b46'" alt="Hunter Lott" class="w-full h-full object-cover">
+                            <img id="profile-photo" src="../assets/images/contacts/rich-goldstein.png" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Rich&backgroundColor=1a1a1a'" alt="Rich Goldstein" class="w-full h-full object-cover object-[center_5%]">
                         </div>
                         <div class="absolute bottom-1 right-1 z-20 bg-brand-accent text-brand-primary rounded-full p-1.5 border-2 border-white shadow-sm">
                         <i data-lucide="shield-check" class="w-3 h-3 stroke-[4]"></i>
                         </div>
                     </div>
-                    
+
                     <div class="mt-4">
-                        <h1 class="font-serif text-3xl font-bold text-brand-primary">Hunter Lott</h1>
-                        <p class="text-brand-accent font-bold text-xs tracking-widest uppercase mt-1">Co-Founder & Managing Partner</p>
-                        <p class="text-slate-400 text-xs mt-1">Simpli-FI Alpha LLC</p>
+                        <h1 class="font-serif text-3xl font-bold text-brand-primary">Rich Goldstein</h1>
+                        <p class="text-brand-accent font-bold text-xs tracking-widest uppercase mt-1">Founding Partner</p>
+                        <p class="text-slate-400 text-xs mt-1">Goldstein Patent Law</p>
                     </div>
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="grid grid-cols-6 gap-2 px-4 mb-6 shrink-0">
-                    <a href="tel:9403730151" class="flex flex-col items-center gap-1 group">
-                        <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-slate-600 group-hover:bg-brand-primary group-hover:text-white transition shadow-sm border border-brand-surface">
-                            <i data-lucide="phone" class="w-5 h-5"></i>
-                        </div>
-                        <span class="text-[10px] text-slate-500 font-medium">Call</span>
-                    </a>
-                    <a href="mailto:hunter.lott@simpli-fi-alpha.com" class="flex flex-col items-center gap-1 group">
-                        <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-slate-600 group-hover:bg-brand-primary group-hover:text-white transition shadow-sm border border-brand-surface">
-                            <i data-lucide="mail" class="w-5 h-5"></i>
-                        </div>
-                        <span class="text-[10px] text-slate-500 font-medium">Email</span>
-                    </a>
-                    <a href="https://www.simpli-fi-alpha.com" target="_blank" class="flex flex-col items-center gap-1 group">
+                <div class="grid grid-cols-3 gap-2 px-4 mb-6 shrink-0">
+                    <a href="https://www.goldsteinpatentlaw.com" target="_blank" class="flex flex-col items-center gap-1 group">
                         <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-slate-600 group-hover:bg-brand-primary group-hover:text-white transition shadow-sm border border-brand-surface">
                             <i data-lucide="globe" class="w-5 h-5"></i>
                         </div>
-                        <span class="text-[10px] text-slate-500 font-medium">Site</span>
+                        <span class="text-[10px] text-slate-500 font-medium">Website</span>
                     </a>
-                    <a href="https://calendar.app.google/ZBGrPEYJsonQmnwL8" target="_blank" class="flex flex-col items-center gap-1 group">
+                    <a href="https://advisors.boardofadvisors.com/profile/rich+goldstein" target="_blank" class="flex flex-col items-center gap-1 group">
                         <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-slate-600 group-hover:bg-brand-primary group-hover:text-white transition shadow-sm border border-brand-surface">
-                            <i data-lucide="calendar-check" class="w-5 h-5"></i>
+                            <i data-lucide="award" class="w-5 h-5"></i>
                         </div>
-                        <span class="text-[10px] text-slate-500 font-medium">Meet</span>
-                    </a>
-                    <a href="/catalog.html" class="flex flex-col items-center gap-1 group">
-                        <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-slate-600 group-hover:bg-brand-primary group-hover:text-white transition shadow-sm border border-brand-surface">
-                            <i data-lucide="folder-open" class="w-5 h-5"></i>
-                        </div>
-                        <span class="text-[10px] text-slate-500 font-medium">Catalog</span>
+                        <span class="text-[10px] text-slate-500 font-medium">BA Profile</span>
                     </a>
                     <button id="save-btn" onclick="downloadVCard()" class="flex flex-col items-center gap-1 group">
                         <div class="w-12 h-12 rounded-2xl bg-brand-accent/10 flex items-center justify-center text-brand-primary group-hover:bg-brand-primary group-hover:text-brand-accent transition shadow-sm border border-brand-accent/20">
@@ -364,31 +345,8 @@
                                 <h3 class="text-[10px] font-bold text-brand-primary uppercase tracking-widest">Current Mission</h3>
                             </div>
                             <p class="text-slate-700 text-sm font-medium italic leading-relaxed">
-                                "Connecting with qualified partners to raise capital for the Simpli-FI Legacy Fund—delivering uncorrelated, income-generating returns for families and institutions."
+                                "Helping inventors, startups, and executives protect their intellectual property, meet their business goals, and leverage the value of what they have already created."
                             </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Ideal Partners Section -->
-                <div class="px-6 mb-6 shrink-0">
-                    <h3 class="text-xs font-bold text-brand-accent uppercase tracking-wider mb-3">Who We Serve</h3>
-                    <div class="space-y-2">
-                        <div class="flex items-start gap-2">
-                            <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
-                            <p class="text-xs text-slate-600"><strong class="text-brand-primary">HNW & Family Offices:</strong> Diversified hedges for large portfolios.</p>
-                        </div>
-                        <div class="flex items-start gap-2">
-                            <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
-                            <p class="text-xs text-slate-600"><strong class="text-brand-primary">Retirees:</strong> Consistent cash flow & peace of mind.</p>
-                        </div>
-                        <div class="flex items-start gap-2">
-                            <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
-                            <p class="text-xs text-slate-600"><strong class="text-brand-primary">Businesses:</strong> Passive income for resilience.</p>
-                        </div>
-                        <div class="flex items-start gap-2">
-                            <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
-                            <p class="text-xs text-slate-600"><strong class="text-brand-primary">Pensions & Non-Profits:</strong> Risk-adjusted returns for long-term goals.</p>
                         </div>
                     </div>
                 </div>
@@ -397,48 +355,71 @@
                 <div class="px-8 mb-6 shrink-0">
                     <h3 class="text-xs font-bold text-brand-accent uppercase tracking-wider mb-2">About</h3>
                     <p class="text-slate-600 text-sm leading-relaxed font-light">
-                        My background in high-stakes leadership—as a Captain in the United States Marine Corps, Denton Fire Department Captain, and trustee on a firefighter pension fund board—has defined my approach to risk. Today, I apply that same institutional precision to financial stewardship, helping clients navigate market trends with confidence and discipline.
+                        Rich Goldstein has built a career on working with individual inventors and start-up companies. He has given critical advice to more than 10,000 inventors and obtained nearly 2,000 patents for his clients. He is the best-selling author of The ABA Consumer Guide to Obtaining a Patent and works directly with executives to help them make effective decisions to protect their IP.
                     </p>
+                </div>
+
+                <!-- Highlights Section -->
+                <div class="px-6 mb-6 shrink-0">
+                    <h3 class="text-xs font-bold text-brand-accent uppercase tracking-wider mb-3">Highlights</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
+                            <p class="text-xs text-slate-600">10,000+ inventors advised on patent strategy</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
+                            <p class="text-xs text-slate-600">Nearly 2,000 patents obtained for clients</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
+                            <p class="text-xs text-slate-600">Best-selling author — The ABA Consumer Guide to Obtaining a Patent</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
+                            <p class="text-xs text-slate-600">Works with executives on IP strategy & business goals</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Contact Details List -->
                 <div class="px-6 mb-8 space-y-3 shrink-0">
-                    <a href="tel:9403730151" class="flex items-center p-3 rounded-xl bg-brand-canvas hover:bg-brand-surface transition group">
-                        <i data-lucide="smartphone" class="w-5 h-5 text-brand-primary group-hover:text-brand-accent transition"></i>
+                    <a href="https://www.goldsteinpatentlaw.com" target="_blank" class="flex items-center p-3 rounded-xl bg-brand-canvas hover:bg-brand-surface transition group">
+                        <i data-lucide="globe" class="w-5 h-5 text-brand-primary group-hover:text-brand-accent transition"></i>
                         <div class="ml-4">
-                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Office</p>
-                            <p class="text-sm font-medium text-slate-900">(940) 373-0151</p>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Website</p>
+                            <p class="text-sm font-medium text-slate-900">goldsteinpatentlaw.com</p>
                         </div>
                     </a>
-                    <a href="mailto:hunter.lott@simpli-fi-alpha.com" class="flex items-center p-3 rounded-xl bg-brand-canvas hover:bg-brand-surface transition group">
-                        <i data-lucide="at-sign" class="w-5 h-5 text-brand-primary group-hover:text-brand-accent transition"></i>
+                    <a href="https://advisors.boardofadvisors.com/profile/rich+goldstein" target="_blank" class="flex items-center p-3 rounded-xl bg-brand-canvas hover:bg-brand-surface transition group">
+                        <i data-lucide="award" class="w-5 h-5 text-brand-primary group-hover:text-brand-accent transition"></i>
                         <div class="ml-4">
-                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Email</p>
-                            <p class="text-sm font-medium text-slate-900">hunter.lott@simpli-fi-alpha.com</p>
-                        </div>
-                    </a>
-                    <a href="https://calendar.app.google/ZBGrPEYJsonQmnwL8" target="_blank" class="flex items-center p-3 rounded-xl bg-brand-canvas hover:bg-brand-surface transition group">
-                        <i data-lucide="calendar-clock" class="w-5 h-5 text-brand-primary group-hover:text-brand-accent transition"></i>
-                        <div class="ml-4">
-                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Meeting</p>
-                            <p class="text-sm font-medium text-slate-900">Schedule a 30-min Intro</p>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">BA Profile</p>
+                            <p class="text-sm font-medium text-slate-900">Board of Advisors Member</p>
                         </div>
                     </a>
                     <div class="flex items-center p-3 rounded-xl bg-brand-canvas transition group">
-                        <i data-lucide="map-pin" class="w-5 h-5 text-brand-primary"></i>
+                        <i data-lucide="briefcase" class="w-5 h-5 text-brand-primary"></i>
                         <div class="ml-4">
-                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Location</p>
-                            <p class="text-sm font-medium text-slate-900">513 W Oak St, Ste 105<br>Denton, TX 76201</p>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Industry</p>
+                            <p class="text-sm font-medium text-slate-900">Legal / Intellectual Property</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center p-3 rounded-xl bg-brand-canvas transition group">
+                        <i data-lucide="user-check" class="w-5 h-5 text-brand-primary"></i>
+                        <div class="ml-4">
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Team Contact</p>
+                            <p class="text-sm font-medium text-slate-900">Larry Slavin (Gatekeeper)</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Social Footer -->
                 <div class="bg-brand-primary p-6 flex justify-center gap-6 border-t border-brand-primary mt-auto">
-                    <a href="https://www.simpli-fi-alpha.com" target="_blank" aria-label="Website" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="globe" class="w-5 h-5"></i></a>
-                    <a href="mailto:hunter.lott@simpli-fi-alpha.com" target="_blank" aria-label="Email" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="mail" class="w-5 h-5"></i></a>
+                    <a href="https://www.goldsteinpatentlaw.com" target="_blank" aria-label="Website" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="globe" class="w-5 h-5"></i></a>
+                    <a href="https://advisors.boardofadvisors.com/profile/rich+goldstein" target="_blank" aria-label="BA Profile" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="award" class="w-5 h-5"></i></a>
                 </div>
-                
+
                 <!-- Branding Footer -->
                 <a href="https://id.simpli-fi-os.com" target="_blank" class="block bg-slate-900 py-3 text-center relative group cursor-pointer overflow-hidden decoration-0">
                     <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition"></div>
@@ -458,7 +439,7 @@
         <i data-lucide="plus" id="icon-plus" class="fab-icon w-8 h-8 text-brand-primary"></i>
         <i data-lucide="minus" id="icon-minus" class="fab-icon w-8 h-8 text-brand-primary"></i>
     </button>
-    
+
     <!-- Confirm Modal for Location -->
     <div id="confirmModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity duration-300">
         <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-xs w-full text-center scale-100 transition-transform">
@@ -474,16 +455,16 @@
     <!-- QR Modal -->
     <div id="qrModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-primary/90 backdrop-blur-sm transition-opacity duration-300" onclick="toggleQR()">
          <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center relative transform transition-transform duration-300 scale-95" onclick="event.stopPropagation()">
-            
+
             <div class="flex justify-between items-center mb-4">
-                <span class="text-brand-primary font-serif font-bold italic">Simpli-FI Alpha</span>
+                <span class="text-brand-primary font-serif font-bold italic">Goldstein Patent Law</span>
                 <button onclick="toggleQR()" class="text-slate-400 hover:text-brand-accent">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
 
             <div class="bg-brand-canvas p-4 rounded-xl border border-brand-surface mb-4 shadow-inner">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://hunter.simpli-fi-alpha.com&color=003b46" alt="Scan QR Code" class="w-full h-auto rounded-lg mix-blend-multiply">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://advisors.boardofadvisors.com/profile/rich+goldstein&color=1a1a1a" alt="Scan QR Code" class="w-full h-auto rounded-lg mix-blend-multiply">
             </div>
 
             <p class="text-slate-500 text-xs uppercase tracking-widest font-medium mb-4">Scan to Connect</p>
@@ -498,13 +479,13 @@
         const card = document.getElementById('main-card');
         const physicsLayer = document.getElementById('physics-layer');
         let photoBase64 = '';
-        const currentMission = "Raising capital for the Simpli-FI Legacy Fund to provide uncorrelated, income-generating returns for qualified families and institutions.";
+        const currentMission = "Helping inventors, startups, and executives protect their intellectual property, meet their business goals, and leverage the value of what they have already created.";
 
         // --- GLOBAL SCALING & ZOOM VARS ---
         let baseScale = 1;
-        let userZoom = 1.0;     
-        let fullViewZoom = 1.0; 
-        
+        let userZoom = 1.0;
+        let fullViewZoom = 1.0;
+
         const ZOOM_SENSITIVITY = 0.001;
         const MIN_ZOOM = 0.5;
         const MAX_ZOOM = 4.0;
@@ -515,10 +496,10 @@
             const availableHeight = window.innerHeight - 40;
             const cardWidth = 650;
             const cardHeight = 370;
-            
+
             const scaleX = availableWidth / cardWidth;
             const scaleY = availableHeight / cardHeight;
-            
+
             baseScale = Math.min(scaleX, scaleY, 1);
             updateTransform();
         }
@@ -536,7 +517,7 @@
 
         // --- ZOOM INTERACTION (SIMPLE VIEW) ---
         const simpleViewContainer = document.getElementById('simple-view-container');
-        
+
         simpleViewContainer.addEventListener('wheel', (e) => {
             e.preventDefault();
             const delta = -e.deltaY * ZOOM_SENSITIVITY;
@@ -571,7 +552,7 @@
                 updateTransform();
             }
         }, { passive: false });
-        
+
         simpleViewContainer.addEventListener('touchend', () => { initialPinchDistSimple = 0; });
 
 
@@ -620,16 +601,16 @@
                 // Physics Pull Logic
                 const y = e.touches[0].pageY;
                 const delta = y - startY;
-                
+
                 // Pull Down (Top) - DOLLARS
                 if (delta > 0 && container.scrollTop <= 0) {
                     pullDirection = 'down';
-                    e.preventDefault(); 
+                    e.preventDefault();
                     const resistance = 0.4;
                     const translate = delta * resistance;
                     card.style.transform = `translateY(${translate}px) scale(${fullViewZoom})`; // Maintain zoom
-                    
-                    if (Math.random() < 0.25) spawnDollar(translate); 
+
+                    if (Math.random() < 0.25) spawnDollar(translate);
                 }
                 // Pull Up (Bottom) - COINS
                 else if (delta < 0 && (container.scrollTop + container.clientHeight >= container.scrollHeight - 5)) {
@@ -638,13 +619,13 @@
                     const resistance = 0.4;
                     const translate = delta * resistance;
                     card.style.transform = `translateY(${translate}px) scale(${fullViewZoom})`; // Maintain zoom
-                    
+
                     if (Math.random() < 0.3) spawnCoin(Math.abs(translate));
                 }
             }
         }, { passive: false });
 
-        container.addEventListener('touchend', () => { 
+        container.addEventListener('touchend', () => {
             initialPinchDistFull = 0;
             // Physics Reset
             if (pulling) {
@@ -661,7 +642,7 @@
         // --- PHYSICS ANIMATION HELPERS ---
         let startY = 0;
         let pulling = false;
-        let pullDirection = null; 
+        let pullDirection = null;
 
         function spawnDollar(offset) {
             const bill = document.createElement('div');
@@ -743,7 +724,7 @@
                 text.innerText = "Save";
             }
         }
-        
+
         function downloadVCard() {
              const modal = document.getElementById('confirmModal');
              modal.classList.remove('hidden');
@@ -752,20 +733,17 @@
         function handleLocationChoice(includeLocation) {
             const modal = document.getElementById('confirmModal');
             modal.classList.add('hidden');
-            
+
             const generateFile = (locationNote = "") => {
                 setLoading(true);
                 const today = new Date().toISOString().replace(/[-:.]/g, '').split('T')[0];
                 let vcard = `BEGIN:VCARD
 VERSION:3.0
-N:Lott;Hunter;;;
-FN:Hunter Lott
-ORG:Simpli-FI Alpha LLC
-TITLE:Co-Founder & Managing Partner
-TEL;TYPE=WORK,VOICE:(940) 373-0151
-EMAIL:hunter.lott@simpli-fi-alpha.com
-URL:https://www.simpli-fi-alpha.com
-ADR;TYPE=WORK:;;513 W Oak St Ste 105;Denton;TX;76201;USA
+N:Goldstein;Rich;;;
+FN:Rich Goldstein
+ORG:Goldstein Patent Law
+TITLE:Founding Partner
+URL:https://www.goldsteinpatentlaw.com
 NOTE:Mission: ${currentMission} ${locationNote}
 REV:${today}
 `;
@@ -776,7 +754,7 @@ REV:${today}
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.setAttribute('download', 'Hunter_Lott_Simpli-FI_Alpha.vcf');
+                link.setAttribute('download', 'Rich_Goldstein_Goldstein_Patent_Law.vcf');
                 document.body.appendChild(link);
                 link.click();
                 setTimeout(() => {
