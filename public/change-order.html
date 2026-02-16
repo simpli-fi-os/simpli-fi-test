@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Order | Simpli-FI ID</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@0.294.0"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            primary: '#1e293b',
+                            accent: '#fbbf24',
+                            surface: '#F3F4F6',
+                            canvas: '#FBF9F7',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #FBF9F7; }
+
+        .guide-line-h {
+            position: absolute;
+            left: 0; right: 0;
+            height: 1px;
+            background: rgba(251, 191, 36, 0.6);
+            pointer-events: none;
+            z-index: 30;
+        }
+        .guide-line-v {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 1px;
+            background: rgba(251, 191, 36, 0.6);
+            pointer-events: none;
+            z-index: 30;
+        }
+        .guide-label {
+            position: absolute;
+            font-size: 9px;
+            color: #fbbf24;
+            font-weight: 700;
+            z-index: 31;
+            pointer-events: none;
+            text-shadow: 0 0 3px rgba(0,0,0,0.8);
+        }
+
+        .preview-circle {
+            cursor: grab;
+            touch-action: none;
+        }
+        .preview-circle:active {
+            cursor: grabbing;
+        }
+        .preview-circle img {
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        .card-thumb {
+            transition: all 0.2s;
+        }
+        .card-thumb:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .card-thumb.active {
+            ring: 3px solid #fbbf24;
+            box-shadow: 0 0 0 3px #fbbf24;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Header -->
+    <div class="bg-brand-primary text-white p-6">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-brand-accent flex items-center justify-center">
+                    <i data-lucide="move" class="w-5 h-5 text-brand-primary"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold font-serif">Change Order</h1>
+                    <p class="text-xs text-white/60 uppercase tracking-widest">Photo Position Adjustment Tool</p>
+                </div>
+            </div>
+            <a href="cards/hunter.html" class="text-xs text-white/40 hover:text-brand-accent transition flex items-center gap-1">
+                <i data-lucide="arrow-left" class="w-3 h-3"></i> Back to Cards
+            </a>
+        </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- LEFT: Card Selector -->
+            <div class="lg:col-span-1">
+                <h2 class="text-sm font-bold text-brand-primary uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i data-lucide="users" class="w-4 h-4"></i> Select Card
+                </h2>
+                <div class="grid grid-cols-2 gap-3" id="card-grid">
+                    <!-- Cards populated by JS -->
+                </div>
+
+                <!-- Position Values -->
+                <div class="mt-6 bg-white rounded-2xl p-5 border border-gray-200 shadow-sm">
+                    <h3 class="text-xs font-bold text-brand-primary uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <i data-lucide="settings-2" class="w-3 h-3"></i> Position Values
+                    </h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase tracking-wide">Horizontal (X)</label>
+                            <div class="flex items-center gap-2 mt-1">
+                                <input type="range" id="pos-x" min="0" max="100" value="50" class="flex-1 accent-brand-accent">
+                                <span id="pos-x-val" class="text-sm font-mono font-bold text-brand-primary w-12 text-right">50%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 uppercase tracking-wide">Vertical (Y)</label>
+                            <div class="flex items-center gap-2 mt-1">
+                                <input type="range" id="pos-y" min="0" max="100" value="20" class="flex-1 accent-brand-accent">
+                                <span id="pos-y-val" class="text-sm font-mono font-bold text-brand-primary w-12 text-right">20%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CSS Output -->
+                    <div class="mt-4 bg-slate-900 rounded-xl p-3">
+                        <p class="text-[10px] text-slate-400 uppercase tracking-wide mb-1">Tailwind Class</p>
+                        <code id="css-output" class="text-brand-accent text-sm font-mono font-bold select-all">object-[50%_20%]</code>
+                    </div>
+
+                    <!-- Copy Button -->
+                    <button onclick="copyCSS()" class="mt-3 w-full py-2.5 bg-brand-primary text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-brand-accent hover:text-brand-primary transition flex items-center justify-center gap-2">
+                        <i data-lucide="copy" class="w-3 h-3"></i>
+                        <span id="copy-text">Copy Class</span>
+                    </button>
+                </div>
+
+                <!-- Guide Info -->
+                <div class="mt-4 bg-amber-50 rounded-xl p-4 border border-amber-200">
+                    <h4 class="text-xs font-bold text-amber-800 mb-1 flex items-center gap-1">
+                        <i data-lucide="info" class="w-3 h-3"></i> Guide Lines
+                    </h4>
+                    <p class="text-[11px] text-amber-700 leading-relaxed">
+                        The <strong>gold horizontal line</strong> marks the 3/4 point (25% from top).
+                        Drag the image so the person's eyes align with this line.
+                        The <strong>vertical line</strong> marks center.
+                    </p>
+                </div>
+            </div>
+
+            <!-- RIGHT: Preview -->
+            <div class="lg:col-span-2">
+                <h2 class="text-sm font-bold text-brand-primary uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i data-lucide="eye" class="w-4 h-4"></i> Live Preview
+                </h2>
+
+                <div class="flex flex-col md:flex-row gap-8 items-start">
+                    <!-- Simple View Circle (large - like the card right panel) -->
+                    <div class="text-center">
+                        <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-3 font-bold">Simple View (w-48 h-48)</p>
+                        <div class="w-48 h-48 rounded-full p-2.5 bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center shadow-xl mx-auto relative">
+                            <div class="w-full h-full rounded-full overflow-hidden relative border-4 border-brand-accent preview-circle" id="preview-large"
+                                 onmousedown="startDrag(event)" ontouchstart="startDrag(event)">
+                                <img id="preview-img-large" src="" alt="Preview" class="w-full h-full object-cover">
+                                <!-- Guide lines -->
+                                <div class="guide-line-h" style="top: 25%"></div>
+                                <div class="guide-line-v" style="left: 50%"></div>
+                                <div class="guide-label" style="top: 25%; left: 4px; transform: translateY(-50%)">3/4 ▸</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Full View Circle (smaller - like expanded card) -->
+                    <div class="text-center">
+                        <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-3 font-bold">Full View (w-32 h-32)</p>
+                        <div class="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-brand-surface mx-auto relative preview-circle" id="preview-small">
+                            <img id="preview-img-small" src="" alt="Preview" class="w-full h-full object-cover">
+                            <!-- Guide lines -->
+                            <div class="guide-line-h" style="top: 25%"></div>
+                            <div class="guide-line-v" style="left: 50%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Side-by-side card mockup -->
+                    <div class="text-center flex-1">
+                        <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-3 font-bold">Card Mockup</p>
+                        <div class="bg-white rounded-2xl shadow-lg border overflow-hidden max-w-xs mx-auto">
+                            <div class="h-20 bg-brand-primary relative">
+                                <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 w-16 h-16 rounded-full border-3 border-white shadow overflow-hidden bg-brand-surface">
+                                    <img id="preview-img-card" src="" alt="" class="w-full h-full object-cover">
+                                </div>
+                            </div>
+                            <div class="pt-10 pb-4 px-4 text-center">
+                                <h3 id="card-name" class="font-serif font-bold text-brand-primary text-sm">Select a card</h3>
+                                <p id="card-title" class="text-[10px] text-brand-accent font-bold uppercase tracking-wider mt-0.5">—</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- All Cards Overview -->
+                <div class="mt-8">
+                    <h2 class="text-sm font-bold text-brand-primary uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i data-lucide="layout-grid" class="w-4 h-4"></i> All Cards at Current Settings
+                    </h2>
+                    <div class="grid grid-cols-5 md:grid-cols-10 gap-3" id="all-previews">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Card data
+        const cards = [
+            { id: 'kevin-harrington', name: 'Kevin Harrington', title: 'Entrepreneur & Investor', img: 'assets/images/contacts/kevin-harrington.png', posX: 50, posY: 18 },
+            { id: 'mike-calhoun', name: 'Mike Calhoun', title: 'Founder & CEO', img: 'assets/images/contacts/mike-calhoun.png', posX: 50, posY: 18 },
+            { id: 'rhonda-klch', name: 'Rhonda Klch', title: 'Managing Partner', img: 'assets/images/contacts/rhonda-klch.png', posX: 55, posY: 20 },
+            { id: 'rhonda-swan', name: 'Rhonda Swan', title: 'CEO & Founder', img: 'assets/images/contacts/rhonda-swan.png', posX: 50, posY: 15 },
+            { id: 'jeff-hayzlett', name: 'Jeff Hayzlett', title: 'Chairman & CEO', img: 'assets/images/contacts/jeff-hayzlett.png', posX: 50, posY: 20 },
+            { id: 'ty-crandall', name: 'Ty Crandall', title: 'CEO', img: 'assets/images/contacts/ty-crandall.png', posX: 50, posY: 18 },
+            { id: 'rich-goldstein', name: 'Rich Goldstein', title: 'Founding Partner', img: 'assets/images/contacts/rich-goldstein.png', posX: 50, posY: 20 },
+            { id: 'carl-gould', name: 'Carl Gould', title: 'CEO & Strategist', img: 'assets/images/contacts/carl-gould.png', posX: 50, posY: 15 },
+            { id: 'hunter', name: 'Hunter Lott', title: 'Co-Founder', img: 'assets/images/hunter-lott.png', posX: 50, posY: 50 },
+            { id: 'lindsey', name: 'Lindsey Lott', title: 'Co-Founder & CEO', img: 'https://raw.githubusercontent.com/simpli-fi-os/assets/abc740cc26a619c8153bbfeafbcb85c23879fcdf/lindsey-lott.jpg', posX: 50, posY: 50 },
+        ];
+
+        let activeCard = null;
+        let isDragging = false;
+        let dragStartX, dragStartY, startPosX, startPosY;
+
+        // Build card selector grid
+        const cardGrid = document.getElementById('card-grid');
+        cards.forEach((card, i) => {
+            const div = document.createElement('div');
+            div.className = 'card-thumb rounded-xl overflow-hidden cursor-pointer border-2 border-transparent bg-white shadow-sm';
+            div.dataset.index = i;
+            div.innerHTML = `
+                <div class="w-full h-20 bg-brand-primary/5 overflow-hidden flex items-center justify-center">
+                    <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-brand-accent">
+                        <img src="${card.img}" alt="${card.name}" class="w-full h-full object-cover" style="object-position: ${card.posX}% ${card.posY}%">
+                    </div>
+                </div>
+                <div class="p-2 text-center">
+                    <p class="text-[10px] font-bold text-brand-primary truncate">${card.name.split(' ')[0]}</p>
+                </div>
+            `;
+            div.onclick = () => selectCard(i);
+            cardGrid.appendChild(div);
+        });
+
+        // Build all-previews row
+        const allPreviews = document.getElementById('all-previews');
+        cards.forEach((card, i) => {
+            const div = document.createElement('div');
+            div.className = 'text-center';
+            div.innerHTML = `
+                <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-brand-accent mx-auto shadow-sm">
+                    <img id="all-prev-${i}" src="${card.img}" alt="${card.name}" class="w-full h-full object-cover" style="object-position: ${card.posX}% ${card.posY}%">
+                </div>
+                <p class="text-[8px] text-slate-400 mt-1 truncate">${card.name.split(' ')[0]}</p>
+            `;
+            allPreviews.appendChild(div);
+        });
+
+        function selectCard(index) {
+            activeCard = cards[index];
+
+            // Highlight
+            document.querySelectorAll('.card-thumb').forEach(el => {
+                el.classList.remove('active');
+                el.style.boxShadow = '';
+            });
+            const thumb = cardGrid.children[index];
+            thumb.classList.add('active');
+            thumb.style.boxShadow = '0 0 0 3px #fbbf24';
+
+            // Update sliders
+            document.getElementById('pos-x').value = activeCard.posX;
+            document.getElementById('pos-y').value = activeCard.posY;
+
+            // Update previews
+            updatePreviews();
+        }
+
+        function updatePreviews() {
+            if (!activeCard) return;
+
+            const x = parseInt(document.getElementById('pos-x').value);
+            const y = parseInt(document.getElementById('pos-y').value);
+            activeCard.posX = x;
+            activeCard.posY = y;
+
+            const pos = `${x}% ${y}%`;
+
+            // Update val displays
+            document.getElementById('pos-x-val').textContent = x + '%';
+            document.getElementById('pos-y-val').textContent = y + '%';
+
+            // Update CSS output
+            document.getElementById('css-output').textContent = `object-[${x}%_${y}%]`;
+
+            // Update preview images
+            ['preview-img-large', 'preview-img-small', 'preview-img-card'].forEach(id => {
+                const img = document.getElementById(id);
+                img.src = activeCard.img;
+                img.style.objectPosition = pos;
+            });
+
+            // Update card mockup text
+            document.getElementById('card-name').textContent = activeCard.name;
+            document.getElementById('card-title').textContent = activeCard.title;
+
+            // Update the thumb in selector
+            const index = cards.indexOf(activeCard);
+            const thumbImg = cardGrid.children[index].querySelector('img');
+            thumbImg.style.objectPosition = pos;
+
+            // Update the all-preview
+            const allPrevImg = document.getElementById('all-prev-' + index);
+            if (allPrevImg) allPrevImg.style.objectPosition = pos;
+        }
+
+        // Slider events
+        document.getElementById('pos-x').addEventListener('input', updatePreviews);
+        document.getElementById('pos-y').addEventListener('input', updatePreviews);
+
+        // Drag to adjust
+        function startDrag(e) {
+            if (!activeCard) return;
+            isDragging = true;
+            const touch = e.touches ? e.touches[0] : e;
+            dragStartX = touch.clientX;
+            dragStartY = touch.clientY;
+            startPosX = activeCard.posX;
+            startPosY = activeCard.posY;
+            e.preventDefault();
+        }
+
+        function onDrag(e) {
+            if (!isDragging || !activeCard) return;
+            const touch = e.touches ? e.touches[0] : e;
+            const dx = touch.clientX - dragStartX;
+            const dy = touch.clientY - dragStartY;
+
+            // Sensitivity: ~0.5% per pixel
+            const newX = Math.max(0, Math.min(100, Math.round(startPosX - dx * 0.5)));
+            const newY = Math.max(0, Math.min(100, Math.round(startPosY - dy * 0.5)));
+
+            document.getElementById('pos-x').value = newX;
+            document.getElementById('pos-y').value = newY;
+            updatePreviews();
+            e.preventDefault();
+        }
+
+        function endDrag() {
+            isDragging = false;
+        }
+
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchmove', onDrag, { passive: false });
+        document.addEventListener('touchend', endDrag);
+
+        // Copy CSS
+        function copyCSS() {
+            const text = document.getElementById('css-output').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copy-text');
+                btn.textContent = 'Copied!';
+                setTimeout(() => { btn.textContent = 'Copy Class'; }, 1500);
+            });
+        }
+
+        // Select first card on load
+        selectCard(0);
+    </script>
+</body>
+</html>
