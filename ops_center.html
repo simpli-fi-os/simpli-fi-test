@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI | COMMAND_V1</title>
+    
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <!-- Fonts: The Voice of the Machine -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+
+    <style>
+        :root {
+            --crt-amber: #ffb000;
+            --crt-green: #33ff00;
+            --crt-red: #ff3300;
+            --panel-bg: #1a1a1a;
+            --panel-border: #444;
+            --screen-bg: #0a0a0a;
+        }
+
+        body {
+            background-color: #050505;
+            color: var(--crt-amber);
+            font-family: 'Share Tech Mono', monospace;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- CRT EFFECTS --- */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.2) 50%,
+                rgba(0,0,0,0.2)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 50;
+            animation: scanline 0.2s linear infinite;
+            opacity: 0.6;
+        }
+        
+        .screen-glow {
+            position: fixed;
+            inset: 0;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+            pointer-events: none;
+            z-index: 51;
+        }
+
+        /* --- UI COMPONENTS --- */
+        .retro-panel {
+            background: var(--panel-bg);
+            border: 2px solid var(--panel-border);
+            box-shadow: 
+                inset 1px 1px 0px rgba(255,255,255,0.1),
+                inset -1px -1px 0px rgba(0,0,0,0.5),
+                4px 4px 0px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .retro-panel::after {
+            /* Screw head effect */
+            content: '+';
+            position: absolute;
+            top: 4px; right: 4px;
+            color: #555;
+            font-size: 12px;
+        }
+        .retro-panel::before {
+            /* Screw head effect */
+            content: '+';
+            position: absolute;
+            top: 4px; left: 4px;
+            color: #555;
+            font-size: 12px;
+        }
+
+        .retro-screen {
+            background: var(--screen-bg);
+            border: 2px solid #333;
+            border-radius: 4px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blink { animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* --- BUTTONS --- */
+        .retro-btn {
+            background: #333;
+            border: 2px solid #555;
+            border-bottom: 4px solid #555;
+            border-right: 4px solid #555;
+            color: #ccc;
+            text-transform: uppercase;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .retro-btn:active {
+            border-width: 2px;
+            transform: translate(2px, 2px);
+        }
+        .retro-btn.active {
+            background: var(--crt-amber);
+            color: #000;
+            border-color: #cc8c00;
+            box-shadow: 0 0 10px var(--crt-amber);
+        }
+        .retro-btn.emergency {
+            background: #500;
+            color: var(--crt-red);
+            border-color: #800;
+        }
+        .retro-btn.emergency:hover {
+            background: var(--crt-red);
+            color: #000;
+            box-shadow: 0 0 15px var(--crt-red);
+        }
+
+        /* --- STATUS LIGHTS --- */
+        .led {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: #222;
+            border: 1px solid #000;
+            box-shadow: inset 2px 2px 2px rgba(0,0,0,0.5);
+        }
+        .led.on-green {
+            background: #0f0;
+            box-shadow: 0 0 5px #0f0, inset -2px -2px 5px rgba(255,255,255,0.5);
+        }
+        .led.on-red {
+            background: #f00;
+            box-shadow: 0 0 5px #f00, inset -2px -2px 5px rgba(255,255,255,0.5);
+        }
+
+        /* --- DATA TABLES --- */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        th { 
+            background: #222; 
+            color: #888; 
+            padding: 8px; 
+            border-bottom: 1px solid var(--crt-amber); 
+            text-align: left;
+        }
+        td { 
+            border-bottom: 1px solid #222; 
+            padding: 8px; 
+            color: var(--crt-amber); 
+        }
+        tr:hover td { background: rgba(255, 176, 0, 0.1); }
+
+        /* --- SCROLLBAR --- */
+        ::-webkit-scrollbar { width: 12px; background: #111; }
+        ::-webkit-scrollbar-thumb { background: #444; border: 2px solid #111; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--crt-amber); }
+
+        /* --- MAP FIX --- */
+        .leaflet-container { background: #050505 !important; }
+        .leaflet-control-attribution { display: none; }
+    </style>
+</head>
+<body class="h-screen flex flex-col p-4">
+
+    <!-- CRT OVERLAYS -->
+    <div class="scanlines"></div>
+    <div class="screen-glow"></div>
+
+    <!-- TOP PANEL: HEADER & NAV -->
+    <header class="retro-panel p-4 mb-4 flex justify-between items-end shrink-0 z-40">
+        <div class="flex items-center gap-6">
+            <div class="border-2 border-amber-500/50 p-2 relative">
+                <div class="w-12 h-12 bg-black flex items-center justify-center border border-amber-500/30">
+                    <i data-lucide="aperture" class="w-8 h-8 text-amber-500 animate-spin-slow" style="animation-duration: 10s;"></i>
+                </div>
+                <div class="absolute -top-1 -left-1 w-2 h-2 bg-amber-500"></div>
+                <div class="absolute -bottom-1 -right-1 w-2 h-2 bg-amber-500"></div>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold tracking-widest leading-none text-white">SIMPLI-FI <span style="color: var(--crt-amber)">COMMAND</span></h1>
+                <p class="text-xs text-gray-500 mt-1">SYS.OP.MODE: <span class="blink text-green-500">NOMINAL</span> // V.4.0</p>
+            </div>
+        </div>
+
+        <!-- PHYSICAL TABS -->
+        <div class="flex items-end gap-2">
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="retro-btn active px-6 py-2 text-sm font-bold">1_DASHBOARD</button>
+            <button onclick="switchTab('infra')" id="tab-infra" class="retro-btn px-6 py-2 text-sm font-bold">2_INFRA</button>
+            <button onclick="switchTab('ecosystem')" id="tab-ecosystem" class="retro-btn px-6 py-2 text-sm font-bold">3_MAP</button>
+            <button onclick="switchTab('crm')" id="tab-crm" class="retro-btn px-6 py-2 text-sm font-bold">4_CRM</button>
+            <button onclick="switchTab('alerts')" id="tab-alerts" class="retro-btn px-6 py-2 text-sm font-bold text-red-500">5_ALERTS</button>
+        </div>
+
+        <div class="flex flex-col items-end gap-2">
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500">AIRLOCK</span>
+                <div class="led on-green"></div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500">DB LINK</span>
+                <div class="led on-green"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN VIEWPORT -->
+    <div class="retro-screen flex-1 relative z-30 p-1">
+        <!-- GRID OVERLAY -->
+        <div class="absolute inset-0 pointer-events-none" style="background-image: linear-gradient(rgba(50,50,50,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(50,50,50,0.1) 1px, transparent 1px); background-size: 40px 40px; opacity: 0.3;"></div>
+
+        <!-- TAB 1: DASHBOARD -->
+        <div id="view-dashboard" class="tab-content active h-full p-6 overflow-y-auto">
+            <div class="grid grid-cols-4 gap-6 mb-8">
+                <!-- METRIC CARD -->
+                <div class="retro-panel p-4 bg-black/50">
+                    <p class="text-xs text-gray-500 mb-1">TOTAL_IDENTITIES</p>
+                    <h3 class="text-4xl text-white tracking-tighter" id="total-users">1,248</h3>
+                    <div class="h-1 w-full bg-gray-800 mt-2"><div class="h-full bg-green-500" style="width: 75%"></div></div>
+                </div>
+                <div class="retro-panel p-4 bg-black/50">
+                    <p class="text-xs text-gray-500 mb-1">LIFETIME_REV</p>
+                    <h3 class="text-4xl text-amber-500 tracking-tighter" id="lifetime-rev">$28,500</h3>
+                    <div class="h-1 w-full bg-gray-800 mt-2"><div class="h-full bg-amber-500" style="width: 45%"></div></div>
+                </div>
+                <div class="retro-panel p-4 bg-black/50">
+                    <p class="text-xs text-gray-500 mb-1">VIRAL_K_FACTOR</p>
+                    <h3 class="text-4xl text-white tracking-tighter">1.2</h3>
+                    <p class="text-xs text-green-500 mt-1">GROWTH_MODE: ACTIVE</p>
+                </div>
+                <div class="retro-panel p-4 bg-black/50">
+                    <p class="text-xs text-gray-500 mb-1">PROJ_MRR</p>
+                    <h3 class="text-4xl text-blue-400 tracking-tighter">$2,450</h3>
+                    <div class="flex gap-1 mt-2">
+                        <div class="w-2 h-2 bg-blue-500"></div>
+                        <div class="w-2 h-2 bg-blue-500"></div>
+                        <div class="w-2 h-2 bg-blue-900"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 h-96">
+                <div class="retro-panel p-4">
+                    <h3 class="text-sm text-gray-400 border-b border-gray-700 pb-2 mb-4">TIER_DISTRIBUTION</h3>
+                    <div class="h-64 flex items-center justify-center">
+                        <canvas id="tierChart"></canvas>
+                    </div>
+                </div>
+                <div class="retro-panel p-4 flex flex-col">
+                    <h3 class="text-sm text-gray-400 border-b border-gray-700 pb-2 mb-4">GLOBAL_DEPLOYMENT_MAP</h3>
+                    <div id="global-map" class="flex-1 bg-black border border-gray-800 opacity-80 filter grayscale sepia"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: INFRASTRUCTURE -->
+        <div id="view-infra" class="tab-content hidden h-full p-6 overflow-y-auto">
+            <div class="grid grid-cols-3 gap-6 mb-6">
+                <div class="retro-panel p-4">
+                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>AIRLOCK_LATENCY</span><span class="text-green-500">OPTIMAL</span></div>
+                    <div class="text-5xl text-white mb-2">42<span class="text-sm text-gray-600">ms</span></div>
+                    <canvas id="latencyChart" class="h-16 w-full"></canvas>
+                </div>
+                <div class="retro-panel p-4">
+                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>DB_READS_SEC</span><span>---</span></div>
+                    <div class="text-5xl text-white mb-2">840</div>
+                    <div class="flex gap-1 h-4 items-end">
+                        <div class="w-1 bg-green-500 h-[40%]"></div>
+                        <div class="w-1 bg-green-500 h-[60%]"></div>
+                        <div class="w-1 bg-green-500 h-[80%]"></div>
+                        <div class="w-1 bg-green-500 h-[30%]"></div>
+                        <div class="w-1 bg-green-500 h-[50%]"></div>
+                    </div>
+                </div>
+                <div class="retro-panel p-4">
+                    <div class="flex justify-between text-xs text-gray-500 mb-2"><span>PAYMENT_GATEWAY</span><span class="text-green-500">CONNECTED</span></div>
+                    <div class="text-5xl text-white mb-2">99.9%</div>
+                    <p class="text-xs text-gray-600">STRIPE API: HEALTHY</p>
+                </div>
+            </div>
+
+            <div class="retro-panel p-4 h-96 flex flex-col">
+                <h3 class="text-sm text-gray-400 border-b border-gray-700 pb-2 mb-2">EVENT_LOG_STREAM // REAL_TIME</h3>
+                <div id="log-stream" class="flex-1 overflow-y-auto font-mono text-xs space-y-1 p-2 bg-black border border-gray-800">
+                    <!-- Logs injected via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: ECOSYSTEM -->
+        <div id="view-ecosystem" class="tab-content hidden h-full p-6">
+            <div class="retro-panel w-full h-full p-0 relative overflow-hidden flex items-center justify-center bg-black">
+                <svg id="ecosystem-svg"></svg>
+                <div class="absolute bottom-4 left-4 text-xs text-gray-600 border border-gray-700 p-2">
+                    NODE_GRAPH_VISUALIZER<br>
+                    RENDER_MODE: VECTOR
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: CRM -->
+        <div id="view-crm" class="tab-content hidden h-full p-6 flex gap-6">
+            <div class="flex-1 retro-panel flex flex-col overflow-hidden">
+                <div class="p-3 border-b border-gray-700 bg-[#222] flex justify-between items-center">
+                    <h3 class="text-sm font-bold">CLIENT_ROSTER_DB</h3>
+                    <input type="text" placeholder="QUERY_USER_ID..." class="bg-black border border-gray-600 text-amber-500 px-2 py-1 text-xs w-64 focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="flex-1 overflow-auto">
+                    <table class="w-full">
+                        <thead class="sticky top-0 z-10">
+                            <tr>
+                                <th>IDENTITY</th>
+                                <th>ACCESS_LEVEL</th>
+                                <th>STATUS</th>
+                                <th>LAST_PING</th>
+                                <th class="text-right">CMD</th>
+                            </tr>
+                        </thead>
+                        <tbody id="crm-table-body">
+                            <!-- Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="w-80 retro-panel p-4 flex flex-col bg-black/40">
+                <h3 class="text-sm text-amber-500 border-b border-gray-700 pb-2 mb-4">INSPECTOR_MODULE</h3>
+                <div id="god-mode-panel" class="flex-1 space-y-4">
+                    <p class="text-xs text-gray-600 text-center mt-10">[ NO_TARGET_SELECTED ]</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: ALERTS -->
+        <div id="view-alerts" class="tab-content hidden h-full p-6">
+            <div class="retro-panel p-6 max-w-3xl mx-auto bg-black/20">
+                <h2 class="text-lg text-red-500 mb-6 border-b border-red-900 pb-2 flex items-center gap-2">
+                    <i data-lucide="siren" class="w-5 h-5 animate-pulse"></i> ALERT_CONFIGURATION
+                </h2>
+                <div class="space-y-4" id="alert-list">
+                    <!-- Alerts Injected -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        lucide.createIcons();
+        
+        // --- DATA SIMULATION & LOGIC ---
+        
+        const db = { collection: () => ({ get: async () => ({ size: 1248, docs: [] }) }) }; // Mock for display
+
+        function switchTab(tab) {
+            document.querySelectorAll('.retro-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            
+            document.getElementById('tab-' + tab).classList.add('active');
+            document.getElementById('view-' + tab).classList.remove('hidden');
+            
+            // Tab Specific Inits
+            if(tab === 'dashboard') initMap();
+            if(tab === 'ecosystem') initEcosystemMap();
+            if(tab === 'crm') loadCRM();
+            if(tab === 'alerts') loadAlerts();
+        }
+
+        // Dashboard Init
+        const ctx = document.getElementById('tierChart').getContext('2d');
+        Chart.defaults.color = '#555';
+        Chart.defaults.font.family = "'Share Tech Mono', monospace";
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['AMBASSADOR', 'PRO', 'FOUNDER'],
+                datasets: [{
+                    data: [65, 25, 10],
+                    backgroundColor: ['#333', '#0d9488', '#fbbf24'],
+                    borderColor: '#1a1a1a',
+                    borderWidth: 2
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { position: 'right', labels: { color: '#888', boxWidth: 10 } } },
+                cutout: '70%'
+            }
+        });
+
+        // Map Init (Dark Mode)
+        function initMap() {
+            if (window.mapInstance) return;
+            const map = L.map('global-map', { zoomControl: false, attributionControl: false }).setView([30, -10], 2);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+            window.mapInstance = map;
+            
+            // Fake data points
+            const points = [[40.7, -74.0], [34.0, -118.2], [51.5, -0.1], [35.6, 139.6], [33.2, -97.1]];
+            points.forEach(p => {
+                L.circleMarker(p, {
+                    color: '#ffb000',
+                    fillColor: '#ffb000',
+                    fillOpacity: 0.5,
+                    radius: 3
+                }).addTo(map);
+            });
+        }
+
+        // Live Logs
+        const logContainer = document.getElementById('log-stream');
+        function addLog() {
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+            const actions = ['GET /card/hunter', 'POST /intake', '302 REDIRECT', 'DB_WRITE_SUCCESS'];
+            const action = actions[Math.floor(Math.random() * actions.length)];
+            const div = document.createElement('div');
+            div.style.color = action.includes('302') ? '#33ff00' : '#888';
+            div.innerHTML = `[${time}] :: ${action}`;
+            logContainer.prepend(div);
+            if(logContainer.children.length > 20) logContainer.lastElementChild.remove();
+        }
+        setInterval(addLog, 800);
+
+        // Ecosystem D3 (Wireframe Style)
+        function initEcosystemMap() {
+            const svg = d3.select("#ecosystem-svg");
+            svg.selectAll("*").remove(); // Clear
+            const width = document.getElementById('view-ecosystem').clientWidth;
+            const height = document.getElementById('view-ecosystem').clientHeight;
+            
+            const nodes = [
+                { id: "INTAKE", x: width * 0.2, y: height * 0.5 },
+                { id: "DB", x: width * 0.5, y: height * 0.5 },
+                { id: "CARD", x: width * 0.8, y: height * 0.5 },
+                { id: "AIRLOCK", x: width * 0.5, y: height * 0.2 },
+                { id: "ADMIN", x: width * 0.5, y: height * 0.8 }
+            ];
+
+            // Lines
+            svg.selectAll("line")
+                .data([
+                    { s: 0, t: 1 }, { s: 1, t: 2 }, { s: 3, t: 1 }, { s: 1, t: 4 }
+                ])
+                .enter().append("line")
+                .attr("x1", d => nodes[d.s].x).attr("y1", d => nodes[d.s].y)
+                .attr("x2", d => nodes[d.t].x).attr("y2", d => nodes[d.t].y)
+                .attr("stroke", "#333").attr("stroke-width", 2);
+
+            // Nodes
+            const g = svg.selectAll("g").data(nodes).enter().append("g")
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+
+            g.append("circle").attr("r", 30).attr("fill", "#000").attr("stroke", "#ffb000").attr("stroke-width", 2);
+            g.append("text").text(d => d.id).attr("text-anchor", "middle").attr("dy", 4).attr("fill", "#ffb000").attr("font-size", "10px");
+        }
+
+        // CRM Logic
+        function loadCRM() {
+            const tbody = document.getElementById('crm-table-body');
+            tbody.innerHTML = `
+                <tr>
+                    <td class="font-bold text-white">HUNTER_LOTT</td>
+                    <td><span class="text-amber-500">[FOUNDER]</span></td>
+                    <td class="text-green-500">ACTIVE</td>
+                    <td>00:02:45</td>
+                    <td class="text-right"><button class="text-blue-400 hover:text-white" onclick="inspectUser('HUNTER')">[INSPECT]</button></td>
+                </tr>
+                <tr>
+                    <td class="font-bold text-white">ACME_CORP</td>
+                    <td><span class="text-purple-400">[ENTERPRISE]</span></td>
+                    <td class="text-green-500">ACTIVE</td>
+                    <td>01:15:00</td>
+                    <td class="text-right"><button class="text-blue-400 hover:text-white" onclick="inspectUser('ACME')">[INSPECT]</button></td>
+                </tr>
+            `;
+        }
+
+        function inspectUser(name) {
+            document.getElementById('god-mode-panel').innerHTML = `
+                <div class="border border-amber-500/30 p-4 bg-black">
+                    <h4 class="text-white font-bold mb-2">TARGET: ${name}</h4>
+                    <p class="text-xs text-gray-500 mb-4">UID: 8d9a7f-x9...</p>
+                    <div class="space-y-2">
+                        <button class="retro-btn w-full py-2 text-xs" onclick="alert('Impersonating...')">IMPERSONATE_SESSION</button>
+                        <button class="retro-btn w-full py-2 text-xs" onclick="alert('Resetting...')">RESET_CREDENTIALS</button>
+                        <button class="retro-btn emergency w-full py-2 text-xs" onclick="alert('Nuking...')">!!! NUKE_DATA !!!</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadAlerts() {
+            document.getElementById('alert-list').innerHTML = `
+                <div class="border border-red-900 bg-red-900/10 p-4 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-red-500 font-bold">LATENCY_SPIKE_DETECTED</h3>
+                        <p class="text-xs text-gray-500">Airlock > 120ms for 5s</p>
+                    </div>
+                    <div class="led on-red animate-pulse"></div>
+                </div>
+                <div class="border border-yellow-900 bg-yellow-900/10 p-4 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-yellow-500 font-bold">PAYMENT_GATEWAY_WARN</h3>
+                        <p class="text-xs text-gray-500">Webhook delay > 2s</p>
+                    </div>
+                    <div class="led" style="background: #aa0"></div>
+                </div>
+            `;
+        }
+
+        // Init
+        switchTab('dashboard');
+    </script>
+</body>
+</html>

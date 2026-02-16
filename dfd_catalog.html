@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simpli-FI | Denton Fire Resources</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="https://files.constantcontact.com/3720c3fd901/10017eb4-f7d2-424d-92ed-c1b5424b9869.png">
+
+    <!-- Tailwind & Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- Firebase SDKs (Compat 11.6.1) -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+
+    <style>
+        /* DFD Specifics - Defining CSS Variables for dynamic usage */
+        :root {
+            --brand-primary: #1e293b; /* DFD Dark Blue/Slate */
+            --brand-accent: #fbbf24;  /* DFD Gold/Yellow */
+            --brand-surface: #F3F4F6;
+        }
+
+        body { background-color: var(--brand-surface); font-family: 'Inter', sans-serif; }
+        .glass-panel { background: white; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .resource-card { transition: all 0.2s; border-left: 4px solid transparent; }
+        .resource-card:active { transform: scale(0.98); }
+        .resource-card:hover { border-left-color: var(--brand-accent); }
+        
+        /* Smooth Fade for Modals */
+        .modal-enter { animation: fadeIn 0.2s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        /* Hide scrollbar for category tabs */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Main View Tabs - Updated for Gold Button Style */
+        .view-tab {
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 0.875rem; /* text-sm */
+            transition: all 0.2s ease;
+            color: rgba(255, 255, 255, 0.7);
+            background-color: transparent;
+            border: 1px solid transparent;
+        }
+        .view-tab:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .view-tab.active {
+            background-color: var(--brand-accent);
+            color: var(--brand-primary);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Category Tab Styles */
+        .cat-tab {
+            transition: all 0.2s ease;
+        }
+        .cat-tab.active {
+            background-color: var(--brand-primary);
+            color: #ffffff;
+            border-color: var(--brand-primary);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .cat-tab:not(.active) {
+            background-color: #ffffff;
+            color: #475569;
+            border-color: #e2e8f0;
+        }
+        .cat-tab:not(.active):hover {
+            border-color: var(--brand-primary);
+            color: var(--brand-primary);
+        }
+        
+        /* Admin-Only Elements */
+        .admin-only { display: none; }
+
+        /* Dynamic Text Colors */
+        .text-primary { color: var(--brand-primary); }
+        .bg-primary { background-color: var(--brand-primary); }
+        .border-primary { border-color: var(--brand-primary); }
+        .text-accent { color: var(--brand-accent); }
+        .bg-accent { background-color: var(--brand-accent); }
+        .border-accent { border-color: var(--brand-accent); }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- HEADER -->
+    <header class="bg-primary text-white p-6 sticky top-0 z-40 shadow-lg">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+                <!-- DENTON FIRE LOGO -->
+                <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center p-1 shadow-md overflow-hidden">
+                    <img src="https://files.constantcontact.com/3720c3fd901/10017eb4-f7d2-424d-92ed-c1b5424b9869.png" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Resource Command</h1>
+                    <p class="text-[10px] text-white/60 uppercase tracking-wider font-bold">Denton Fire Dept</p>
+                </div>
+            </div>
+            <!-- Profile Avatar (Updated) -->
+            <div class="w-10 h-10 rounded-full bg-slate-600 border-2 border-accent overflow-hidden relative shadow-md">
+                <img id="profile-avatar" src="https://files.constantcontact.com/3720c3fd901/4f2373af-ad95-4bb2-8c4a-77b2ab0fbc0f.jpg" class="w-full h-full object-cover">
+            </div>
+        </div>
+
+        <!-- MAIN VIEW TOGGLE (Updated Style) -->
+        <div class="flex justify-center mb-4">
+            <div class="bg-black/20 p-1 rounded-full inline-flex">
+                <button onclick="switchMainView('resources')" id="tab-resources" class="view-tab active">Resources</button>
+                <button onclick="switchMainView('contacts')" id="tab-contacts" class="view-tab">Contacts</button>
+            </div>
+        </div>
+
+        <!-- SEARCH BAR -->
+        <div class="relative">
+            <i data-lucide="search" class="absolute left-3 top-3.5 w-5 h-5 text-slate-400"></i>
+            <input type="text" id="search-input" onkeyup="handleSearch()" placeholder="Search assets..." class="w-full pl-10 pr-4 py-3 bg-[#0f172a] border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-accent transition shadow-inner">
+        </div>
+    </header>
+
+    <!-- VIEW 1: RESOURCES -->
+    <div id="view-resources">
+        <!-- CATEGORY TABS -->
+        <div class="flex gap-2 p-4 overflow-x-auto no-scrollbar sticky top-[210px] bg-brand-surface z-30 pb-2 transition-colors duration-300" style="background-color: var(--brand-surface);">
+            <button onclick="filterCategory('all', this)" class="cat-tab active px-4 py-2 text-xs font-bold rounded-full whitespace-nowrap border">All Assets</button>
+            <button onclick="filterCategory('public', this)" class="cat-tab px-4 py-2 text-xs font-bold rounded-full whitespace-nowrap border">Public Info</button>
+            <button onclick="filterCategory('internal', this)" class="cat-tab px-4 py-2 text-xs font-bold rounded-full whitespace-nowrap border">Internal Ops</button>
+            <button onclick="filterCategory('legal', this)" class="cat-tab px-4 py-2 text-xs font-bold rounded-full whitespace-nowrap border">Legal & Forms</button>
+        </div>
+
+        <!-- RESOURCE GRID -->
+        <main id="resource-grid" class="px-4 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <!-- JS will inject cards here -->
+        </main>
+    </div>
+
+    <!-- VIEW 2: CONTACTS (Hidden by default) -->
+    <div id="view-contacts" class="hidden">
+        <!-- CONTACT GRID -->
+        <main id="contact-grid" class="p-4 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <!-- JS will inject cards here -->
+        </main>
+    </div>
+
+    <!-- FAB -->
+    <button id="fab-main" onclick="handleFabClick()" class="fixed bottom-6 right-6 w-14 h-14 bg-accent text-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition z-50 border-2 border-white">
+        <i data-lucide="plus" class="w-8 h-8"></i>
+    </button>
+
+    <!-- MODAL: ADD CONTACT OPTIONS -->
+    <div id="contact-options-modal" class="fixed inset-0 z-[70] bg-slate-900/90 backdrop-blur-sm hidden items-end sm:items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl p-6 relative modal-enter">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-bold text-slate-800">Add New Contact</h2>
+                <button onclick="closeModal('contact-options-modal')" class="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition">
+                    <i data-lucide="x" class="w-4 h-4 text-slate-600"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-3">
+                <button onclick="alert('Camera Scan Feature Coming Soon')" class="w-full p-4 flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-xl hover:border-accent transition group text-left">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-600 shadow-sm group-hover:text-accent"><i data-lucide="scan-line" class="w-5 h-5"></i></div>
+                    <div><h3 class="font-bold text-slate-800 text-sm">Scan QR Code</h3><p class="text-[10px] text-slate-500">Capture a Simpli-FI ID instantly.</p></div>
+                </button>
+                <button onclick="alert('Paste URL Logic')" class="w-full p-4 flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-xl hover:border-accent transition group text-left">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-600 shadow-sm group-hover:text-accent"><i data-lucide="link" class="w-5 h-5"></i></div>
+                    <div><h3 class="font-bold text-slate-800 text-sm">Paste ID Link</h3><p class="text-[10px] text-slate-500">Add via shared URL.</p></div>
+                </button>
+                <button onclick="openBuildContact()" class="w-full p-4 flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-xl hover:border-accent transition group text-left">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-600 shadow-sm group-hover:text-accent"><i data-lucide="user-plus" class="w-5 h-5"></i></div>
+                    <div><h3 class="font-bold text-slate-800 text-sm">Build & Gift</h3><p class="text-[10px] text-slate-500">Create a card for a lead.</p></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: BUILD CONTACT -->
+    <div id="build-contact-modal" class="fixed inset-0 z-[80] bg-slate-900/95 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 relative modal-enter h-[80vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6 sticky top-0 bg-white z-10 py-2 border-b border-slate-100">
+                <h2 class="text-lg font-bold text-slate-800">Build New Contact</h2>
+                <button onclick="closeModal('build-contact-modal')" class="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition">
+                    <i data-lucide="x" class="w-4 h-4 text-slate-600"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="p-3 bg-amber-50 rounded-xl border border-amber-100 flex gap-3">
+                    <i data-lucide="gift" class="w-5 h-5 text-amber-500 shrink-0"></i>
+                    <p class="text-xs text-amber-800">You are building a <strong>Free Ambassador Card</strong> for this lead.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-xs font-bold text-slate-500 uppercase">First Name</label><input type="text" class="w-full p-3 bg-slate-50 border rounded-xl text-sm mt-1"></div>
+                    <div><label class="text-xs font-bold text-slate-500 uppercase">Last Name</label><input type="text" class="w-full p-3 bg-slate-50 border rounded-xl text-sm mt-1"></div>
+                </div>
+                <div><label class="text-xs font-bold text-slate-500 uppercase">Email</label><input type="email" class="w-full p-3 bg-slate-50 border rounded-xl text-sm mt-1"></div>
+                <div><label class="text-xs font-bold text-slate-500 uppercase">Phone</label><input type="tel" class="w-full p-3 bg-slate-50 border rounded-xl text-sm mt-1"></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-xs font-bold text-slate-500 uppercase">Business</label><input type="text" class="w-full p-3 bg-slate-50 border rounded-xl text-sm mt-1"></div>
+                    <div><label class="text-xs font-bold text-slate-500 uppercase">Industry/Field</label><input type="text" class="w-full p-3 bg-slate-50 border rounded-xl text-sm mt-1"></div>
+                </div>
+                <button onclick="submitBuildContact()" class="w-full py-4 bg-primary text-white font-bold rounded-xl mt-4 shadow-lg">Generate & Send Gift</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: RESOURCE DETAILS (Existing) -->
+    <div id="details-modal" class="fixed inset-0 z-[60] bg-slate-900/90 backdrop-blur-sm hidden items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-0 overflow-hidden relative modal-enter shadow-2xl">
+            <div class="h-32 bg-primary relative flex items-center justify-center">
+                <button onclick="closeModal('details-modal')" class="absolute top-4 right-4 p-2 bg-black/20 text-white rounded-full hover:bg-black/40 transition z-10"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <div id="detail-icon-bg" class="w-20 h-20 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white text-4xl shadow-lg border border-white/20"></div>
+            </div>
+            <div class="p-6">
+                <div class="text-center mb-6"><h3 id="detail-title" class="text-2xl font-black text-slate-800 mb-2 leading-tight">Title</h3><span id="detail-category" class="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wider rounded-full">Category</span></div>
+                <div class="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-100"><p id="detail-desc" class="text-sm text-slate-600 leading-relaxed">Description goes here...</p></div>
+                <div class="grid grid-cols-2 gap-3"><button id="detail-open-btn" class="py-3 px-4 bg-primary text-white font-bold rounded-xl shadow-lg hover:bg-slate-800 transition flex items-center justify-center gap-2 text-sm"><i data-lucide="external-link" class="w-4 h-4"></i> Open</button><button id="detail-qr-btn" class="py-3 px-4 bg-white text-primary font-bold rounded-xl shadow border border-slate-200 hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm"><i data-lucide="qr-code" class="w-4 h-4"></i> QR Code</button></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- UPLOAD MODAL (Admin) -->
+    <div id="upload-modal" class="fixed inset-0 z-[60] bg-slate-900/90 backdrop-blur-sm hidden items-center justify-center p-6">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 relative modal-enter">
+            <div class="flex items-center justify-between mb-6"><h2 class="text-lg font-bold text-slate-800">Add New Resource</h2><button onclick="closeModal('upload-modal')" class="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition"><i data-lucide="x" class="w-4 h-4 text-slate-600"></i></button></div>
+             <div class="space-y-4">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Resource Title</label><input type="text" id="new-title" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Destination URL</label><input type="url" id="new-url" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Description</label><textarea id="new-desc" rows="2" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent"></textarea></div>
+                <div class="pt-4"><button onclick="saveResource()" class="w-full py-4 bg-accent text-primary font-bold rounded-xl shadow-lg hover:shadow-xl transition flex items-center justify-center gap-2"><i data-lucide="plus-circle" class="w-5 h-5"></i> Add to Catalog</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR MODAL -->
+    <div id="qr-modal" class="fixed inset-0 z-[70] bg-slate-900/95 backdrop-blur-md hidden items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-8 text-center relative modal-enter shadow-2xl border-4 border-[#1e293b]">
+            <button onclick="closeModal('qr-modal')" class="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition"><i data-lucide="x" class="w-4 h-4 text-slate-600"></i></button>
+            <div class="mb-6"><div class="w-12 h-12 bg-[#fbbf24] rounded-full flex items-center justify-center mx-auto mb-4 text-[#1e293b]"><i data-lucide="scan-line" class="w-6 h-6"></i></div><h3 id="qr-title" class="text-xl font-black text-slate-800 mb-1">Resource Title</h3><p class="text-xs text-slate-500 uppercase tracking-widest font-bold">Scan to Access</p></div>
+            <div class="bg-white p-4 rounded-2xl border-2 border-dashed border-slate-300 shadow-sm inline-block mx-auto mb-6 relative"><div id="qrcode"></div></div>
+            <button onclick="closeModal('qr-modal')" class="w-full py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition text-sm">Done</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIG ---
+        const currentUser = { id: "dfd_admin", role: "admin", org_id: "denton_fire_dept" };
+        let currentMainView = 'resources';
+        let selectedCategory = 'public';
+
+        // --- MOCK DATA ---
+        let resources = [
+            { id: 1, title: "Water Shutoff Survey", category: "internal", url: "https://dentonfire.github.io/Water-Shutoff/", desc: "Log water meter or sprinkler system shutoffs.", icon: "droplet", color: "text-blue-500", bg: "bg-blue-50" },
+            { id: 7, title: "Water Shutoff Command", category: "internal", url: "https://dentonfire.github.io/Water-Shutoff/", desc: "Admin dashboard to view active water shutoff reports.", icon: "map-pin", color: "text-purple-500", bg: "bg-purple-50" },
+            { id: 2, title: "Knox Box Guidelines", category: "public", url: "https://dentonfire.github.io/Knox-Box/index.html", desc: "Official ordering, installation, and gate requirements.", icon: "box", color: "text-orange-600", bg: "bg-orange-50" },
+            { id: 3, title: "Fire Watch Protocols", category: "public", url: "https://dentonfire.github.io/Fire-Watch/", desc: "Procedures and printable forms for establishing a fire watch.", icon: "eye", color: "text-red-600", bg: "bg-red-50" },
+            { id: 4, title: "After the Fire Guide", category: "public", url: "https://dentonfire.github.io/After-the-Fire/after_the_fire.html", desc: "Comprehensive recovery guide for residents.", icon: "home", color: "text-slate-600", bg: "bg-slate-100" },
+            { id: 5, title: "Adult Liability Release", category: "legal", url: "https://dentonfire.github.io/DFD_Adult_Liability_Release/", desc: "Digital waiver form with signature pad.", icon: "file-signature", color: "text-yellow-600", bg: "bg-yellow-50" },
+            { id: 6, title: "Ride-Along Agreement", category: "legal", url: "https://dentonfire.github.io/DFD_Ride_Along_Agreement_HIPAA/", desc: "HIPAA observer agreement and liability waiver.", icon: "ambulance", color: "text-red-500", bg: "bg-red-50" },
+            { id: 8, title: "Ready to Serve", category: "public", url: "https://lp.constantcontactpages.com/sl/NKeQbQ1/dentonfire", desc: "Recruiting newsletter signup form.", icon: "mail", color: "text-blue-600", bg: "bg-blue-50" },
+            { id: 9, title: "The Frontline Report", category: "public", url: "https://lp.constantcontactpages.com/sl/69SofgB", desc: "Community Risk Reduction (CRR) newsletter signup.", icon: "newspaper", color: "text-slate-600", bg: "bg-slate-100" }
+        ];
+
+        let contacts = [
+            { id: 101, name: "Chief Smith", title: "Battalion Chief", business: "Denton Fire Dept", field: "Public Safety", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Chief" },
+            { id: 102, name: "City Manager", title: "City Manager", business: "City of Denton", field: "Government", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Manager" }
+        ];
+
+        window.onload = function() {
+            renderResources(resources);
+            renderContacts(contacts);
+            lucide.createIcons();
+            switchMainView('resources');
+        };
+
+        // --- VIEW SWITCHING ---
+        function switchMainView(view) {
+            currentMainView = view;
+            const resView = document.getElementById('view-resources');
+            const conView = document.getElementById('view-contacts');
+            const fab = document.getElementById('fab-main');
+            const searchInput = document.getElementById('search-input');
+            const tabRes = document.getElementById('tab-resources');
+            const tabCon = document.getElementById('tab-contacts');
+
+            if (view === 'resources') {
+                resView.classList.remove('hidden');
+                conView.classList.add('hidden');
+                tabRes.className = "view-tab active";
+                tabCon.className = "view-tab";
+                searchInput.placeholder = "Search protocols, forms...";
+                // Admin check for Resource FAB
+                if (currentUser.role !== 'admin') fab.style.display = 'none';
+                else fab.style.display = 'flex';
+            } else {
+                resView.classList.add('hidden');
+                conView.classList.remove('hidden');
+                tabRes.className = "view-tab";
+                tabCon.className = "view-tab active";
+                searchInput.placeholder = "Search personnel...";
+                fab.style.display = 'flex'; // FAB always on for contacts
+            }
+            searchInput.value = '';
+            filterResources();
+            filterContacts();
+        }
+
+        // --- FAB HANDLER ---
+        function handleFabClick() {
+            if (currentMainView === 'resources') openUploadModal();
+            else openContactOptions();
+        }
+
+        function openContactOptions() { document.getElementById('contact-options-modal').classList.remove('hidden'); document.getElementById('contact-options-modal').classList.add('flex'); }
+        function openBuildContact() { closeModal('contact-options-modal'); document.getElementById('build-contact-modal').classList.remove('hidden'); document.getElementById('build-contact-modal').classList.add('flex'); }
+        function submitBuildContact() { alert("Sending Invite..."); closeModal('build-contact-modal'); }
+
+        // --- RENDER & FILTER ---
+        function renderResources(data) {
+            const grid = document.getElementById('resource-grid');
+            grid.innerHTML = '';
+            data.forEach(item => {
+                const deleteBtn = currentUser.role === 'admin' ? `<button onclick="deleteResource(${item.id}, event)" class="p-2 ml-2 rounded-full bg-slate-50 text-slate-300 hover:text-red-500 hover:bg-red-50 border border-slate-100 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : '';
+                grid.innerHTML += `
+                    <div class="resource-card glass-panel rounded-2xl p-4 flex items-center justify-between cursor-pointer group hover:border-[#fbbf24]" onclick="openDetails(${item.id})">
+                        <div class="flex items-center gap-4 min-w-0 flex-1">
+                            <div class="w-14 h-14 rounded-xl ${item.bg} ${item.color} flex items-center justify-center shrink-0 border border-black/5 shadow-sm"><i data-lucide="${item.icon}" class="w-7 h-7"></i></div>
+                            <div class="flex-1 min-w-0"><h3 class="font-bold text-slate-800 text-sm leading-tight mb-1 group-hover:text-[#1e293b] truncate">${item.title}</h3><span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 px-2 py-0.5 rounded border border-slate-100">${item.category}</span></div>
+                        </div>
+                        <div class="flex items-center"><div class="ml-2 w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100 group-hover:bg-[#fbbf24] group-hover:text-[#1e293b] group-hover:border-[#fbbf24] transition shadow-sm"><i data-lucide="chevron-right" class="w-5 h-5"></i></div>${deleteBtn}</div>
+                    </div>`;
+            });
+            lucide.createIcons();
+        }
+
+        function renderContacts(data) {
+            const grid = document.getElementById('contact-grid');
+            grid.innerHTML = '';
+            data.forEach(item => {
+                grid.innerHTML += `
+                    <div class="glass-panel rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition group border-l-4 border-transparent hover:border-l-[#fbbf24]">
+                        <div class="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0"><img src="${item.avatar}" class="w-full h-full object-cover"></div>
+                        <div class="flex-1 min-w-0"><h3 class="font-bold text-slate-800 text-sm truncate">${item.name}</h3><p class="text-xs text-slate-500 truncate">${item.title} @ ${item.business}</p><span class="inline-block mt-1 text-[10px] font-bold text-[#1e293b] bg-[#1e293b]/5 px-2 py-0.5 rounded-full">${item.field}</span></div>
+                        <div class="text-slate-300 group-hover:text-[#fbbf24]"><i data-lucide="arrow-up-right" class="w-4 h-4"></i></div>
+                    </div>`;
+            });
+            lucide.createIcons();
+        }
+
+        function handleSearch() {
+            if (currentMainView === 'resources') filterResources();
+            else filterContacts();
+        }
+
+        function filterResources() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            renderResources(resources.filter(item => item.title.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query)));
+        }
+
+        function filterContacts() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            renderContacts(contacts.filter(item => item.name.toLowerCase().includes(query) || item.business.toLowerCase().includes(query) || item.field.toLowerCase().includes(query)));
+        }
+
+        function filterCategory(cat, btn) {
+            document.querySelectorAll('.cat-tab').forEach(el => { el.classList.remove('active'); });
+            btn.classList.add('active'); 
+            if (cat === 'all') renderResources(resources);
+            else renderResources(resources.filter(item => item.category === cat));
+        }
+
+        // ... (Existing utility functions: openDetails, openQR, openUploadModal, saveResource, deleteResource, closeModal) ...
+        function openDetails(id) { const item = resources.find(r => r.id === id); if(!item) return; document.getElementById('detail-title').innerText = item.title; document.getElementById('detail-category').innerText = item.category; document.getElementById('detail-desc').innerText = item.desc; document.getElementById('detail-icon-bg').className = `w-20 h-20 rounded-full backdrop-blur-md flex items-center justify-center text-4xl shadow-lg border border-white/20 ${item.bg.replace('bg-', 'text-')}`; document.getElementById('detail-icon-bg').innerHTML = `<i data-lucide="${item.icon}" class="w-10 h-10 ${item.color}"></i>`; document.getElementById('detail-open-btn').onclick = () => window.open(item.url, '_blank'); document.getElementById('detail-qr-btn').onclick = () => { closeModal('details-modal'); openQR(item.title, item.url); }; document.getElementById('details-modal').classList.remove('hidden'); document.getElementById('details-modal').classList.add('flex'); lucide.createIcons(); }
+        function openQR(title, url) { document.getElementById('qr-title').innerText = title; const container = document.getElementById('qrcode'); container.innerHTML = ""; new QRCode(container, { text: url, width: 180, height: 180, colorDark : "#1e293b", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H }); document.getElementById('qr-modal').classList.remove('hidden'); document.getElementById('qr-modal').classList.add('flex'); }
+        function openUploadModal() { document.getElementById('upload-modal').classList.remove('hidden'); document.getElementById('upload-modal').classList.add('flex'); }
+        function selectUploadCategory(cat) { /* ... */ }
+        function saveResource() { /* ... */ closeModal('upload-modal'); }
+        function deleteResource(id, event) { event.stopPropagation(); if(confirm("Delete?")) { resources = resources.filter(r => r.id !== id); renderResources(resources); } }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+    </script>
+</body>
+</html>

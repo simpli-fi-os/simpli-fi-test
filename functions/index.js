@@ -30,8 +30,9 @@ exports.syncToNotion = functions.firestore
         const userData = snap.data();
         const userId = context.params.userId;
 
-        console.log(`Syncing User ${userId} to Notion...`);
+        console.log(`New User Detected: ${userId}. Starting sync...`);
 
+        // Validation
         if (!userData.full_name) {
             console.warn(`Skipped ${userId}: Missing full_name`);
             return null;
@@ -43,7 +44,7 @@ exports.syncToNotion = functions.firestore
             startDate = userData.created_at.toDate().toISOString();
         }
 
-        // Normalization
+        // Tier normalization (use "ambassador" as default, not "free")
         const tierValue = (userData.tier || "ambassador").toLowerCase();
 
         try {
@@ -62,8 +63,17 @@ exports.syncToNotion = functions.firestore
             console.log(`✅ Synced ${userId} successfully.`);
             return null;
         } catch (error) {
-            console.error("❌ Notion Sync Failed:", error.message);
-            // Don't throw error to avoid infinite retry loop on bad data
+            console.error("❌ Notion Sync Failed:", error.code, error.message);
+            if (error.body) {
+                console.error("Error Body:", JSON.stringify(error.body));
+            }
+
+            // Rate limit handling: throw to trigger Cloud Retry
+            if (error.status === 429) {
+                throw new Error("Notion Rate Limit Hit - Triggering Cloud Retry...");
+            }
+
+            // For other errors, return null to stop infinite loops
             return null;
         }
     });
