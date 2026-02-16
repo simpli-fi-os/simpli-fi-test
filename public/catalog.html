@@ -83,7 +83,7 @@
             </div>
             <!-- Profile Avatar (User) -->
             <div class="w-10 h-10 rounded-full bg-slate-600 border-2 border-accent overflow-hidden relative shadow-md">
-                <img id="user-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter" class="w-full h-full object-cover">
+                <img id="user-avatar" src="assets/images/hunter-lott.png" class="w-full h-full object-cover">
             </div>
         </div>
 
@@ -490,14 +490,29 @@
 
         // --- DATA (Mock) ---
         let resources = [
-            { id: 1, title: "2025 Pricing Guide", category: "public", url: "#", desc: "Standard rate card.", icon: "file-text", color: "text-blue-500", bg: "bg-blue-50" },
-            { id: 2, title: "Intro Video", category: "public", url: "#", desc: "Explainer video.", icon: "video", color: "text-purple-500", bg: "bg-purple-50" }
+            { id: 1, title: "Kevin Harrington — ID Card", category: "public", url: "cards/kevin-harrington.html", desc: "Original Shark Tank investor.", icon: "id-card", color: "text-amber-500", bg: "bg-amber-50" },
+            { id: 2, title: "Mike Calhoun — ID Card", category: "public", url: "cards/mike-calhoun.html", desc: "Board of Advisors Founder.", icon: "id-card", color: "text-blue-500", bg: "bg-blue-50" },
+            { id: 3, title: "Rhonda Klch — ID Card", category: "public", url: "cards/rhonda-klch.html", desc: "Equity First Consultants.", icon: "id-card", color: "text-emerald-500", bg: "bg-emerald-50" },
+            { id: 4, title: "Rhonda Swan — ID Card", category: "public", url: "cards/rhonda-swan.html", desc: "Unstoppable Branding Agency.", icon: "id-card", color: "text-purple-500", bg: "bg-purple-50" },
+            { id: 5, title: "Jeff Hayzlett — ID Card", category: "public", url: "cards/jeff-hayzlett.html", desc: "C-Suite Network Chairman.", icon: "id-card", color: "text-red-500", bg: "bg-red-50" },
+            { id: 6, title: "Ty Crandall — ID Card", category: "public", url: "cards/ty-crandall.html", desc: "Credit Suite CEO.", icon: "id-card", color: "text-cyan-500", bg: "bg-cyan-50" },
+            { id: 7, title: "Rich Goldstein — ID Card", category: "public", url: "cards/rich-goldstein.html", desc: "Goldstein Patent Law.", icon: "id-card", color: "text-slate-500", bg: "bg-slate-50" },
+            { id: 8, title: "Carl Gould — ID Card", category: "public", url: "cards/carl-gould.html", desc: "7 Stage Advisors.", icon: "id-card", color: "text-orange-500", bg: "bg-orange-50" },
+            { id: 9, title: "Hunter Lott — ID Card", category: "public", url: "cards/hunter.html", desc: "Simpli-FI Alpha LLC.", icon: "id-card", color: "text-teal-500", bg: "bg-teal-50" },
+            { id: 10, title: "Lindsey Lott — ID Card", category: "public", url: "cards/lindsey.html", desc: "Simpli-FI Life.", icon: "id-card", color: "text-pink-500", bg: "bg-pink-50" }
         ];
 
         let contacts = [
-            { id: 101, name: "Sarah Jenkins", title: "Marketing Director", business: "TechFlow Inc.", field: "SaaS", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" },
-            { id: 102, name: "Mike Ross", title: "Real Estate Agent", business: "Keller Williams", field: "Real Estate", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike" },
-            { id: 103, name: "Jessica Pearson", title: "Attorney", business: "Pearson Specter", field: "Legal", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jess" }
+            { id: "hunter", name: "Hunter Lott", title: "Co-Founder & Managing Partner", business: "Simpli-FI Alpha LLC", field: "Investment Stewardship", avatar: "assets/images/hunter-lott.png", cardUrl: "cards/hunter.html" },
+            { id: "lindsey", name: "Lindsey Lott", title: "Co-Founder & CEO", business: "Simpli-FI Life", field: "Life & Career Coaching", avatar: "https://raw.githubusercontent.com/simpli-fi-os/assets/abc740cc26a619c8153bbfeafbcb85c23879fcdf/lindsey-lott.jpg", cardUrl: "cards/lindsey.html" },
+            { id: "kevin-harrington", name: "Kevin Harrington", title: "Entrepreneur & Investor", business: "Shark Tank / As Seen On TV", field: "Business Development", avatar: "assets/images/contacts/kevin-harrington.png", cardUrl: "cards/kevin-harrington.html" },
+            { id: "mike-calhoun", name: "Mike Calhoun", title: "Founder & CEO", business: "Board of Advisors / BizBlueprint", field: "Strategic Growth", avatar: "assets/images/contacts/mike-calhoun.png", cardUrl: "cards/mike-calhoun.html" },
+            { id: "rhonda-klch", name: "Rhonda Klch", title: "Managing Partner", business: "Equity First Consultants", field: "Financial / Credit", avatar: "assets/images/contacts/rhonda-klch.png", cardUrl: "cards/rhonda-klch.html" },
+            { id: "rhonda-swan", name: "Rhonda Swan", title: "CEO & Founder", business: "Unstoppable Branding Agency", field: "Branding / Marketing", avatar: "assets/images/contacts/rhonda-swan.png", cardUrl: "cards/rhonda-swan.html" },
+            { id: "jeff-hayzlett", name: "Jeff Hayzlett", title: "Chairman & CEO", business: "C-Suite Network", field: "Media / Executive Leadership", avatar: "assets/images/contacts/jeff-hayzlett.png", cardUrl: "cards/jeff-hayzlett.html" },
+            { id: "ty-crandall", name: "Ty Crandall", title: "CEO", business: "Credit Suite", field: "Business Credit", avatar: "assets/images/contacts/ty-crandall.png", cardUrl: "cards/ty-crandall.html" },
+            { id: "rich-goldstein", name: "Rich Goldstein", title: "Founder & Principal", business: "Goldstein Patent Law", field: "Intellectual Property", avatar: "assets/images/contacts/rich-goldstein.png", cardUrl: "cards/rich-goldstein.html" },
+            { id: "carl-gould", name: "Carl Gould", title: "CEO & Hypergrowth Strategist", business: "7 Stage Advisors", field: "Business Growth", avatar: "assets/images/contacts/carl-gould.png", cardUrl: "cards/carl-gould.html" }
         ];
 
         // --- RENDER LOGIC: RESOURCES ---
@@ -524,7 +539,7 @@
             grid.innerHTML = '';
             data.forEach(item => {
                 grid.innerHTML += `
-                    <div class="glass-panel rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition group border-l-4 border-transparent hover:border-l-accent" onclick="window.open('card.html?u=${item.id}', '_blank')">
+                    <div class="glass-panel rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition group border-l-4 border-transparent hover:border-l-accent" onclick="window.open('${item.cardUrl || 'card.html?u=' + item.id}', '_blank')">
                         <div class="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
                             <img src="${item.avatar}" class="w-full h-full object-cover">
                         </div>

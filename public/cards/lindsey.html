@@ -23,7 +23,7 @@
     <link rel="icon" type="image/png" href="../favicon.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.294.0"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
     
     <script>
@@ -169,11 +169,58 @@
         .bg-gradient-brand {
             background: linear-gradient(135deg, #5a60a6 0%, #7178c8 50%, #d4d7ff 100%);
         }
+
+        /* Physics Elements */
+        .dollar-bill {
+            position: absolute;
+            background-color: #85bb65;
+            border: 1px solid #6da04e;
+            width: 50px;
+            height: 24px;
+            border-radius: 2px;
+            pointer-events: none;
+            z-index: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4a7036;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .dollar-bill::after { content: '$'; }
+
+        .gold-coin {
+            position: absolute;
+            background-color: #DAA520;
+            border: 2px solid #b8860b;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            box-shadow: inset -2px -2px 0px rgba(0,0,0,0.1);
+        }
+        .gold-coin::after {
+            content: '$';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #8B6914;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        #scroll-container {
+            padding-bottom: 120px;
+        }
     </style>
 </head>
 <body class="bg-white">
     <!-- Brighter white background with smaller, darker dots -->
     <div class="fixed inset-0 bg-white bg-[radial-gradient(#cbd5e1_1.5px,transparent_1.5px)] [background-size:24px_24px] pointer-events-none"></div>
+
+    <!-- Physics Canvas Overlay -->
+    <div id="physics-layer" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
 
     <!-- SIMPLE CARD VIEW (The "Business Card") -->
     <div id="simple-view-container">
@@ -267,7 +314,7 @@
                 <div class="relative px-8 -mt-16 mb-6 text-center shrink-0">
                     <div class="inline-block relative">
                         <div class="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-brand-surface mx-auto relative z-10">
-                            <img id="profile-photo" src="https://raw.githubusercontent.com/simpli-fi-os/assets/abc740cc26a619c8153bbfeafbcb85c23879fcdf/lindsey-lott.jpg" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Lindsey&backgroundColor=7178c8'" alt="Lindsey Lott" class="w-full h-full object-cover object-center">
+                            <img id="profile-photo" src="https://raw.githubusercontent.com/simpli-fi-os/assets/abc740cc26a619c8153bbfeafbcb85c23879fcdf/lindsey-lott.jpg" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Lindsey&backgroundColor=7178c8'" alt="Lindsey Lott" class="w-full h-full object-cover">
                         </div>
                         <div class="absolute bottom-1 right-1 z-20 bg-brand-gold text-white rounded-full p-1.5 border-2 border-white shadow-sm">
                             <i data-lucide="check" class="w-3 h-3 stroke-[4]"></i>
@@ -497,19 +544,28 @@
             }
         }, { passive: false });
 
-        // Touch Pinch (Full View)
+        // --- PHYSICS ANIMATION VARS ---
+        const physicsLayer = document.getElementById('physics-layer');
+        const card = document.getElementById('main-card');
+        let startY = 0;
+        let pulling = false;
+        let pullDirection = null;
+
+        // Touch Pinch (Full View) + Physics Pull
         let initialPinchDistFull = 0;
         let startZoomLevelFull = 1;
 
         fullViewContainer.addEventListener('touchstart', (e) => {
-            // Only intervene if 2 fingers (Pinch)
             if (e.touches.length === 2) {
-                e.preventDefault(); // Stop native zoom/scroll behavior for pinch
+                e.preventDefault();
                 initialPinchDistFull = Math.hypot(
                     e.touches[0].pageX - e.touches[1].pageX,
                     e.touches[0].pageY - e.touches[1].pageY
                 );
                 startZoomLevelFull = fullViewZoom;
+            } else if (e.touches.length === 1 && (fullViewContainer.scrollTop === 0 || fullViewContainer.scrollTop + fullViewContainer.clientHeight >= fullViewContainer.scrollHeight)) {
+                startY = e.touches[0].pageY;
+                pulling = true;
             }
         }, { passive: false });
 
@@ -523,10 +579,79 @@
                 const ratio = currentDist / initialPinchDistFull;
                 fullViewZoom = Math.min(Math.max(startZoomLevelFull * ratio, MIN_ZOOM), MAX_ZOOM);
                 updateTransform();
+            } else if (e.touches.length === 1 && pulling) {
+                const y = e.touches[0].pageY;
+                const delta = y - startY;
+
+                // Pull Down (Top) - DOLLARS
+                if (delta > 0 && fullViewContainer.scrollTop <= 0) {
+                    pullDirection = 'down';
+                    e.preventDefault();
+                    const resistance = 0.4;
+                    const translate = delta * resistance;
+                    card.style.transform = `translateY(${translate}px) scale(${fullViewZoom})`;
+                    if (Math.random() < 0.25) spawnDollar(translate);
+                }
+                // Pull Up (Bottom) - COINS
+                else if (delta < 0 && (fullViewContainer.scrollTop + fullViewContainer.clientHeight >= fullViewContainer.scrollHeight - 5)) {
+                    pullDirection = 'up';
+                    e.preventDefault();
+                    const resistance = 0.4;
+                    const translate = delta * resistance;
+                    card.style.transform = `translateY(${translate}px) scale(${fullViewZoom})`;
+                    if (Math.random() < 0.3) spawnCoin(Math.abs(translate));
+                }
             }
         }, { passive: false });
 
-        fullViewContainer.addEventListener('touchend', () => { initialPinchDistFull = 0; });
+        fullViewContainer.addEventListener('touchend', () => {
+            initialPinchDistFull = 0;
+            if (pulling) {
+                pulling = false;
+                pullDirection = null;
+                card.style.transform = `scale(${fullViewZoom})`;
+                setTimeout(() => { physicsLayer.innerHTML = ''; }, 800);
+            }
+        });
+
+        // --- PHYSICS ANIMATION HELPERS ---
+        function spawnDollar(offset) {
+            const bill = document.createElement('div');
+            bill.className = 'dollar-bill';
+            const width = 40 + Math.random() * 20;
+            bill.style.width = `${width}px`;
+            bill.style.height = `${width * 0.4}px`;
+            const x = Math.random() * window.innerWidth;
+            bill.style.left = `${x}px`;
+            bill.style.top = `-50px`;
+            const rotation = Math.random() * 360;
+            bill.style.transform = `rotate(${rotation}deg)`;
+            physicsLayer.appendChild(bill);
+            const duration = 500 + Math.random() * 500;
+            const targetY = offset + 20 + (Math.random() * 80);
+            bill.animate([
+                { top: '-50px', transform: `rotate(${rotation}deg)` },
+                { top: `${targetY}px`, transform: `rotate(${rotation + 180}deg)` }
+            ], { duration, easing: 'cubic-bezier(0.25, 1, 0.5, 1)', fill: 'forwards' });
+        }
+
+        function spawnCoin(offset) {
+            const coin = document.createElement('div');
+            coin.className = 'gold-coin';
+            const size = 15 + Math.random() * 20;
+            coin.style.width = `${size}px`;
+            coin.style.height = `${size}px`;
+            const x = Math.random() * window.innerWidth;
+            coin.style.left = `${x}px`;
+            coin.style.bottom = `-50px`;
+            physicsLayer.appendChild(coin);
+            const duration = 600 + Math.random() * 600;
+            const targetY = offset + 20 + (Math.random() * 100);
+            coin.animate([
+                { bottom: '-50px', transform: `translateY(0) scale(1)` },
+                { bottom: `${targetY}px`, transform: `translateY(0) scale(1)` }
+            ], { duration, easing: 'ease-out', fill: 'forwards' });
+        }
 
 
         // --- VIEW TOGGLING ---
