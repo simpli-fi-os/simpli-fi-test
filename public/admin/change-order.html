@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Change Order | Simpli-FI ID</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@0.294.0"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { primary: '#1e293b', accent: '#fbbf24', surface: '#F3F4F6', canvas: '#FBF9F7' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], serif: ['Playfair Display', 'serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #FBF9F7; }
+        .guide-h { position: absolute; left: 0; right: 0; height: 1px; background: rgba(251,191,36,0.5); pointer-events: none; z-index: 30; }
+        .guide-v { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(251,191,36,0.5); pointer-events: none; z-index: 30; }
+        .guide-label { position: absolute; font-size: 8px; color: #fbbf24; font-weight: 700; z-index: 31; pointer-events: none; text-shadow: 0 0 3px rgba(0,0,0,0.9); }
+        .card-circle { cursor: grab; touch-action: none; }
+        .card-circle:active { cursor: grabbing; }
+        .card-circle img { pointer-events: none; user-select: none; -webkit-user-drag: none; }
+        .ring-active { box-shadow: 0 0 0 3px #fbbf24, 0 8px 25px rgba(0,0,0,0.15); }
+
+        /* Login gate */
+        #login-gate { backdrop-filter: blur(8px); }
+
+        /* Toast */
+        .toast { animation: slideUp 0.3s ease-out, fadeOut 0.3s ease-in 2.7s; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; } }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- LOGIN GATE -->
+    <div id="login-gate" class="fixed inset-0 z-[100] bg-brand-primary/95 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 text-center">
+            <div class="w-16 h-16 rounded-full bg-brand-accent mx-auto mb-4 flex items-center justify-center">
+                <i data-lucide="shield" class="w-8 h-8 text-brand-primary"></i>
+            </div>
+            <h1 class="font-serif text-2xl font-bold text-brand-primary mb-1">Admin Access</h1>
+            <p class="text-xs text-slate-400 mb-6">Change Order — Photo Position Tool</p>
+
+            <div class="space-y-3">
+                <input id="login-pass" type="password" placeholder="Enter admin password"
+                    class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20"
+                    onkeydown="if(event.key==='Enter') attemptLogin()">
+                <button onclick="attemptLogin()" class="w-full py-3 bg-brand-primary text-white rounded-xl font-bold text-sm hover:bg-brand-accent hover:text-brand-primary transition">
+                    Sign In
+                </button>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-gray-100">
+                <button onclick="bypassLogin()" class="text-xs text-slate-400 hover:text-brand-accent transition flex items-center gap-1 mx-auto">
+                    <i data-lucide="zap" class="w-3 h-3"></i>
+                    Dev Bypass (pre-launch only)
+                </button>
+            </div>
+            <p id="login-error" class="text-red-500 text-xs mt-3 hidden">Invalid password</p>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="main-app" class="hidden">
+
+        <!-- Header -->
+        <div class="bg-brand-primary text-white p-4 sticky top-0 z-50 shadow-lg">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-brand-accent flex items-center justify-center">
+                        <i data-lucide="move" class="w-4 h-4 text-brand-primary"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold font-serif leading-none">Change Order</h1>
+                        <p class="text-[10px] text-white/50 uppercase tracking-widest">Admin Photo Positioning</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleGuides()" id="guide-toggle" class="px-3 py-1.5 rounded-lg bg-white/10 text-xs font-bold hover:bg-brand-accent hover:text-brand-primary transition flex items-center gap-1.5">
+                        <i data-lucide="crosshair" class="w-3 h-3"></i> Guides: ON
+                    </button>
+                    <button onclick="exportAll()" class="px-3 py-1.5 rounded-lg bg-brand-accent text-brand-primary text-xs font-bold hover:bg-white transition flex items-center gap-1.5">
+                        <i data-lucide="clipboard-copy" class="w-3 h-3"></i> Export All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid: All cards at once -->
+        <div class="max-w-7xl mx-auto p-6">
+
+            <!-- Instructions -->
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3">
+                <i data-lucide="info" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>
+                <div class="text-xs text-amber-800 leading-relaxed">
+                    <strong>How to use:</strong> Drag any photo circle to reposition. Use sliders for fine control.
+                    The gold horizontal line = 3/4 mark (eyes should sit here). Gold vertical = center.
+                    Click <strong>Export All</strong> to copy all positions, then paste to Claude to apply.
+                </div>
+            </div>
+
+            <!-- Cards Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" id="cards-container">
+                <!-- Generated by JS -->
+            </div>
+
+            <!-- Export Panel (hidden until Export clicked) -->
+            <div id="export-panel" class="hidden mt-8 bg-slate-900 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-white font-bold text-sm flex items-center gap-2">
+                        <i data-lucide="code-2" class="w-4 h-4 text-brand-accent"></i> Export — All Card Positions
+                    </h3>
+                    <button onclick="copyExport()" class="px-4 py-2 bg-brand-accent text-brand-primary rounded-lg text-xs font-bold hover:bg-white transition flex items-center gap-1.5">
+                        <i data-lucide="copy" class="w-3 h-3"></i> <span id="copy-btn-text">Copy to Clipboard</span>
+                    </button>
+                </div>
+                <pre id="export-code" class="text-brand-accent text-xs font-mono bg-black/30 rounded-xl p-4 overflow-x-auto select-all whitespace-pre-wrap"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[200] space-y-2"></div>
+
+    <script>
+        // ==========================================
+        // CARD DATA (source of truth for positions)
+        // ==========================================
+        const cards = [
+            { id: 'kevin-harrington', name: 'Kevin Harrington', title: 'Entrepreneur & Investor', company: 'Shark Tank', img: '../assets/images/contacts/kevin-harrington.png', posX: 50, posY: 18, color: '#0a2647' },
+            { id: 'mike-calhoun', name: 'Mike Calhoun', title: 'Founder & CEO', company: 'Board of Advisors', img: '../assets/images/contacts/mike-calhoun.png', posX: 50, posY: 18, color: '#1e3a5f' },
+            { id: 'rhonda-klch', name: 'Rhonda Klch', title: 'Managing Partner', company: 'Equity First', img: '../assets/images/contacts/rhonda-klch.png', posX: 55, posY: 20, color: '#2d4a7a' },
+            { id: 'rhonda-swan', name: 'Rhonda Swan', title: 'CEO & Founder', company: 'Unstoppable Branding', img: '../assets/images/contacts/rhonda-swan.png', posX: 50, posY: 15, color: '#1a1a2e' },
+            { id: 'jeff-hayzlett', name: 'Jeff Hayzlett', title: 'Chairman & CEO', company: 'C-Suite Network', img: '../assets/images/contacts/jeff-hayzlett.png', posX: 50, posY: 20, color: '#1b2838' },
+            { id: 'ty-crandall', name: 'Ty Crandall', title: 'CEO', company: 'Credit Suite', img: '../assets/images/contacts/ty-crandall.png', posX: 50, posY: 18, color: '#003d5c' },
+            { id: 'rich-goldstein', name: 'Rich Goldstein', title: 'Founding Partner', company: 'Goldstein Patent Law', img: '../assets/images/contacts/rich-goldstein.png', posX: 50, posY: 20, color: '#1a1a1a' },
+            { id: 'carl-gould', name: 'Carl Gould', title: 'CEO & Strategist', company: '7 Stage Advisors', img: '../assets/images/contacts/carl-gould.png', posX: 50, posY: 15, color: '#2c3e50' },
+        ];
+
+        let guidesOn = true;
+        let activeIndex = null;
+        let dragState = null;
+
+        // ==========================================
+        // AUTH
+        // ==========================================
+        function attemptLogin() {
+            const pass = document.getElementById('login-pass').value;
+            // Future: check against real auth
+            if (pass === 'simpli2025') {
+                showApp();
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+
+        function bypassLogin() {
+            showApp();
+        }
+
+        function showApp() {
+            document.getElementById('login-gate').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // BUILD CARDS UI
+        // ==========================================
+        function buildCards() {
+            const container = document.getElementById('cards-container');
+            container.innerHTML = '';
+
+            cards.forEach((card, i) => {
+                const div = document.createElement('div');
+                div.className = 'bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden';
+                div.innerHTML = `
+                    <!-- Card Header -->
+                    <div class="p-1.5" style="background: ${card.color}">
+                        <p class="text-[9px] text-white/60 text-center font-bold uppercase tracking-widest truncate">${card.company}</p>
+                    </div>
+
+                    <!-- Preview Circle -->
+                    <div class="flex justify-center pt-5 pb-3 px-4">
+                        <div class="relative">
+                            <div class="w-32 h-32 rounded-full border-4 shadow-lg overflow-hidden card-circle relative"
+                                 style="border-color: ${card.color}"
+                                 data-index="${i}"
+                                 onmousedown="startDrag(event, ${i})" ontouchstart="startDrag(event, ${i})">
+                                <img id="img-${i}" src="${card.img}" alt="${card.name}"
+                                     class="w-full h-full object-cover"
+                                     style="object-position: ${card.posX}% ${card.posY}%">
+                                <!-- Guides -->
+                                <div class="guide-h guide-line" style="top: 25%"></div>
+                                <div class="guide-v guide-line" style="left: 50%"></div>
+                                <div class="guide-label guide-line" style="top: 23%; right: 3px;">3/4</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Name -->
+                    <div class="text-center px-3 pb-2">
+                        <h3 class="font-serif font-bold text-sm text-brand-primary leading-none">${card.name}</h3>
+                        <p class="text-[9px] text-slate-400 mt-0.5">${card.title}</p>
+                    </div>
+
+                    <!-- Sliders -->
+                    <div class="px-4 pb-4 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] text-slate-400 font-bold w-4">X</span>
+                            <input type="range" min="0" max="100" value="${card.posX}"
+                                   class="flex-1 accent-amber-400 h-1"
+                                   oninput="updatePos(${i}, 'x', this.value)">
+                            <span id="val-x-${i}" class="text-[10px] font-mono font-bold text-brand-primary w-8 text-right">${card.posX}%</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] text-slate-400 font-bold w-4">Y</span>
+                            <input type="range" min="0" max="100" value="${card.posY}"
+                                   class="flex-1 accent-amber-400 h-1"
+                                   oninput="updatePos(${i}, 'y', this.value)">
+                            <span id="val-y-${i}" class="text-[10px] font-mono font-bold text-brand-primary w-8 text-right">${card.posY}%</span>
+                        </div>
+
+                        <!-- Tailwind class -->
+                        <div class="bg-slate-900 rounded-lg px-2.5 py-1.5 flex items-center justify-between mt-1">
+                            <code id="class-${i}" class="text-brand-accent text-[10px] font-mono font-bold">object-[${card.posX}%_${card.posY}%]</code>
+                            <button onclick="copySingle(${i})" class="text-white/40 hover:text-brand-accent transition">
+                                <i data-lucide="copy" class="w-3 h-3"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // ==========================================
+        // POSITION UPDATES
+        // ==========================================
+        function updatePos(index, axis, value) {
+            value = parseInt(value);
+            if (axis === 'x') cards[index].posX = value;
+            else cards[index].posY = value;
+            refreshCard(index);
+        }
+
+        function refreshCard(index) {
+            const card = cards[index];
+            const img = document.getElementById(`img-${index}`);
+            img.style.objectPosition = `${card.posX}% ${card.posY}%`;
+
+            document.getElementById(`val-x-${index}`).textContent = card.posX + '%';
+            document.getElementById(`val-y-${index}`).textContent = card.posY + '%';
+            document.getElementById(`class-${index}`).textContent = `object-[${card.posX}%_${card.posY}%]`;
+
+            // Update sliders
+            const sliders = document.querySelectorAll(`[data-index="${index}"]`);
+        }
+
+        // ==========================================
+        // DRAG TO ADJUST
+        // ==========================================
+        function startDrag(e, index) {
+            e.preventDefault();
+            const touch = e.touches ? e.touches[0] : e;
+            dragState = {
+                index,
+                startX: touch.clientX,
+                startY: touch.clientY,
+                origPosX: cards[index].posX,
+                origPosY: cards[index].posY
+            };
+        }
+
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('touchmove', onDrag, { passive: false });
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchend', endDrag);
+
+        function onDrag(e) {
+            if (!dragState) return;
+            e.preventDefault();
+            const touch = e.touches ? e.touches[0] : e;
+            const dx = touch.clientX - dragState.startX;
+            const dy = touch.clientY - dragState.startY;
+
+            const newX = Math.max(0, Math.min(100, Math.round(dragState.origPosX - dx * 0.4)));
+            const newY = Math.max(0, Math.min(100, Math.round(dragState.origPosY - dy * 0.4)));
+
+            cards[dragState.index].posX = newX;
+            cards[dragState.index].posY = newY;
+            refreshCard(dragState.index);
+
+            // Also update sliders
+            const container = document.getElementById('cards-container');
+            const cardEl = container.children[dragState.index];
+            const sliders = cardEl.querySelectorAll('input[type="range"]');
+            sliders[0].value = newX;
+            sliders[1].value = newY;
+        }
+
+        function endDrag() {
+            dragState = null;
+        }
+
+        // ==========================================
+        // GUIDES TOGGLE
+        // ==========================================
+        function toggleGuides() {
+            guidesOn = !guidesOn;
+            document.querySelectorAll('.guide-line').forEach(el => {
+                el.style.display = guidesOn ? '' : 'none';
+            });
+            document.getElementById('guide-toggle').innerHTML = `
+                <i data-lucide="crosshair" class="w-3 h-3"></i> Guides: ${guidesOn ? 'ON' : 'OFF'}
+            `;
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // EXPORT
+        // ==========================================
+        function exportAll() {
+            const panel = document.getElementById('export-panel');
+            panel.classList.remove('hidden');
+            panel.scrollIntoView({ behavior: 'smooth' });
+
+            let output = `Photo Position Update — ${new Date().toLocaleDateString()}\n`;
+            output += `${'—'.repeat(50)}\n\n`;
+            output += `Please update these card files with the following object-position values:\n\n`;
+
+            cards.forEach(card => {
+                const cls = `object-[${card.posX}%_${card.posY}%]`;
+                output += `${card.name.padEnd(22)} → ${cls.padEnd(22)} (cards/${card.id}.html)\n`;
+            });
+
+            output += `\nApply to both img tags in each card (simple view + full view).\n`;
+            output += `Also update change-order.html card data to match.`;
+
+            document.getElementById('export-code').textContent = output;
+        }
+
+        function copyExport() {
+            const text = document.getElementById('export-code').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copy-btn-text');
+                btn.textContent = 'Copied!';
+                setTimeout(() => { btn.textContent = 'Copy to Clipboard'; }, 2000);
+                showToast('Positions copied — paste to Claude to apply');
+            });
+        }
+
+        function copySingle(index) {
+            const card = cards[index];
+            const text = `object-[${card.posX}%_${card.posY}%]`;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`${card.name}: ${text} copied`);
+            });
+        }
+
+        // ==========================================
+        // TOAST
+        // ==========================================
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast bg-brand-primary text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-bold flex items-center gap-2';
+            toast.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-brand-accent"></i> ${message}`;
+            container.appendChild(toast);
+            lucide.createIcons();
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // ==========================================
+        // INIT
+        // ==========================================
+        lucide.createIcons();
+        buildCards();
+    </script>
+</body>
+</html>
