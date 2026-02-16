@@ -19,6 +19,8 @@
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-storage-compat.js"></script>
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/tiers.js"></script>
 
     <style>
         /* DYNAMIC THEME VARIABLES (Default: Simpli-FI Navy/Gold) */
@@ -388,11 +390,7 @@
             "denton_fire_dept": { primary: "#b91c1c", accent: "#fbbf24", name: "Denton Fire Dept", logo: "https://files.constantcontact.com/3720c3fd901/10017eb4-f7d2-424d-92ed-c1b5424b9869.png" }
         };
 
-        // Initialize Firebase - Replace with your config
-        const firebaseConfig = {
-             // apiKey: "...",
-        };
-        // if (!firebase.apps.length) firebase.initializeApp(firebaseConfig); 
+        // Firebase initialized via /js/firebase-config.js (loaded in <head>)
 
         // --- INIT ---
         let currentMainView = 'resources';

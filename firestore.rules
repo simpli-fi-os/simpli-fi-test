@@ -7,27 +7,38 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
+    // Check if the authenticated user owns this user doc (via auth_uid field)
+    function isOwner() {
+      return isSignedIn() && resource.data.auth_uid == request.auth.uid;
+    }
+
     // Strict Tenant Isolation
     function isOrgMember(orgId) {
-      return isSignedIn() && 
+      return isSignedIn() &&
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.org_id == orgId;
     }
 
     // --- COLLECTIONS ---
 
-    // 1. Users (Private Profile Data)
-    // Only the user themselves can read/write their own PII.
-    match /users/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    // 1. Users (Profile Data — keyed by slug, not auth UID)
+    // Public read for active cards (needed for QR scans / card.html)
+    // Owner can read/update their own doc (matched by auth_uid field)
+    // Any signed-in user can create (intake form)
+    // No deletes allowed
+    match /users/{slug} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update: if isOwner();
+      allow delete: if false;
     }
 
     // 2. Public Cards (Denormalized Data)
-    // World readable (needed for QR scans). 
+    // World readable (needed for QR scans).
     // Only the owner can write.
     match /public_cards/{cardId} {
       allow read: if true;
-      allow write: if isSignedIn() && 
+      allow write: if isSignedIn() &&
                    request.auth.uid == resource.data.owner_uid;
     }
 
@@ -37,7 +48,7 @@ service cloud.firestore {
       allow read: if isOrgMember(orgId);
       match /assets/{assetId} {
         allow read: if isOrgMember(orgId);
-        allow write: if isOrgMember(orgId) && 
+        allow write: if isOrgMember(orgId) &&
                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
       }
     }
@@ -45,8 +56,18 @@ service cloud.firestore {
     // 4. Events (Analytics)
     // Append-only for public (scans). No deletes allowed.
     match /events/{eventId} {
-      allow create: if true; 
-      allow read, update, delete: if false; 
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+
+    // 5. Change Orders (Profile edit history)
+    // Owner can read their own change orders (matched by auth_uid field)
+    // Any signed-in user can create (the app enforces tier limits)
+    // No updates or deletes allowed (immutable audit trail)
+    match /change_orders/{orderId} {
+      allow read: if isSignedIn() && resource.data.auth_uid == request.auth.uid;
+      allow create: if isSignedIn();
+      allow update, delete: if false;
     }
   }
 }

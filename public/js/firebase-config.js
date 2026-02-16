@@ -24,7 +24,37 @@ window.db = db;
 window.auth = auth;
 window.storage = storage;
 
-// Anonymous auth (for write operations)
-auth.signInAnonymously().catch(e => console.warn('Anonymous auth failed:', e.message));
+// Conditional anonymous auth — only sign in anonymously if no user is signed in
+// Pages that handle their own auth (login, portal) set this flag to suppress
+window._suppressAnonymousAuth = window._suppressAnonymousAuth || false;
+auth.onAuthStateChanged(user => {
+  if (!user && !window._suppressAnonymousAuth) {
+    auth.signInAnonymously().catch(e => console.warn('Anonymous auth failed:', e.message));
+  }
+});
+
+// Wait for auth to resolve (useful for pages that need a user before proceeding)
+function waitForAuth(timeout = 5000) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Auth timeout')), timeout);
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      clearTimeout(timer);
+      unsubscribe();
+      resolve(user);
+    });
+  });
+}
+
+// Look up a user's Firestore doc by their Firebase Auth UID
+// Returns { slug, ...userData } or null if no linked account found
+async function getUserByAuthUid(uid) {
+  const snapshot = await db.collection('users').where('auth_uid', '==', uid).limit(1).get();
+  if (snapshot.empty) return null;
+  const doc = snapshot.docs[0];
+  return { slug: doc.id, ...doc.data() };
+}
+
+window.waitForAuth = waitForAuth;
+window.getUserByAuthUid = getUserByAuthUid;
 
 console.log('[Simpli-FI] Firebase initialized — project: simpli-fi-id');

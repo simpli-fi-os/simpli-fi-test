@@ -1,0 +1,29 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Avatars: public read, authenticated write to own path
+    match /avatars/{slug} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Logos: public read, authenticated write to own path
+    match /logos/{slug} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Organization assets: public read, authenticated write
+    match /org-assets/{orgId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Resource catalog uploads: public read, authenticated write
+    match /resources/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}

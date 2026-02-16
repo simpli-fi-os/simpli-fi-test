@@ -81,7 +81,8 @@
                 <button onclick="copyFinalURL()" class="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition flex items-center justify-center gap-2"><i data-lucide="copy" class="w-4 h-4"></i> Copy</button>
                 <button onclick="openFinalURL()" class="flex-1 py-3 bg-[#1e293b] text-white font-bold rounded-xl hover:bg-slate-800 transition flex items-center justify-center gap-2">Open <i data-lucide="external-link" class="w-4 h-4"></i></button>
             </div>
-            <button onclick="closeModal()" class="mt-6 text-xs text-slate-400 hover:text-slate-600">Close</button>
+            <a href="/account/" class="mt-4 w-full py-3 bg-[#fbbf24] text-[#1e293b] font-bold rounded-xl hover:bg-amber-400 transition flex items-center justify-center gap-2 block"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Go to Portal</a>
+            <button onclick="closeModal()" class="mt-4 text-xs text-slate-400 hover:text-slate-600">Close</button>
         </div>
     </div>
 
@@ -101,7 +102,7 @@
             <div class="bg-slate-100 p-1 rounded-xl flex gap-1 mb-4">
                 <button onclick="setTier('ambassador')" id="btn-tier-ambassador" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all shadow-sm bg-white text-slate-800">Ambassador</button>
                 <button onclick="setTier('professional')" id="btn-tier-professional" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-500 hover:bg-white/50">Professional</button>
-                <button onclick="setTier('founder')" id="btn-tier-founder" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-500 hover:bg-white/50">Founder/Ent</button>
+                <button onclick="setTier('founder')" id="btn-tier-founder" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-500 hover:bg-white/50">Founder/Enterprise</button>
             </div>
 
             <div class="flex items-center gap-2 text-[10px] text-slate-400 uppercase tracking-wider font-medium">
@@ -195,6 +196,35 @@
                     <div class="flex items-start gap-4"><div class="relative mt-2 shrink-0"><input type="checkbox" id="toggle-website" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-2 appearance-none cursor-pointer border-slate-300 left-0" onclick="toggleField('website')"/><label for="toggle-website" class="toggle-label block overflow-hidden h-4 w-8 rounded-full bg-slate-300 cursor-pointer"></label></div><div id="field-website" class="w-full relative field-disabled transition-opacity"><i data-lucide="globe" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i><input type="url" id="input-website" placeholder="Website URL" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] text-sm" oninput="updatePreview()"></div></div>
                     <div class="flex items-start gap-4"><div class="relative mt-2 shrink-0"><input type="checkbox" id="toggle-location" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-2 appearance-none cursor-pointer border-slate-300 left-0" onclick="toggleField('location')"/><label for="toggle-location" class="toggle-label block overflow-hidden h-4 w-8 rounded-full bg-slate-300 cursor-pointer"></label></div><div id="field-location" class="w-full relative field-disabled transition-opacity"><i data-lucide="map-pin" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i><input type="text" id="input-location" placeholder="City, State or Address" class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] text-sm" oninput="updatePreview()"></div></div>
                 </div>
+            </div>
+
+            <!-- Section: Account Security -->
+            <div class="space-y-4 slide-in" style="animation-delay: 0.42s">
+                <div class="flex items-center justify-between border-t border-slate-100 pt-6"><h3 class="text-xs font-bold text-[#fbbf24] uppercase tracking-widest flex items-center gap-2"><i data-lucide="shield" class="w-4 h-4"></i> Account Security</h3></div>
+                <p class="text-[10px] text-slate-400">Create login credentials so you can return and manage your profile.</p>
+
+                <div id="auth-email-password-section">
+                    <div class="space-y-4">
+                        <div><label class="block text-xs font-medium text-slate-600 mb-1">Login Email <span class="text-red-400">*</span></label><input type="email" id="input-account-email" placeholder="you@email.com" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="block text-xs font-medium text-slate-600 mb-1">Password <span class="text-red-400">*</span></label><input type="password" id="input-password" placeholder="Min 6 characters" minlength="6" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition"></div>
+                            <div><label class="block text-xs font-medium text-slate-600 mb-1">Confirm Password <span class="text-red-400">*</span></label><input type="password" id="input-password-confirm" placeholder="Re-enter password" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition"></div>
+                        </div>
+                        <p id="auth-error" class="text-[10px] text-red-500 hidden"></p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4 my-2">
+                    <div class="flex-1 h-px bg-slate-200"></div>
+                    <span class="text-[10px] text-slate-400 font-medium uppercase">or</span>
+                    <div class="flex-1 h-px bg-slate-200"></div>
+                </div>
+
+                <button type="button" id="btn-google-signup" onclick="handleGoogleSignup()" class="w-full py-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition flex items-center justify-center gap-3 text-sm font-medium text-slate-700">
+                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                    Sign up with Google
+                </button>
+                <p id="google-auth-status" class="text-[10px] text-green-600 hidden text-center"></p>
             </div>
 
             <!-- FOUNDER FEATURE: Commerce & Payments -->
@@ -485,20 +515,92 @@
             }
         }
 
+        // --- GOOGLE SIGN-UP ---
+        let googleAuthUser = null;
+
+        async function handleGoogleSignup() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                const result = await auth.signInWithPopup(provider);
+                if (result.user && !result.user.isAnonymous) {
+                    googleAuthUser = result.user;
+
+                    document.getElementById('input-account-email').value = result.user.email;
+                    document.getElementById('input-account-email').disabled = true;
+                    document.getElementById('input-password').disabled = true;
+                    document.getElementById('input-password-confirm').disabled = true;
+                    document.getElementById('input-password').value = '';
+                    document.getElementById('input-password-confirm').value = '';
+                    document.getElementById('auth-email-password-section').style.opacity = '0.4';
+
+                    if (!document.getElementById('input-fname').value && result.user.displayName) {
+                        const parts = result.user.displayName.split(' ');
+                        document.getElementById('input-fname').value = parts[0] || '';
+                        document.getElementById('input-lname').value = parts.slice(1).join(' ') || '';
+                        updatePreview();
+                    }
+
+                    document.getElementById('google-auth-status').textContent = 'Signed in as ' + result.user.email;
+                    document.getElementById('google-auth-status').classList.remove('hidden');
+                }
+            } catch (error) {
+                if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') return;
+                const errorEl = document.getElementById('auth-error');
+                if (errorEl) {
+                    errorEl.textContent = error.message;
+                    errorEl.classList.remove('hidden');
+                }
+            }
+        }
+
+        // Check for Google pre-fill from login redirect
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('google') === '1') {
+                if (params.get('name')) {
+                    const parts = decodeURIComponent(params.get('name')).split(' ');
+                    document.getElementById('input-fname').value = parts[0] || '';
+                    document.getElementById('input-lname').value = parts.slice(1).join(' ') || '';
+                }
+                if (params.get('email')) {
+                    document.getElementById('input-account-email').value = decodeURIComponent(params.get('email'));
+                }
+            }
+        })();
+
         // --- SUBMISSION ---
         async function submitForm() {
             const btn = document.getElementById('btn-submit');
             const originalText = btn.innerHTML;
             const fname = document.getElementById('input-fname').value.trim();
             const lname = document.getElementById('input-lname').value.trim();
+            const accountEmail = document.getElementById('input-account-email').value.trim();
+            const password = document.getElementById('input-password').value;
+            const passwordConfirm = document.getElementById('input-password-confirm').value;
+            const errorEl = document.getElementById('auth-error');
+            errorEl.classList.add('hidden');
 
             if (!fname || !lname) { alert("Please enter at least a First and Last Name."); return; }
 
-            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Generating ID...';
+            // Auth validation (skip if Google user already signed in)
+            if (!googleAuthUser) {
+                if (!accountEmail) { errorEl.textContent = 'Login email is required.'; errorEl.classList.remove('hidden'); return; }
+                if (password.length < 6) { errorEl.textContent = 'Password must be at least 6 characters.'; errorEl.classList.remove('hidden'); return; }
+                if (password !== passwordConfirm) { errorEl.textContent = 'Passwords do not match.'; errorEl.classList.remove('hidden'); return; }
+            }
+
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Creating Account...';
             lucide.createIcons();
             btn.disabled = true;
 
             try {
+                // Step 1: Create auth account (or use existing Google auth)
+                let authUser = googleAuthUser;
+                if (!authUser) {
+                    const credential = await auth.createUserWithEmailAndPassword(accountEmail, password);
+                    authUser = credential.user;
+                }
+
                 const slug = `${fname.toLowerCase().replace(/[^a-z0-9]/g, '')}.${lname.toLowerCase().replace(/[^a-z0-9]/g, '')}.${uniqueId}`;
 
                 const userData = {
@@ -529,6 +631,10 @@
                     logo_url: '',
                     is_active: true,
                     scan_count: 0,
+                    auth_uid: authUser.uid,
+                    account_email: accountEmail || authUser.email,
+                    change_order_count: 0,
+                    last_change_order_date: null,
                     created_at: firebase.firestore.FieldValue.serverTimestamp(),
                     updated_at: firebase.firestore.FieldValue.serverTimestamp()
                 };
@@ -563,7 +669,13 @@
                 btn.disabled = false;
             } catch (error) {
                 console.error('Submission error:', error);
-                alert('Error saving profile: ' + error.message);
+                // Show user-friendly auth errors
+                let msg = error.message;
+                if (error.code === 'auth/email-already-in-use') msg = 'This email already has an account. Try logging in instead.';
+                if (error.code === 'auth/weak-password') msg = 'Password is too weak. Use at least 6 characters.';
+                if (error.code === 'auth/invalid-email') msg = 'Please enter a valid email address.';
+                errorEl.textContent = msg;
+                errorEl.classList.remove('hidden');
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
@@ -574,7 +686,11 @@
 
         // Initialize
         window.onload = function() {
-            setTier('ambassador');
+            const params = new URLSearchParams(window.location.search);
+            const tierParam = params.get('tier');
+            const validTiers = ['ambassador', 'professional', 'founder'];
+            const initialTier = validTiers.includes(tierParam) ? tierParam : 'ambassador';
+            setTier(initialTier);
             updatePreview();
         };
     </script>

@@ -44,7 +44,7 @@ exports.syncToNotion = functions.firestore
         }
 
         // Normalization
-        const tierValue = (userData.tier || "free").toLowerCase(); 
+        const tierValue = (userData.tier || "ambassador").toLowerCase();
 
         try {
             await notion.pages.create({

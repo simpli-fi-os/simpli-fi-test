@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI ID | Sign In</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase SDKs (Compat 11.6.1) -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-storage-compat.js"></script>
+    <script>window._suppressAnonymousAuth = true;</script>
+    <script src="/js/firebase-config.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { background-color: #FBF9F7; font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md">
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 bg-[#1e293b] text-[#fbbf24] rounded-xl flex items-center justify-center font-serif text-2xl leading-none tracking-[0.25em] pl-1" style="font-family: 'Playfair Display', serif;">ID</div>
+            </div>
+            <h1 class="text-2xl font-serif text-[#1e293b] font-bold" style="font-family: 'Playfair Display', serif;">Sign in to your Simpli-FI ID</h1>
+            <p class="text-sm text-slate-500 mt-2">Access your portal, update your profile, and more.</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
+            <!-- Email + Password -->
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Email</label>
+                    <input type="email" id="input-email" placeholder="you@email.com" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Password</label>
+                    <input type="password" id="input-password" placeholder="Your password" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#1e293b] transition text-sm" onkeydown="if(event.key==='Enter') handleLogin()">
+                </div>
+
+                <p id="auth-error" class="text-[10px] text-red-500 hidden"></p>
+                <p id="auth-success" class="text-[10px] text-green-600 hidden"></p>
+
+                <button onclick="handleLogin()" id="btn-login" class="w-full py-3 bg-[#1e293b] text-white font-bold rounded-xl hover:bg-slate-800 transition flex items-center justify-center gap-2">
+                    <span>Log In</span>
+                    <i data-lucide="log-in" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Divider -->
+            <div class="flex items-center gap-4 my-6">
+                <div class="flex-1 h-px bg-slate-200"></div>
+                <span class="text-[10px] text-slate-400 font-medium uppercase">or</span>
+                <div class="flex-1 h-px bg-slate-200"></div>
+            </div>
+
+            <!-- Google Sign-In -->
+            <button onclick="handleGoogleLogin()" id="btn-google" class="w-full py-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition flex items-center justify-center gap-3 text-sm font-medium text-slate-700">
+                <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                Sign in with Google
+            </button>
+
+            <!-- Forgot Password -->
+            <div class="mt-6 text-center">
+                <button onclick="handleForgotPassword()" class="text-xs text-slate-500 hover:text-[#1e293b] transition underline">Forgot Password?</button>
+            </div>
+        </div>
+
+        <!-- Sign Up CTA -->
+        <div class="text-center mt-6">
+            <p class="text-sm text-slate-500">Don't have an account? <a href="/intake/" class="text-[#1e293b] font-bold hover:text-[#fbbf24] transition">Claim your ID</a></p>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Handle redirect result (when popup was blocked and we fell back to redirect)
+        auth.getRedirectResult().then(function(result) {
+            if (result && result.user) {
+                console.log('[Simpli-FI] Redirect sign-in success:', result.user.email);
+                getUserByAuthUid(result.user.uid).then(function(userData) {
+                    if (!userData) {
+                        const params = new URLSearchParams({
+                            google: '1',
+                            name: result.user.displayName || '',
+                            email: result.user.email || ''
+                        });
+                        window.location.href = '/intake/?' + params.toString();
+                    } else {
+                        window.location.href = '/account/';
+                    }
+                });
+            }
+        }).catch(function(error) {
+            console.error('[Simpli-FI] Redirect result error:', error.code, error.message);
+            if (error.code === 'auth/unauthorized-domain') {
+                const errorEl = document.getElementById('auth-error');
+                errorEl.textContent = 'This domain is not authorized. Add it in Firebase Console → Auth → Settings → Authorized domains.';
+                errorEl.classList.remove('hidden');
+            }
+        });
+
+        // Auto-redirect if already authenticated (non-anonymous)
+        auth.onAuthStateChanged(function(user) {
+            if (user && !user.isAnonymous) {
+                window.location.href = '/account/';
+            }
+        });
+
+        async function handleLogin() {
+            const email = document.getElementById('input-email').value.trim();
+            const password = document.getElementById('input-password').value;
+            const errorEl = document.getElementById('auth-error');
+            const successEl = document.getElementById('auth-success');
+            const btn = document.getElementById('btn-login');
+
+            errorEl.classList.add('hidden');
+            successEl.classList.add('hidden');
+
+            if (!email || !password) {
+                errorEl.textContent = 'Please enter your email and password.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Signing in...';
+            lucide.createIcons();
+
+            try {
+                // Sign out anonymous user first to avoid conflicts
+                if (auth.currentUser && auth.currentUser.isAnonymous) {
+                    await auth.signOut();
+                }
+                await auth.signInWithEmailAndPassword(email, password);
+                window.location.href = '/account/';
+            } catch (error) {
+                let msg = error.message;
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                    msg = 'Invalid email or password. Please try again.';
+                }
+                if (error.code === 'auth/too-many-requests') {
+                    msg = 'Too many failed attempts. Please try again later.';
+                }
+                errorEl.textContent = msg;
+                errorEl.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<span>Log In</span><i data-lucide="log-in" class="w-4 h-4"></i>';
+                lucide.createIcons();
+            }
+        }
+
+        async function handleGoogleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope('email');
+            provider.addScope('profile');
+            const errorEl = document.getElementById('auth-error');
+            const btn = document.getElementById('btn-google');
+            errorEl.classList.add('hidden');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Connecting to Google...';
+            lucide.createIcons();
+
+            try {
+                // Sign out anonymous user first to avoid conflicts
+                if (auth.currentUser && auth.currentUser.isAnonymous) {
+                    await auth.signOut();
+                }
+                const result = await auth.signInWithPopup(provider);
+                if (result.user) {
+                    console.log('[Simpli-FI] Google sign-in success:', result.user.email);
+                    const userData = await getUserByAuthUid(result.user.uid);
+                    if (!userData) {
+                        // New user — send to intake form pre-filled
+                        const params = new URLSearchParams({
+                            google: '1',
+                            name: result.user.displayName || '',
+                            email: result.user.email || ''
+                        });
+                        window.location.href = '/intake/?' + params.toString();
+                    } else {
+                        window.location.href = '/account/';
+                    }
+                }
+            } catch (error) {
+                console.error('[Simpli-FI] Google sign-in error:', error.code, error.message);
+                if (error.code === 'auth/popup-closed-by-user') return;
+                if (error.code === 'auth/cancelled-popup-request') return;
+                if (error.code === 'auth/popup-blocked') {
+                    // Fallback to redirect
+                    console.log('[Simpli-FI] Popup blocked, trying redirect...');
+                    auth.signInWithRedirect(provider);
+                    return;
+                }
+                if (error.code === 'auth/unauthorized-domain') {
+                    errorEl.textContent = 'This domain is not authorized for sign-in. Add it to Firebase Console → Auth → Settings → Authorized domains.';
+                } else {
+                    errorEl.textContent = error.message;
+                }
+                errorEl.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Sign in with Google';
+            }
+        }
+
+        async function handleForgotPassword() {
+            const email = document.getElementById('input-email').value.trim();
+            const errorEl = document.getElementById('auth-error');
+            const successEl = document.getElementById('auth-success');
+            errorEl.classList.add('hidden');
+            successEl.classList.add('hidden');
+
+            if (!email) {
+                errorEl.textContent = 'Enter your email address above, then click Forgot Password.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                await auth.sendPasswordResetEmail(email);
+                successEl.textContent = 'Password reset email sent! Check your inbox.';
+                successEl.classList.remove('hidden');
+            } catch (error) {
+                let msg = error.message;
+                if (error.code === 'auth/user-not-found') msg = 'No account found with this email.';
+                errorEl.textContent = msg;
+                errorEl.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

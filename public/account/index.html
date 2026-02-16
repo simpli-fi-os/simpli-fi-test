@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simpli-FI ID | My Portal</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase SDKs (Compat 11.6.1) -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-storage-compat.js"></script>
+    <script>window._suppressAnonymousAuth = true;</script>
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/tiers.js"></script>
+    <script src="/js/auth-guard.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/shared.css">
+
+    <style>
+        body { background-color: #FBF9F7; font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Loading State -->
+    <div id="loading-state" class="min-h-screen flex items-center justify-center">
+        <div class="text-center">
+            <div class="w-12 h-12 border-4 border-slate-200 border-t-[#1e293b] rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-sm text-slate-500">Loading your portal...</p>
+        </div>
+    </div>
+
+    <!-- Main Content (hidden until loaded) -->
+    <div id="portal-content" class="hidden">
+        <!-- Header -->
+        <header class="bg-white border-b border-slate-100 sticky top-0 z-30">
+            <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-[#1e293b] text-[#fbbf24] rounded-lg flex items-center justify-center font-serif text-lg leading-none tracking-[0.25em] pl-0.5" style="font-family: 'Playfair Display', serif;">ID</div>
+                    <span class="font-serif text-[#1e293b] font-bold text-sm" style="font-family: 'Playfair Display', serif;">My Portal</span>
+                </div>
+                <button onclick="handleSignOut()" class="flex items-center gap-2 text-xs text-slate-500 hover:text-[#1e293b] transition font-medium">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+                </button>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto px-6 py-8 space-y-6">
+
+            <!-- Welcome -->
+            <div>
+                <h1 class="text-2xl font-serif text-[#1e293b] font-bold" id="welcome-name" style="font-family: 'Playfair Display', serif;">Welcome back</h1>
+                <p class="text-sm text-slate-500 mt-1">Manage your Simpli-FI ID from here.</p>
+            </div>
+
+            <!-- Card Preview + Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                <!-- Mini Card Preview -->
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div class="h-16 relative" id="card-header-bg" style="background-color: #1e293b;">
+                        <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#fbbf24_1px,transparent_1px)] [background-size:8px_8px]"></div>
+                    </div>
+                    <div class="px-4 pb-4 -mt-8 text-center">
+                        <div class="w-16 h-16 rounded-full border-3 border-white shadow-md overflow-hidden bg-slate-200 mx-auto">
+                            <img id="card-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="w-full h-full object-cover">
+                        </div>
+                        <h3 class="font-bold text-[#1e293b] text-sm mt-2" id="card-name">—</h3>
+                        <p class="text-[10px] text-[#fbbf24] font-bold uppercase tracking-wider mt-0.5" id="card-title">—</p>
+                        <div class="mt-2" id="card-tier-badge"></div>
+                    </div>
+                    <div class="px-4 pb-4">
+                        <a id="view-card-link" href="#" target="_blank" class="w-full py-2 bg-[#1e293b] text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition flex items-center justify-center gap-2 block">
+                            <i data-lucide="external-link" class="w-3 h-3"></i> View My Card
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Change Order Status -->
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 md:col-span-2">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <i data-lucide="edit-3" class="w-4 h-4"></i> Profile Updates
+                    </h3>
+
+                    <div id="change-order-status"></div>
+                </div>
+            </div>
+
+            <!-- Account Info -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i data-lucide="user" class="w-4 h-4"></i> Account
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-slate-500">Login Email</p>
+                            <p class="text-sm font-medium text-[#1e293b]" id="account-email">—</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-slate-500">Password</p>
+                            <p class="text-sm text-slate-400">••••••••</p>
+                        </div>
+                        <button onclick="handleChangePassword()" class="text-xs text-[#1e293b] font-bold hover:text-[#fbbf24] transition">Change</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i data-lucide="link" class="w-4 h-4"></i> Quick Links
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="quick-links"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        let currentUserData = null;
+
+        // Load portal data once auth resolves
+        auth.onAuthStateChanged(async function(user) {
+            if (!user || user.isAnonymous) return; // auth-guard handles redirect
+
+            try {
+                const userData = await getUserByAuthUid(user.uid);
+
+                if (!userData) {
+                    // Authenticated but no Firestore doc — send to intake
+                    window.location.href = '/intake/';
+                    return;
+                }
+
+                currentUserData = userData;
+                renderPortal(userData, user);
+            } catch (error) {
+                console.error('Portal load error:', error);
+                document.getElementById('loading-state').innerHTML = '<div class="text-center"><p class="text-sm text-red-500">Error loading your profile. Please try again.</p><button onclick="location.reload()" class="mt-4 text-xs font-bold text-[#1e293b] underline">Reload</button></div>';
+            }
+        });
+
+        function renderPortal(userData, authUser) {
+            const tier = normalizeTier(userData.tier);
+            const tierConfig = getTierConfig(tier);
+
+            // Welcome
+            document.getElementById('welcome-name').textContent = 'Welcome back, ' + (userData.first_name || 'there');
+
+            // Card preview
+            if (userData.avatar_url) {
+                document.getElementById('card-avatar').src = userData.avatar_url;
+            }
+            document.getElementById('card-name').textContent = userData.full_name || '—';
+            document.getElementById('card-title').textContent = userData.title || '—';
+            if (userData.custom_color) {
+                document.getElementById('card-header-bg').style.backgroundColor = userData.custom_color;
+            }
+
+            // Tier badge
+            const badgeEl = document.getElementById('card-tier-badge');
+            badgeEl.innerHTML = '<span class="tier-badge ' + tier + '">' + tierConfig.name + '</span>';
+
+            // View card link
+            document.getElementById('view-card-link').href = '/card.html?u=' + userData.slug;
+
+            // Account email
+            document.getElementById('account-email').textContent = userData.account_email || authUser.email || '—';
+
+            // Change order status
+            renderChangeOrderStatus(userData, tier, tierConfig);
+
+            // Quick links
+            renderQuickLinks(userData, tier);
+
+            // Show content
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('portal-content').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function renderChangeOrderStatus(userData, tier, tierConfig) {
+            const container = document.getElementById('change-order-status');
+            const count = userData.change_order_count || 0;
+
+            if (!tierConfig.changeOrders) {
+                // Ambassador — no change orders
+                container.innerHTML = `
+                    <div class="bg-[#fbbf24]/10 rounded-xl p-4 text-center">
+                        <p class="text-sm text-[#1e293b] font-medium mb-2">Profile updates are not available on the Ambassador tier.</p>
+                        <p class="text-xs text-slate-500 mb-4">Upgrade to Professional or higher to edit your profile.</p>
+                        <a href="/intake/" class="inline-flex items-center gap-2 px-4 py-2 bg-[#fbbf24] text-[#1e293b] text-xs font-bold rounded-lg hover:bg-amber-400 transition">
+                            <i data-lucide="crown" class="w-3 h-3"></i> Upgrade Your Tier
+                        </a>
+                    </div>`;
+            } else if (tierConfig.changeOrderLimit === -1) {
+                // Founder / Enterprise — unlimited
+                container.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-sm font-medium text-[#1e293b]">Unlimited profile updates</p>
+                            <p class="text-xs text-slate-500">${count} change${count !== 1 ? 's' : ''} made so far</p>
+                        </div>
+                        <span class="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded uppercase">${tierConfig.name}</span>
+                    </div>
+                    <a href="/account/change-order.html" class="w-full py-3 bg-[#1e293b] text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition flex items-center justify-center gap-2 block">
+                        <i data-lucide="edit-3" class="w-4 h-4"></i> Edit My Profile
+                    </a>`;
+            } else {
+                // Professional — limited
+                const remaining = tierConfig.changeOrderLimit - count;
+                const canEdit = remaining > 0;
+                container.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-sm font-medium text-[#1e293b]">${count} of ${tierConfig.changeOrderLimit} update${tierConfig.changeOrderLimit !== 1 ? 's' : ''} used this year</p>
+                            <p class="text-xs text-slate-500">${canEdit ? remaining + ' remaining' : 'No updates remaining this year'}</p>
+                        </div>
+                    </div>
+                    ${canEdit ? `
+                    <a href="/account/change-order.html" class="w-full py-3 bg-[#1e293b] text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition flex items-center justify-center gap-2 block">
+                        <i data-lucide="edit-3" class="w-4 h-4"></i> Edit My Profile
+                    </a>` : `
+                    <div class="text-center">
+                        <p class="text-xs text-slate-400 mb-3">Upgrade to Founder for unlimited updates.</p>
+                        <a href="/intake/" class="inline-flex items-center gap-2 px-4 py-2 bg-[#fbbf24] text-[#1e293b] text-xs font-bold rounded-lg hover:bg-amber-400 transition">
+                            <i data-lucide="crown" class="w-3 h-3"></i> Upgrade
+                        </a>
+                    </div>`}`;
+            }
+        }
+
+        function renderQuickLinks(userData, tier) {
+            const container = document.getElementById('quick-links');
+            let links = `
+                <a href="/card.html?u=${userData.slug}" target="_blank" class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:border-[#1e293b] hover:bg-slate-50 transition">
+                    <i data-lucide="credit-card" class="w-4 h-4 text-slate-400"></i>
+                    <span class="text-xs font-medium text-[#1e293b]">View My Card</span>
+                </a>`;
+
+            if (tier !== 'founder' && tier !== 'enterprise') {
+                links += `
+                <a href="/intake/" class="flex items-center gap-3 p-3 rounded-xl border border-[#fbbf24]/30 hover:border-[#fbbf24] hover:bg-[#fbbf24]/5 transition">
+                    <i data-lucide="arrow-up-circle" class="w-4 h-4 text-[#fbbf24]"></i>
+                    <span class="text-xs font-medium text-[#1e293b]">Upgrade Tier</span>
+                </a>`;
+            }
+
+            if (tier === 'enterprise') {
+                links += `
+                <a href="/admin/dashboard.html" class="flex items-center gap-3 p-3 rounded-xl border border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-purple-500"></i>
+                    <span class="text-xs font-medium text-[#1e293b]">Enterprise Dashboard</span>
+                </a>`;
+            }
+
+            links += `
+                <a href="/" class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:border-[#1e293b] hover:bg-slate-50 transition">
+                    <i data-lucide="home" class="w-4 h-4 text-slate-400"></i>
+                    <span class="text-xs font-medium text-[#1e293b]">Simpli-FI Home</span>
+                </a>`;
+
+            container.innerHTML = links;
+        }
+
+        async function handleChangePassword() {
+            const email = currentUserData?.account_email || auth.currentUser?.email;
+            if (!email) {
+                alert('No email associated with this account.');
+                return;
+            }
+            try {
+                await auth.sendPasswordResetEmail(email);
+                alert('Password reset email sent to ' + email);
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function handleSignOut() {
+            auth.signOut().then(function() {
+                window.location.href = '/account/login.html';
+            });
+        }
+    </script>
+</body>
+</html>
