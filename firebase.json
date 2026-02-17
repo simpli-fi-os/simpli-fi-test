@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "simpli-fi-id",
     "public": "public",
     "ignore": [
       "firebase.json",
