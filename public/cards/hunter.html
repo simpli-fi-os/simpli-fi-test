@@ -5,8 +5,13 @@
     <!-- Updated Viewport: Allowed zooming -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow"> 
-    <meta name="apple-mobile-web-app-title" content="Simpli-FI Alpha"> 
-    
+    <meta name="apple-mobile-web-app-title" content="Simpli-FI Alpha">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1e293b">
+    <link rel="manifest" href="manifest-hunter.json">
+
     <!-- Open Graph Tags -->
     <meta property="og:title" content="Hunter Lott | Simpli-FI Alpha LLC">
     <meta property="og:description" content="Co-Founder & Managing Partner at Simpli-FI Alpha LLC. Investment Stewardship, For Legacy Building.">
@@ -216,8 +221,8 @@
                      
                     <!-- Header -->
                     <div class="flex items-center gap-5">
-                        <div class="w-16 h-16 shrink-0 rounded-2xl bg-brand-surface shadow-neu-flat flex items-center justify-center text-brand-primary border border-white/20">
-                            <img src="../favicon.png" alt="Logo" class="w-10 h-10 object-contain drop-shadow-sm opacity-90">
+                        <div class="w-16 h-16 shrink-0 rounded-2xl bg-brand-surface shadow-neu-flat flex items-center justify-center text-brand-primary border border-white/20 overflow-hidden">
+                            <img src="../assets/images/alpha-logo.png" alt="Simpli-FI Alpha Logo" class="w-14 h-14 object-contain drop-shadow-sm">
                         </div>
                         <div>
                             <h2 class="text-2xl font-bold tracking-tight text-brand-primary leading-none">Simpli-FI <span class="text-brand-accent">Alpha</span></h2>
@@ -237,9 +242,9 @@
                             <i data-lucide="phone" class="w-3.5 h-3.5 text-brand-primary shrink-0"></i>
                             <span class="text-[11px] font-bold text-brand-primary whitespace-nowrap">(940) 373-0151</span>
                         </a>
-                        <a href="https://www.simpli-fi-alpha.com" target="_blank" class="px-2 py-3.5 rounded-xl bg-brand-surface shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent hover:border-brand-primary/10 transition-colors cursor-pointer group">
-                            <i data-lucide="globe" class="w-3.5 h-3.5 text-brand-primary shrink-0"></i>
-                            <span class="text-[11px] font-bold text-brand-primary whitespace-nowrap">simpli-fi-alpha.com</span>
+                        <a href="mailto:hunter.lott@simpli-fi-alpha.com" class="px-2 py-3.5 rounded-xl bg-brand-surface shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent hover:border-brand-primary/10 transition-colors cursor-pointer group">
+                            <i data-lucide="mail" class="w-3.5 h-3.5 text-brand-primary shrink-0"></i>
+                            <span class="text-[11px] font-bold text-brand-primary whitespace-nowrap">hunter.lott@simpli-fi-alpha.com</span>
                         </a>
                     </div>
                 </div>
@@ -280,7 +285,7 @@
                 <!-- Top Banner -->
                 <div class="h-32 bg-brand-primary relative overflow-hidden shrink-0">
                     <div class="absolute top-4 left-4 z-10 flex items-center gap-3">
-                        <img src="../favicon.png" alt="Simpli-FI Alpha Logo" class="w-10 h-10 object-contain drop-shadow-md bg-white/10 rounded-full backdrop-blur-sm p-1">
+                        <img src="../assets/images/alpha-logo.png" alt="Simpli-FI Alpha Logo" class="w-10 h-10 object-contain drop-shadow-md bg-white/10 rounded-full backdrop-blur-sm p-1">
                         <span class="font-serif text-white font-bold tracking-tight text-sm opacity-90">Simpli-FI <span class="font-light text-brand-pop">Alpha</span></span>
                     </div>
 
@@ -459,14 +464,17 @@
         <i data-lucide="minus" id="icon-minus" class="fab-icon w-8 h-8 text-brand-primary"></i>
     </button>
     
-    <!-- Confirm Modal for Location -->
-    <div id="confirmModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity duration-300">
-        <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-xs w-full text-center scale-100 transition-transform">
-            <h3 class="text-lg font-bold text-brand-primary mb-2">Add Location?</h3>
-            <p class="text-sm text-gray-500 mb-6">Would you like to include your current location in the contact card?</p>
-            <div class="flex gap-3 justify-center">
-                <button onclick="handleLocationChoice(false)" class="px-5 py-2.5 rounded-full bg-brand-surface text-brand-primary font-bold text-xs uppercase tracking-wider hover:bg-gray-200 transition">No</button>
-                <button onclick="handleLocationChoice(true)" class="px-5 py-2.5 rounded-full bg-brand-primary text-white font-bold text-xs uppercase tracking-wider hover:bg-brand-primary/90 shadow-lg transition">Yes</button>
+    <!-- Save Contact Toast -->
+    <div id="saveToast" class="fixed top-0 left-0 right-0 z-[60] flex justify-center pointer-events-none" style="opacity:0; transform:translateY(-100%); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
+        <div class="bg-white mx-4 mt-4 px-5 py-4 rounded-2xl shadow-2xl border border-amber-200 max-w-sm w-full pointer-events-auto">
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <i data-lucide="arrow-down" class="w-4 h-4 text-amber-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-slate-800">Almost there!</p>
+                    <p class="text-xs text-slate-500 mt-1 leading-relaxed">Scroll down and tap <strong class="text-amber-700">"Create New Contact"</strong> to finish saving.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -483,10 +491,17 @@
             </div>
 
             <div class="bg-brand-canvas p-4 rounded-xl border border-brand-surface mb-4 shadow-inner">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://hunter.simpli-fi-alpha.com&color=003b46" alt="Scan QR Code" class="w-full h-auto rounded-lg mix-blend-multiply">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://simpli-fi-id.web.app/cards/hunter.html&color=003b46" alt="Scan QR Code" class="w-full h-auto rounded-lg mix-blend-multiply">
             </div>
 
-            <p class="text-slate-500 text-xs uppercase tracking-widest font-medium mb-4">Scan to Connect</p>
+            <p class="text-slate-500 text-xs uppercase tracking-widest font-medium mb-3">Scan to Connect</p>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-left">
+                <p class="text-xs text-amber-800 font-medium flex items-start gap-2">
+                    <i data-lucide="info" class="w-4 h-4 shrink-0 mt-0.5 text-amber-500"></i>
+                    <span>After scanning, tap <strong>Save Contact</strong> on the card, then scroll down and tap <strong>"Create New Contact"</strong> to save.</span>
+                </p>
+            </div>
          </div>
     </div>
 
@@ -744,57 +759,23 @@
             }
         }
         
-        function downloadVCard() {
-             const modal = document.getElementById('confirmModal');
-             modal.classList.remove('hidden');
+        function showSaveToast() {
+            const toast = document.getElementById('saveToast');
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-100%)';
+            }, 6000);
         }
 
-        function handleLocationChoice(includeLocation) {
-            const modal = document.getElementById('confirmModal');
-            modal.classList.add('hidden');
-            
-            const generateFile = (locationNote = "") => {
-                setLoading(true);
-                const today = new Date().toISOString().replace(/[-:.]/g, '').split('T')[0];
-                let vcard = `BEGIN:VCARD
-VERSION:3.0
-N:Lott;Hunter;;;
-FN:Hunter Lott
-ORG:Simpli-FI Alpha LLC
-TITLE:Co-Founder & Managing Partner
-TEL;TYPE=WORK,VOICE:(940) 373-0151
-EMAIL:hunter.lott@simpli-fi-alpha.com
-URL:https://www.simpli-fi-alpha.com
-ADR;TYPE=WORK:;;513 W Oak St Ste 105;Denton;TX;76201;USA
-NOTE:Mission: ${currentMission} ${locationNote}
-REV:${today}
-`;
-                if (photoBase64) vcard += `PHOTO;ENCODING=b;TYPE=PNG:${photoBase64}\n`;
-                vcard += `END:VCARD`;
-
-                const blob = new Blob([vcard], { type: 'text/vcard' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', 'Hunter_Lott_Simpli-FI_Alpha.vcf');
-                document.body.appendChild(link);
-                link.click();
-                setTimeout(() => {
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
-                    setLoading(false);
-                }, 100);
-            };
-
-            if (includeLocation) {
-                setLoading(true);
-                navigator.geolocation.getCurrentPosition(
-                    pos => generateFile(`| Met at: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`),
-                    () => generateFile("")
-                );
-            } else {
-                generateFile("");
-            }
+        function downloadVCard() {
+            setLoading(true);
+            window.location.href = '/vcf/hunter-lott.vcf';
+            setTimeout(() => {
+                setLoading(false);
+                showSaveToast();
+            }, 800);
         }
     </script>
 </body>

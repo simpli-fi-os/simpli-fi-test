@@ -1,0 +1,22 @@
+{
+  "name": "Ty Crandall | Credit Suite",
+  "short_name": "Ty Crandall",
+  "description": "Professional ID Card",
+  "start_url": "/cards/ty-crandall.html",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#003d5c",
+  "background_color": "#FBF9F7",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

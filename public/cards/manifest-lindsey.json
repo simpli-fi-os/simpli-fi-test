@@ -1,0 +1,22 @@
+{
+  "name": "Lindsey Lott | Simpli-FI Life",
+  "short_name": "Lindsey Lott",
+  "description": "Professional ID Card",
+  "start_url": "/cards/lindsey.html",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#7178C8",
+  "background_color": "#FBF9F7",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -235,6 +235,7 @@
                         <h1 id="fv-name" class="font-serif text-3xl font-bold" style="color: var(--brand-primary);">Loading...</h1>
                         <p id="fv-title" class="font-bold text-xs tracking-widest uppercase mt-1" style="color: var(--brand-accent);"></p>
                         <p id="fv-company-sub" class="text-slate-400 text-xs mt-1"></p>
+                        <p id="fv-role" class="text-slate-400 text-xs mt-1 italic hidden"></p>
                     </div>
                 </div>
 
@@ -323,18 +324,6 @@
                 <img id="qr-image" src="" alt="Scan QR Code" class="w-full h-auto rounded-lg mix-blend-multiply">
             </div>
             <p class="text-slate-500 text-xs uppercase tracking-widest font-medium mb-4">Scan to Connect</p>
-        </div>
-    </div>
-
-    <!-- Location Confirm Modal -->
-    <div id="confirmModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity duration-300">
-        <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-xs w-full text-center scale-100 transition-transform">
-            <h3 class="text-lg font-bold mb-2" style="color: var(--brand-primary);">Add Location?</h3>
-            <p class="text-sm text-gray-500 mb-6">Would you like to include your current location in the contact card?</p>
-            <div class="flex gap-3 justify-center">
-                <button onclick="handleLocationChoice(false)" class="px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-gray-200 transition" style="background-color: #F0EFEB; color: var(--brand-primary);">No</button>
-                <button onclick="handleLocationChoice(true)" class="px-5 py-2.5 rounded-full text-white font-bold text-xs uppercase tracking-wider shadow-lg transition" style="background-color: var(--brand-primary);">Yes</button>
-            </div>
         </div>
     </div>
 
@@ -486,11 +475,12 @@
             const contacts = document.getElementById('sv-contacts');
             contacts.innerHTML = '';
             if (d.phone) {
-                contacts.innerHTML += `<a href="tel:${sanitizePhone(d.phone)}" onclick="logEvent('click_phone')" class="px-2 py-3.5 rounded-xl shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent transition-colors cursor-pointer group" style="background-color: #F0EFEB;"><i data-lucide="phone" class="w-3.5 h-3.5 shrink-0" style="color: var(--brand-primary);"></i><span class="text-[11px] font-bold whitespace-nowrap" style="color: var(--brand-primary);">${escapeHtml(d.phone)}</span></a>`;
+                contacts.innerHTML += `<a href="tel:${sanitizePhone(d.phone)}" onclick="logEvent('click_phone')" class="px-2 py-3.5 rounded-xl shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent transition-colors cursor-pointer group overflow-hidden" style="background-color: #F0EFEB;"><i data-lucide="phone" class="w-3.5 h-3.5 shrink-0" style="color: var(--brand-primary);"></i><span class="text-[11px] font-bold truncate" style="color: var(--brand-primary);">${escapeHtml(d.phone)}</span></a>`;
             }
             if (d.social_links?.website) {
-                const displayUrl = d.social_links.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
-                contacts.innerHTML += `<a href="${sanitizeUrl(d.social_links.website)}" target="_blank" onclick="logEvent('click_website')" class="px-2 py-3.5 rounded-xl shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent transition-colors cursor-pointer group" style="background-color: #F0EFEB;"><i data-lucide="globe" class="w-3.5 h-3.5 shrink-0" style="color: var(--brand-primary);"></i><span class="text-[11px] font-bold whitespace-nowrap" style="color: var(--brand-primary);">${escapeHtml(displayUrl)}</span></a>`;
+                let displayUrl = d.social_links.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+                if (displayUrl.length > 22) displayUrl = displayUrl.substring(0, 20) + '…';
+                contacts.innerHTML += `<a href="${sanitizeUrl(d.social_links.website)}" target="_blank" onclick="logEvent('click_website')" class="px-2 py-3.5 rounded-xl shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent transition-colors cursor-pointer group overflow-hidden" style="background-color: #F0EFEB;"><i data-lucide="globe" class="w-3.5 h-3.5 shrink-0" style="color: var(--brand-primary);"></i><span class="text-[11px] font-bold truncate" style="color: var(--brand-primary);">${escapeHtml(displayUrl)}</span></a>`;
             }
 
             // Update page title and OG
@@ -514,6 +504,12 @@
 
             // Company in header
             document.getElementById('fv-company').textContent = d.company || 'Simpli-FI ID';
+
+            // Role
+            if (d.role) {
+                document.getElementById('fv-role').textContent = d.role;
+                document.getElementById('fv-role').classList.remove('hidden');
+            }
 
             // Logo
             if (d.logo_url) {
@@ -690,56 +686,32 @@
                 return;
             }
             logEvent('save_contact');
-            document.getElementById('confirmModal').classList.remove('hidden');
-        }
 
-        function handleLocationChoice(includeLocation) {
-            document.getElementById('confirmModal').classList.add('hidden');
+            // For dynamic cards, generate vCard client-side and use Blob approach
+            const d = userData;
+            const today = new Date().toISOString().replace(/[-:.]/g, '').split('T')[0];
+            const nameParts = (d.full_name || 'User').split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
 
-            const generate = (locationNote = "") => {
-                const d = userData;
-                const today = new Date().toISOString().replace(/[-:.]/g, '').split('T')[0];
-                const nameParts = (d.full_name || 'User').split(' ');
-                const firstName = nameParts[0] || '';
-                const lastName = nameParts.slice(1).join(' ') || '';
+            let vcard = 'BEGIN:VCARD\nVERSION:3.0\n';
+            vcard += 'N:' + lastName + ';' + firstName + ';;;\n';
+            vcard += 'FN:' + d.full_name + '\n';
+            if (d.company) vcard += 'ORG:' + d.company + '\n';
+            if (d.title) vcard += 'TITLE:' + d.title + '\n';
+            if (d.phone) vcard += 'TEL;TYPE=WORK,VOICE:' + d.phone + '\n';
+            if (d.email) vcard += 'EMAIL:' + d.email + '\n';
+            if (d.social_links && d.social_links.website) vcard += 'URL:' + d.social_links.website + '\n';
+            if (d.location) vcard += 'ADR;TYPE=WORK:;;' + d.location + ';;;;\n';
+            if (d.mission) vcard += 'NOTE:Mission: ' + d.mission + '\n';
+            vcard += 'REV:' + today + '\n';
+            vcard += 'END:VCARD';
 
-                let vcard = `BEGIN:VCARD\nVERSION:3.0\n`;
-                vcard += `N:${lastName};${firstName};;;\n`;
-                vcard += `FN:${d.full_name}\n`;
-                if (d.company) vcard += `ORG:${d.company}\n`;
-                if (d.title) vcard += `TITLE:${d.title}\n`;
-                if (d.phone) vcard += `TEL;TYPE=WORK,VOICE:${d.phone}\n`;
-                if (d.email) vcard += `EMAIL:${d.email}\n`;
-                if (d.social_links?.website) vcard += `URL:${d.social_links.website}\n`;
-                if (d.location) vcard += `ADR;TYPE=WORK:;;${d.location};;;;\n`;
-
-                let note = '';
-                if (d.mission) note += `Mission: ${d.mission}`;
-                if (locationNote) note += ` ${locationNote}`;
-                if (note) vcard += `NOTE:${note}\n`;
-
-                vcard += `REV:${today}\n`;
-                if (photoBase64) vcard += `PHOTO;ENCODING=b;TYPE=PNG:${photoBase64}\n`;
-                vcard += `END:VCARD`;
-
-                const blob = new Blob([vcard], { type: 'text/vcard' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${(d.full_name || 'contact').replace(/\s+/g, '_')}.vcf`;
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
-            };
-
-            if (includeLocation) {
-                navigator.geolocation.getCurrentPosition(
-                    pos => generate(`| Met at: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`),
-                    () => generate("")
-                );
-            } else {
-                generate("");
-            }
+            // Use Blob with window.open for cross-platform support
+            const blob = new Blob([vcard], { type: 'text/x-vcard;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_self');
+            setTimeout(function() { URL.revokeObjectURL(url); }, 3000);
         }
 
         async function preloadPhoto() {

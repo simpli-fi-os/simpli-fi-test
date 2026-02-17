@@ -2,24 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Updated Viewport: Allowed zooming -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow">
-    <meta name="apple-mobile-web-app-title" content="Simpli-FI ID">
+    <meta name="apple-mobile-web-app-title" content="Colten Page">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#1a1a2e">
-    <link rel="manifest" href="manifest-rhonda-swan.json">
+    <meta name="theme-color" content="#1a237e">
+    <link rel="manifest" href="manifest-colten-page.json">
 
-    <!-- Open Graph Tags -->
-    <meta property="og:title" content="Rhonda Swan | Unstoppable Branding Agency">
-    <meta property="og:description" content="CEO & Founder of Unstoppable Branding Agency. We Turn Best Kept Secrets Into World Renowned Brands.">
-    <meta property="og:image" content="../assets/images/contacts/rhonda-swan.png">
+    <meta property="og:title" content="Colten Page | Platinum Payment Systems">
+    <meta property="og:description" content="Chief Sales Officer & Equity Partner at Platinum Payment Systems. Merchant processing solutions and business growth.">
+    <meta property="og:image" content="../assets/images/contacts/colten-page.png">
 
-    <title>Rhonda Swan | Unstoppable Branding Agency</title>
+    <title>Colten Page | Platinum Payment Systems</title>
 
-    <!-- Home Screen Icon & Favicon -->
     <link rel="apple-touch-icon" href="../favicon.png">
     <link rel="icon" type="image/png" href="../favicon.png">
 
@@ -27,18 +24,17 @@
     <script src="https://unpkg.com/lucide@0.294.0"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
 
-    <!-- UPDATED COLORS -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         brand: {
-                            primary: '#1a1a2e',   /* Dark Indigo */
-                            accent: '#d4af37',    /* Classic Gold */
-                            pop: '#d4af37',       /* Using accent color for pop */
-                            canvas: '#f5f2ed',    /* Warm Background */
-                            surface: '#e8e4dd',   /* Slightly darker surface for contrast */
+                            primary: '#1a237e',   /* Deep Indigo */
+                            accent: '#ffd700',    /* Gold */
+                            pop: '#ffd700',
+                            canvas: '#eef0f5',    /* Cool Gray Background */
+                            surface: '#dfe2ea',
                         }
                     },
                     fontFamily: {
@@ -46,8 +42,8 @@
                         serif: ['Playfair Display', 'serif'],
                     },
                     boxShadow: {
-                        'neu-flat': '9px 9px 18px #d1cfcb, -9px -9px 18px #ffffff',
-                        'neu-pressed': 'inset 6px 6px 12px #d1cfcb, inset -6px -6px 12px #ffffff',
+                        'neu-flat': '9px 9px 18px #cfd1d8, -9px -9px 18px #ffffff',
+                        'neu-pressed': 'inset 6px 6px 12px #cfd1d8, inset -6px -6px 12px #ffffff',
                     }
                 }
             }
@@ -55,160 +51,70 @@
     </script>
     <style>
         body {
-            background-color: #f5f2ed;
-            overflow: hidden; /* Handle zoom manually */
+            background-color: #eef0f5;
+            overflow: hidden;
         }
 
         a, button { -webkit-tap-highlight-color: transparent; }
 
-        /* --- VIEW TRANSITIONS --- */
         #simple-view-container {
-            position: fixed;
-            inset: 0;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.5s ease;
-            opacity: 1;
-            pointer-events: auto;
-            touch-action: none;
+            position: fixed; inset: 0; z-index: 10;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.5s ease; opacity: 1; pointer-events: auto; touch-action: none;
         }
 
         #full-view {
-            position: fixed;
-            inset: 0;
-            z-index: 20;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: fixed; inset: 0; z-index: 20; opacity: 0; pointer-events: none;
+            transition: opacity 0.5s ease; display: flex; align-items: center; justify-content: center;
         }
 
-        /* State: Expanded */
-        body.show-full #simple-view-container {
-            opacity: 0;
-            pointer-events: none;
-        }
-        body.show-full #full-view {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        body.show-full #simple-view-container { opacity: 0; pointer-events: none; }
+        body.show-full #full-view { opacity: 1; pointer-events: auto; }
 
-        /* --- CARD SCALING LOGIC --- */
-        #card-wrapper {
-            width: 650px;
-            height: 370px;
-            position: relative;
-            transform-origin: center center;
-            transition: transform 0.1s ease-out;
-        }
+        #card-wrapper { width: 650px; height: 370px; position: relative; transform-origin: center center; transition: transform 0.1s ease-out; }
+        #main-card { transform-origin: top center; transition: transform 0.1s ease-out; }
 
-        #main-card {
-            transform-origin: top center;
-            transition: transform 0.1s ease-out;
-        }
-
-        /* --- UNIFIED FAB BUTTON --- */
         .toggle-btn {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 1px solid rgba(0,0,0,0.05);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            overflow: hidden;
+            position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px;
+            border-radius: 50%; background: #ffffff; border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center;
+            justify-content: center; z-index: 50; transition: all 0.2s ease; cursor: pointer; overflow: hidden;
         }
         .toggle-btn:active { transform: scale(0.95); }
 
-        /* Icon Transitions */
-        .fab-icon {
-            position: absolute;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .fab-icon { position: absolute; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        #icon-plus { opacity: 1; transform: rotate(0deg) scale(1); }
+        #icon-minus { opacity: 0; transform: rotate(-90deg) scale(0.5); }
+        body.show-full #icon-plus { opacity: 0; transform: rotate(90deg) scale(0.5); }
+        body.show-full #icon-minus { opacity: 1; transform: rotate(0deg) scale(1); }
 
-        #icon-plus {
-            opacity: 1;
-            transform: rotate(0deg) scale(1);
-        }
-        #icon-minus {
-            opacity: 0;
-            transform: rotate(-90deg) scale(0.5);
-        }
-
-        body.show-full #icon-plus {
-            opacity: 0;
-            transform: rotate(90deg) scale(0.5);
-        }
-        body.show-full #icon-minus {
-            opacity: 1;
-            transform: rotate(0deg) scale(1);
-        }
-
-        /* Physics Elements */
         .dollar-bill {
-            position: absolute;
-            background-color: #85bb65;
-            border: 1px solid #6da04e;
-            width: 50px;
-            height: 24px;
-            border-radius: 2px;
-            pointer-events: none;
-            z-index: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #4a7036;
-            font-family: monospace;
-            font-weight: bold;
-            font-size: 10px;
+            position: absolute; background-color: #85bb65; border: 1px solid #6da04e;
+            width: 50px; height: 24px; border-radius: 2px; pointer-events: none; z-index: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: #4a7036; font-family: monospace; font-weight: bold; font-size: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .dollar-bill::after { content: '$'; }
 
         .gold-coin {
-            position: absolute;
-            background-color: #d4af37;
-            border: 2px solid #b8972e;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
+            position: absolute; background-color: #ffd700; border: 2px solid #d4af00;
+            border-radius: 50%; pointer-events: none; z-index: 0;
             box-shadow: inset -2px -2px 0px rgba(0,0,0,0.1);
         }
         .gold-coin::after {
-            content: '$';
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            color: #8a7422;
-            font-size: 12px;
-            font-weight: bold;
+            content: '$'; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); color: #b37400; font-size: 12px; font-weight: bold;
         }
 
         #scroll-container {
-            height: 100vh;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            position: relative;
-            z-index: 10;
-            padding-bottom: 120px;
+            height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+            position: relative; z-index: 10; padding-bottom: 120px;
         }
     </style>
 </head>
-<body class="fixed inset-0 bg-brand-canvas bg-[radial-gradient(#1a1a2e_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.99]">
+<body class="fixed inset-0 bg-brand-canvas bg-[radial-gradient(#1a237e_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.99]">
 
-    <!-- Physics Canvas Overlay -->
     <div id="physics-layer" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
 
     <!-- SIMPLE CARD VIEW -->
@@ -216,48 +122,41 @@
         <div id="card-wrapper">
             <div class="w-full h-full bg-brand-canvas rounded-[2.5rem] shadow-neu-flat flex items-center justify-between border border-stone-300/50 overflow-hidden relative">
 
-                <!-- Left Side (Info) -->
                 <div class="flex flex-col justify-between h-full w-2/3 p-10">
-
-                    <!-- Header -->
                     <div class="flex items-center gap-5">
                         <div class="w-16 h-16 shrink-0 rounded-2xl bg-brand-surface shadow-neu-flat flex items-center justify-center text-brand-primary border border-white/20">
-                            <span class="text-2xl font-bold text-brand-primary" style="font-family: 'Playfair Display', serif;">UBA</span>
+                            <span class="text-2xl font-bold font-serif text-brand-primary">CP</span>
                         </div>
                         <div>
-                            <h2 class="text-2xl font-bold tracking-tight text-brand-primary leading-none">Unstoppable <span class="text-brand-accent">Branding</span></h2>
-                            <p class="text-[11px] text-brand-accent font-bold uppercase tracking-[0.15em] mt-1.5">Agency</p>
+                            <h2 class="text-2xl font-bold tracking-tight text-brand-primary leading-none">Plat<span class="text-brand-accent">Pay</span></h2>
+                            <p class="text-[11px] text-brand-accent font-bold uppercase tracking-[0.15em] mt-1.5">Payment Solutions</p>
                         </div>
                     </div>
 
-                    <!-- Name Block -->
                     <div>
-                        <h1 class="text-5xl font-black mb-1 text-brand-primary font-serif leading-none">Rhonda Swan</h1>
-                        <p class="text-brand-accent font-extrabold text-sm tracking-[0.2em] uppercase pl-1">CEO & Founder</p>
+                        <h1 class="text-5xl font-black mb-1 text-brand-primary font-serif leading-none">Colten Page</h1>
+                        <p class="text-brand-accent font-extrabold text-sm tracking-[0.2em] uppercase pl-1">Chief Sales Officer</p>
                     </div>
 
-                    <!-- Contact Grid -->
                     <div class="grid grid-cols-2 gap-3 w-full">
-                        <a href="tel:3107295578" class="px-2 py-3.5 rounded-xl bg-brand-surface shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent hover:border-brand-primary/10 transition-colors cursor-pointer group">
+                        <a href="tel:8887528644" class="px-2 py-3.5 rounded-xl bg-brand-surface shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent hover:border-brand-primary/10 transition-colors cursor-pointer group">
                             <i data-lucide="phone" class="w-3.5 h-3.5 text-brand-primary shrink-0"></i>
-                            <span class="text-[11px] font-bold text-brand-primary whitespace-nowrap">(310) 729-5578</span>
+                            <span class="text-[11px] font-bold text-brand-primary whitespace-nowrap">(888) 752-8644</span>
                         </a>
-                        <a href="mailto:rhonda@unstoppablebrandingagency.com" class="px-2 py-3.5 rounded-xl bg-brand-surface shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent hover:border-brand-primary/10 transition-colors cursor-pointer group">
+                        <a href="mailto:colten@platpay.com" class="px-2 py-3.5 rounded-xl bg-brand-surface shadow-neu-pressed flex items-center justify-center gap-1.5 border border-transparent hover:border-brand-primary/10 transition-colors cursor-pointer group">
                             <i data-lucide="mail" class="w-3.5 h-3.5 text-brand-primary shrink-0"></i>
-                            <span class="text-[11px] font-bold text-brand-primary whitespace-nowrap truncate">rhonda@unstoppablebranding…</span>
+                            <span class="text-[11px] font-bold text-brand-primary whitespace-nowrap">colten@platpay.com</span>
                         </a>
                     </div>
                 </div>
 
-                <!-- Right Side (Color Band) -->
                 <div class="w-1/3 h-full bg-brand-primary relative flex flex-col items-center justify-center pl-6 pr-4">
-                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:14px_14px]"></div>
+                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#ffd700_1px,transparent_1px)] [background-size:14px_14px]"></div>
 
-                    <!-- Profile Pic -->
                     <div class="relative mb-6 group cursor-pointer z-20" onclick="toggleQR()">
                         <div class="w-48 h-48 rounded-full p-2.5 bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-2xl">
                             <div class="w-full h-full rounded-full overflow-hidden relative border-4 border-brand-accent">
-                                <img src="../assets/images/contacts/rhonda-swan.png" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Rhonda&backgroundColor=1a1a2e'" alt="Rhonda Swan" class="w-full h-full object-cover object-[40%_-39%]" style="transform: scale(1.49)">
+                                <img src="../assets/images/contacts/colten-page.png" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Colten&backgroundColor=1a237e'" alt="Colten Page" class="w-full h-full object-cover object-[50%_20%]">
                             </div>
                         </div>
                         <div class="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-brand-accent shadow-lg flex items-center justify-center text-brand-primary border-2 border-white">
@@ -265,7 +164,6 @@
                         </div>
                     </div>
 
-                    <!-- Save Button -->
                     <button onclick="downloadVCard()" class="w-full max-w-[180px] py-3.5 rounded-xl bg-black/20 backdrop-blur-md shadow-lg text-white font-extrabold text-xs uppercase tracking-wider hover:bg-brand-accent hover:text-brand-primary transition-all flex items-center justify-center gap-2 group z-20 border border-white/10">
                         <span>Save Contact</span>
                         <i data-lucide="arrow-down-to-line" class="w-4 h-4"></i>
@@ -276,33 +174,33 @@
     </div>
 
 
-    <!-- FULL VIEW (Scrollable) -->
+    <!-- FULL VIEW -->
     <div id="full-view">
         <div id="scroll-container" class="w-full flex justify-center p-4">
 
             <main id="main-card" class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-brand-surface relative flex flex-col shrink-0 my-auto transition-transform duration-75 will-change-transform">
 
-                <!-- Top Banner -->
                 <div class="h-32 bg-brand-primary relative overflow-hidden shrink-0">
                     <div class="absolute top-4 left-4 z-10 flex items-center gap-3">
-                        <span class="text-xl font-bold text-white bg-white/10 rounded-full backdrop-blur-sm px-3 py-1 border border-white/10" style="font-family: 'Playfair Display', serif;">UBA</span>
-                        <span class="font-serif text-white font-bold tracking-tight text-sm opacity-90">Unstoppable <span class="font-light text-brand-pop">Branding</span></span>
+                        <div class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                            <span class="text-sm font-bold font-serif text-white">CP</span>
+                        </div>
+                        <span class="font-serif text-white font-bold tracking-tight text-sm opacity-90">Plat<span class="font-light text-brand-pop">Pay</span></span>
                     </div>
 
                     <button onclick="toggleQR()" aria-label="Show QR Code" class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white transition-all border border-white/10 shadow-lg group">
                         <i data-lucide="qr-code" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
                     </button>
 
-                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:14px_14px]"></div>
+                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#ffd700_1px,transparent_1px)] [background-size:14px_14px]"></div>
                     <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-brand-accent rounded-full opacity-30 blur-3xl"></div>
                     <div class="absolute top-0 right-10 w-24 h-24 bg-brand-pop rounded-full opacity-20 blur-2xl"></div>
                 </div>
 
-                <!-- Profile Image -->
                 <div class="relative px-8 -mt-16 mb-6 text-center shrink-0">
                     <div class="inline-block relative">
                         <div class="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-brand-surface mx-auto relative z-10">
-                            <img id="profile-photo" src="../assets/images/contacts/rhonda-swan.png" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Rhonda&backgroundColor=1a1a2e'" alt="Rhonda Swan" class="w-full h-full object-cover object-[40%_-39%]" style="transform: scale(1.49)">
+                            <img id="profile-photo" src="../assets/images/contacts/colten-page.png" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Colten&backgroundColor=1a237e'" alt="Colten Page" class="w-full h-full object-cover object-[50%_20%]">
                         </div>
                         <div class="absolute bottom-1 right-1 z-20 bg-brand-accent text-brand-primary rounded-full p-1.5 border-2 border-white shadow-sm">
                         <i data-lucide="shield-check" class="w-3 h-3 stroke-[4]"></i>
@@ -310,32 +208,27 @@
                     </div>
 
                     <div class="mt-4">
-                        <h1 class="font-serif text-3xl font-bold text-brand-primary">Rhonda Swan</h1>
-                        <p class="text-brand-accent font-bold text-xs tracking-widest uppercase mt-1">CEO & Founder</p>
-                        <p class="text-slate-400 text-xs mt-1">Unstoppable Branding Agency</p>
+                        <h1 class="font-serif text-3xl font-bold text-brand-primary">Colten Page</h1>
+                        <p class="text-brand-accent font-bold text-xs tracking-widest uppercase mt-1">Chief Sales Officer & Equity Partner</p>
+                        <p class="text-slate-400 text-xs mt-1">Platinum Payment Systems</p>
                     </div>
-                </div>
-
-                <!-- Tagline -->
-                <div class="px-6 mb-4 text-center shrink-0">
-                    <p class="text-brand-primary font-serif italic text-sm">"We Turn Best Kept Secrets Into World Renowned Brands"</p>
                 </div>
 
                 <!-- Action Buttons -->
                 <div class="grid grid-cols-5 gap-2 px-4 mb-6 shrink-0">
-                    <a href="tel:3107295578" class="flex flex-col items-center gap-1 group">
+                    <a href="tel:8887528644" class="flex flex-col items-center gap-1 group">
                         <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-slate-600 group-hover:bg-brand-primary group-hover:text-white transition shadow-sm border border-brand-surface">
                             <i data-lucide="phone" class="w-5 h-5"></i>
                         </div>
                         <span class="text-[10px] text-slate-500 font-medium">Call</span>
                     </a>
-                    <a href="mailto:rhonda@unstoppablebrandingagency.com" class="flex flex-col items-center gap-1 group">
+                    <a href="mailto:colten@platpay.com" class="flex flex-col items-center gap-1 group">
                         <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-slate-600 group-hover:bg-brand-primary group-hover:text-white transition shadow-sm border border-brand-surface">
                             <i data-lucide="mail" class="w-5 h-5"></i>
                         </div>
                         <span class="text-[10px] text-slate-500 font-medium">Email</span>
                     </a>
-                    <a href="https://unstoppablebrandingagency.com" target="_blank" class="flex flex-col items-center gap-1 group">
+                    <a href="https://www.platpay.com" target="_blank" class="flex flex-col items-center gap-1 group">
                         <div class="w-12 h-12 rounded-2xl bg-brand-surface flex items-center justify-center text-slate-600 group-hover:bg-brand-primary group-hover:text-white transition shadow-sm border border-brand-surface">
                             <i data-lucide="globe" class="w-5 h-5"></i>
                         </div>
@@ -356,7 +249,6 @@
                     </button>
                 </div>
 
-                <!-- Current Mission Module -->
                 <div class="px-6 mb-6 shrink-0">
                     <div class="relative bg-gradient-to-r from-brand-primary/5 to-transparent p-4 rounded-xl border-l-4 border-brand-primary overflow-hidden">
                         <div class="absolute right-0 top-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
@@ -368,72 +260,67 @@
                                 <h3 class="text-[10px] font-bold text-brand-primary uppercase tracking-widest">Current Mission</h3>
                             </div>
                             <p class="text-slate-700 text-sm font-medium italic leading-relaxed">
-                                "Building brand credibility through strategic media placement and Google indexing, ensuring clients are recognized as industry authorities online. Positioning entrepreneurs and CEOs for long-term digital visibility."
+                                "Empowering businesses with innovative payment solutions and strategic partnerships to drive growth and streamline operations."
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Bio Section -->
-                <div class="px-8 mb-6 shrink-0">
-                    <h3 class="text-xs font-bold text-brand-accent uppercase tracking-wider mb-2">About</h3>
-                    <p class="text-slate-600 text-sm leading-relaxed font-light">
-                        Rhonda Swan is an international speaker, bestselling author, and the founder and CEO of Unstoppable Branding Agency. After leaving the corporate world in 2003, Rhonda built UBA while traveling the world with her family, operating in over 50 countries and touching all seven continents. She is also the executive producer and host of The Rhonda Swan Show, syndicated via USA Today.
-                    </p>
-                </div>
-
-                <!-- Highlights Section -->
                 <div class="px-6 mb-6 shrink-0">
                     <h3 class="text-xs font-bold text-brand-accent uppercase tracking-wider mb-3">Highlights</h3>
                     <div class="space-y-2">
                         <div class="flex items-start gap-2">
                             <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
-                            <p class="text-xs text-slate-600">300+ clients featured in Forbes, Entrepreneur, USA Today</p>
+                            <p class="text-xs text-slate-600"><strong class="text-brand-primary">Chief Sales Officer & Equity Partner</strong> at PlatPay</p>
                         </div>
                         <div class="flex items-start gap-2">
                             <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
-                            <p class="text-xs text-slate-600">$25M+ in client media value and sales impact</p>
+                            <p class="text-xs text-slate-600"><strong class="text-brand-primary">Merchant Processing Solutions</strong> across US & Canada</p>
                         </div>
                         <div class="flex items-start gap-2">
                             <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
-                            <p class="text-xs text-slate-600">Hosted interviews at NASDAQ and NYSE</p>
+                            <p class="text-xs text-slate-600"><strong class="text-brand-primary">Background in Financial Advisory</strong> & Wealth Management</p>
                         </div>
                         <div class="flex items-start gap-2">
                             <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-accent shrink-0 mt-0.5"></i>
-                            <p class="text-xs text-slate-600">Operated in 50+ countries across all 7 continents</p>
+                            <p class="text-xs text-slate-600"><strong class="text-brand-primary">Board of Advisors Member</strong></p>
                         </div>
                     </div>
                 </div>
 
+                <div class="px-8 mb-6 shrink-0">
+                    <h3 class="text-xs font-bold text-brand-accent uppercase tracking-wider mb-2">About</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed font-light">
+                        Colten Page is the Chief Sales Officer and Equity Partner at Platinum Payment Systems (PlatPay), where he leads sales strategy and business development for diverse merchant and business payment solutions. With a background spanning financial advisory, wealth management, and sales leadership, Colten brings a results-driven approach to helping businesses optimize their payment processing. His experience includes roles in financial consulting and entrepreneurship, supported by studies in Accounting and Finance at Utah Valley University.
+                    </p>
+                </div>
+
                 <!-- Contact Details List -->
                 <div class="px-6 mb-8 space-y-3 shrink-0">
-                    <a href="tel:3107295578" class="flex items-center p-3 rounded-xl bg-brand-canvas hover:bg-brand-surface transition group">
+                    <a href="tel:8887528644" class="flex items-center p-3 rounded-xl bg-brand-canvas hover:bg-brand-surface transition group">
                         <i data-lucide="smartphone" class="w-5 h-5 text-brand-primary group-hover:text-brand-accent transition"></i>
                         <div class="ml-4">
-                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Mobile</p>
-                            <p class="text-sm font-medium text-slate-900">(310) 729-5578</p>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Office</p>
+                            <p class="text-sm font-medium text-slate-900">(888) 752-8644</p>
                         </div>
                     </a>
-                    <a href="mailto:rhonda@unstoppablebrandingagency.com" class="flex items-center p-3 rounded-xl bg-brand-canvas hover:bg-brand-surface transition group">
+                    <a href="mailto:colten@platpay.com" class="flex items-center p-3 rounded-xl bg-brand-canvas hover:bg-brand-surface transition group">
                         <i data-lucide="at-sign" class="w-5 h-5 text-brand-primary group-hover:text-brand-accent transition"></i>
                         <div class="ml-4">
                             <p class="text-[10px] text-slate-400 uppercase tracking-wide">Email</p>
-                            <p class="text-sm font-medium text-slate-900">rhonda@unstoppablebrandingagency.com</p>
+                            <p class="text-sm font-medium text-slate-900">colten@platpay.com</p>
                         </div>
                     </a>
                 </div>
 
-                <!-- Social Footer -->
                 <div class="bg-brand-primary p-6 flex justify-center gap-6 border-t border-brand-primary mt-auto flex-wrap">
-                    <a href="https://unstoppablebrandingagency.com" target="_blank" aria-label="Website" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="globe" class="w-5 h-5"></i></a>
-                    <a href="https://www.linkedin.com/in/rhondaswan" target="_blank" aria-label="LinkedIn" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
-                    <a href="https://www.instagram.com/rhondaswan/" target="_blank" aria-label="Instagram" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="instagram" class="w-5 h-5"></i></a>
-                    <a href="https://www.facebook.com/UnstoppableBrandingAgency" target="_blank" aria-label="Facebook" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="facebook" class="w-5 h-5"></i></a>
-                    <a href="https://www.youtube.com/@UnstoppableBrandingAgency" target="_blank" aria-label="YouTube" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="youtube" class="w-5 h-5"></i></a>
-                    <a href="https://advisors.boardofadvisors.com/profile/rhonda+swan" target="_blank" aria-label="BA Profile" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="award" class="w-5 h-5"></i></a>
+                    <a href="https://www.platpay.com" target="_blank" aria-label="Website" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="globe" class="w-5 h-5"></i></a>
+                    <a href="https://www.linkedin.com/company/platpay" target="_blank" aria-label="LinkedIn" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                    <a href="https://www.facebook.com/platpay" target="_blank" aria-label="Facebook" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="facebook" class="w-5 h-5"></i></a>
+                    <a href="https://www.instagram.com/platpay/" target="_blank" aria-label="Instagram" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+                    <a href="https://advisors.boardofadvisors.com/profile/colten+page" target="_blank" aria-label="BA Profile" class="text-brand-accent hover:text-white transition transform hover:scale-110"><i data-lucide="award" class="w-5 h-5"></i></a>
                 </div>
 
-                <!-- Branding Footer -->
                 <a href="https://id.simpli-fi-os.com" target="_blank" class="block bg-slate-900 py-3 text-center relative group cursor-pointer overflow-hidden decoration-0">
                     <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition"></div>
                     <div class="inline-flex items-center text-[10px] font-bold tracking-[0.2em] text-white/40 uppercase">
@@ -447,7 +334,6 @@
         </div>
     </div>
 
-    <!-- UNIFIED FAB BUTTON -->
     <button id="toggle-view-btn" onclick="toggleView()" aria-label="Toggle View" class="toggle-btn">
         <i data-lucide="plus" id="icon-plus" class="fab-icon w-8 h-8 text-brand-primary"></i>
         <i data-lucide="minus" id="icon-minus" class="fab-icon w-8 h-8 text-brand-primary"></i>
@@ -473,14 +359,14 @@
          <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center relative transform transition-transform duration-300 scale-95" onclick="event.stopPropagation()">
 
             <div class="flex justify-between items-center mb-4">
-                <span class="text-brand-primary font-serif font-bold italic">Unstoppable Branding Agency</span>
+                <span class="text-brand-primary font-serif font-bold italic">Colten Page</span>
                 <button onclick="toggleQR()" class="text-slate-400 hover:text-brand-accent">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
 
             <div class="bg-brand-canvas p-4 rounded-xl border border-brand-surface mb-4 shadow-inner">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://simpli-fi-id.web.app/cards/rhonda-swan.html&color=1a1a2e" alt="Scan QR Code" class="w-full h-auto rounded-lg mix-blend-multiply">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://simpli-fi-id.web.app/cards/colten-page.html&color=1a237e" alt="Scan QR Code" class="w-full h-auto rounded-lg mix-blend-multiply">
             </div>
 
             <p class="text-slate-500 text-xs uppercase tracking-widest font-medium mb-3">Scan to Connect</p>
@@ -497,14 +383,12 @@
     <script>
         lucide.createIcons();
 
-        // 1. Setup & Config
         const container = document.getElementById('scroll-container');
         const card = document.getElementById('main-card');
         const physicsLayer = document.getElementById('physics-layer');
         let photoBase64 = '';
-        const currentMission = "Building brand credibility through strategic media placement and Google indexing, ensuring clients are recognized as industry authorities online.";
+        const currentMission = "Empowering businesses with innovative payment solutions and strategic partnerships to drive growth and streamline operations.";
 
-        // --- GLOBAL SCALING & ZOOM VARS ---
         let baseScale = 1;
         let userZoom = 1.0;
         let fullViewZoom = 1.0;
@@ -513,7 +397,6 @@
         const MIN_ZOOM = 0.5;
         const MAX_ZOOM = 4.0;
 
-        // --- RESIZE LOGIC (Auto-Fit Simple View) ---
         function resizeCard() {
             const availableWidth = window.innerWidth - 40;
             const availableHeight = window.innerHeight - 40;
@@ -528,17 +411,14 @@
         }
 
         function updateTransform() {
-            // Simple View
             const wrapper = document.getElementById('card-wrapper');
             const totalScale = baseScale * userZoom;
             wrapper.style.transform = `scale(${totalScale})`;
 
-            // Full View
             const mainCard = document.getElementById('main-card');
             mainCard.style.transform = `scale(${fullViewZoom})`;
         }
 
-        // --- ZOOM INTERACTION (SIMPLE VIEW) ---
         const simpleViewContainer = document.getElementById('simple-view-container');
 
         simpleViewContainer.addEventListener('wheel', (e) => {
@@ -548,17 +428,13 @@
             updateTransform();
         }, { passive: false });
 
-        // Touch Pinch (Simple View)
         let initialPinchDistSimple = 0;
         let startZoomLevelSimple = 1;
 
         simpleViewContainer.addEventListener('touchstart', (e) => {
             if (e.touches.length === 2) {
                 e.preventDefault();
-                initialPinchDistSimple = Math.hypot(
-                    e.touches[0].pageX - e.touches[1].pageX,
-                    e.touches[0].pageY - e.touches[1].pageY
-                );
+                initialPinchDistSimple = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
                 startZoomLevelSimple = userZoom;
             }
         }, { passive: false });
@@ -566,10 +442,7 @@
         simpleViewContainer.addEventListener('touchmove', (e) => {
             if (e.touches.length === 2 && initialPinchDistSimple > 0) {
                 e.preventDefault();
-                const currentDist = Math.hypot(
-                    e.touches[0].pageX - e.touches[1].pageX,
-                    e.touches[0].pageY - e.touches[1].pageY
-                );
+                const currentDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
                 const ratio = currentDist / initialPinchDistSimple;
                 userZoom = Math.min(Math.max(startZoomLevelSimple * ratio, MIN_ZOOM), MAX_ZOOM);
                 updateTransform();
@@ -578,9 +451,6 @@
 
         simpleViewContainer.addEventListener('touchend', () => { initialPinchDistSimple = 0; });
 
-
-        // --- ZOOM INTERACTION (FULL VIEW) ---
-        // Mouse Wheel (Zoom with Ctrl)
         container.addEventListener('wheel', (e) => {
             if (e.ctrlKey) {
                 e.preventDefault();
@@ -590,20 +460,18 @@
             }
         }, { passive: false });
 
-        // Touch Pinch (Full View)
         let initialPinchDistFull = 0;
         let startZoomLevelFull = 1;
+        let startY = 0;
+        let pulling = false;
+        let pullDirection = null;
 
         container.addEventListener('touchstart', (e) => {
             if (e.touches.length === 2) {
                 e.preventDefault();
-                initialPinchDistFull = Math.hypot(
-                    e.touches[0].pageX - e.touches[1].pageX,
-                    e.touches[0].pageY - e.touches[1].pageY
-                );
+                initialPinchDistFull = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
                 startZoomLevelFull = fullViewZoom;
             } else if (e.touches.length === 1 && (container.scrollTop === 0 || container.scrollTop + container.clientHeight >= container.scrollHeight)) {
-                // Physics Start Logic
                 startY = e.touches[0].pageY;
                 pulling = true;
             }
@@ -611,38 +479,28 @@
 
         container.addEventListener('touchmove', (e) => {
             if (e.touches.length === 2 && initialPinchDistFull > 0) {
-                // Pinch Logic
                 e.preventDefault();
-                const currentDist = Math.hypot(
-                    e.touches[0].pageX - e.touches[1].pageX,
-                    e.touches[0].pageY - e.touches[1].pageY
-                );
+                const currentDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
                 const ratio = currentDist / initialPinchDistFull;
                 fullViewZoom = Math.min(Math.max(startZoomLevelFull * ratio, MIN_ZOOM), MAX_ZOOM);
                 updateTransform();
             } else if (e.touches.length === 1 && pulling) {
-                // Physics Pull Logic
                 const y = e.touches[0].pageY;
                 const delta = y - startY;
 
-                // Pull Down (Top) - DOLLARS
                 if (delta > 0 && container.scrollTop <= 0) {
                     pullDirection = 'down';
                     e.preventDefault();
                     const resistance = 0.4;
                     const translate = delta * resistance;
-                    card.style.transform = `translateY(${translate}px) scale(${fullViewZoom})`; // Maintain zoom
-
+                    card.style.transform = `translateY(${translate}px) scale(${fullViewZoom})`;
                     if (Math.random() < 0.25) spawnDollar(translate);
-                }
-                // Pull Up (Bottom) - COINS
-                else if (delta < 0 && (container.scrollTop + container.clientHeight >= container.scrollHeight - 5)) {
+                } else if (delta < 0 && (container.scrollTop + container.clientHeight >= container.scrollHeight - 5)) {
                     pullDirection = 'up';
                     e.preventDefault();
                     const resistance = 0.4;
                     const translate = delta * resistance;
-                    card.style.transform = `translateY(${translate}px) scale(${fullViewZoom})`; // Maintain zoom
-
+                    card.style.transform = `translateY(${translate}px) scale(${fullViewZoom})`;
                     if (Math.random() < 0.3) spawnCoin(Math.abs(translate));
                 }
             }
@@ -650,22 +508,13 @@
 
         container.addEventListener('touchend', () => {
             initialPinchDistFull = 0;
-            // Physics Reset
             if (pulling) {
                 pulling = false;
                 pullDirection = null;
-                card.style.transform = `scale(${fullViewZoom})`; // Snap back retaining zoom
-                setTimeout(() => {
-                    physicsLayer.innerHTML = '';
-                }, 800);
+                card.style.transform = `scale(${fullViewZoom})`;
+                setTimeout(() => { physicsLayer.innerHTML = ''; }, 800);
             }
         });
-
-
-        // --- PHYSICS ANIMATION HELPERS ---
-        let startY = 0;
-        let pulling = false;
-        let pullDirection = null;
 
         function spawnDollar(offset) {
             const bill = document.createElement('div');
@@ -681,10 +530,7 @@
             physicsLayer.appendChild(bill);
             const duration = 500 + Math.random() * 500;
             const targetY = offset + 20 + (Math.random() * 80);
-            bill.animate([
-                { top: '-50px', transform: `rotate(${rotation}deg)` },
-                { top: `${targetY}px`, transform: `rotate(${rotation + 180}deg)` }
-            ], { duration: duration, easing: 'cubic-bezier(0.25, 1, 0.5, 1)', fill: 'forwards' });
+            bill.animate([{ top: '-50px', transform: `rotate(${rotation}deg)` }, { top: `${targetY}px`, transform: `rotate(${rotation + 180}deg)` }], { duration, easing: 'cubic-bezier(0.25, 1, 0.5, 1)', fill: 'forwards' });
         }
 
         function spawnCoin(offset) {
@@ -699,22 +545,14 @@
             physicsLayer.appendChild(coin);
             const duration = 600 + Math.random() * 600;
             const targetY = offset + 20 + (Math.random() * 100);
-            coin.animate([
-                { bottom: '-50px', transform: `translateY(0) scale(1)` },
-                { bottom: `${targetY}px`, transform: `translateY(0) scale(1)` }
-            ], { duration: duration, easing: 'ease-out', fill: 'forwards' });
+            coin.animate([{ bottom: '-50px', transform: `translateY(0) scale(1)` }, { bottom: `${targetY}px`, transform: `translateY(0) scale(1)` }], { duration, easing: 'ease-out', fill: 'forwards' });
         }
 
-        // --- VIEW TOGGLING ---
-        function toggleView() {
-            document.body.classList.toggle('show-full');
-        }
+        function toggleView() { document.body.classList.toggle('show-full'); }
 
         window.addEventListener('resize', resizeCard);
         window.addEventListener('load', resizeCard);
 
-
-        // --- MODAL & VCARD LOGIC ---
         window.addEventListener('load', async () => {
             const imgElement = document.getElementById('profile-photo');
             const imgSrc = imgElement.src;
@@ -729,23 +567,14 @@
             } catch (e) { console.log("Image load error:", e); }
         });
 
-        function toggleQR() {
-            document.getElementById('qrModal').classList.toggle('hidden');
-        }
+        function toggleQR() { document.getElementById('qrModal').classList.toggle('hidden'); }
 
         function setLoading(isLoading) {
             const icon = document.getElementById('save-icon');
             const loader = document.getElementById('loading-icon');
             const text = document.getElementById('save-text');
-            if (isLoading) {
-                icon.classList.add('hidden');
-                loader.classList.remove('hidden');
-                text.innerText = "Saving...";
-            } else {
-                icon.classList.remove('hidden');
-                loader.classList.add('hidden');
-                text.innerText = "Save";
-            }
+            if (isLoading) { icon.classList.add('hidden'); loader.classList.remove('hidden'); text.innerText = "Saving..."; }
+            else { icon.classList.remove('hidden'); loader.classList.add('hidden'); text.innerText = "Save"; }
         }
 
         function showSaveToast() {
@@ -760,7 +589,7 @@
 
         function downloadVCard() {
             setLoading(true);
-            window.location.href = '/vcf/rhonda-swan.vcf';
+            window.location.href = '/vcf/colten-page.vcf';
             setTimeout(() => {
                 setLoading(false);
                 showSaveToast();

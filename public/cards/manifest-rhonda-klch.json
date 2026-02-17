@@ -1,0 +1,22 @@
+{
+  "name": "Rhonda Klch | Equity First",
+  "short_name": "Rhonda Klch",
+  "description": "Professional ID Card",
+  "start_url": "/cards/rhonda-klch.html",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#2d4a7a",
+  "background_color": "#FBF9F7",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

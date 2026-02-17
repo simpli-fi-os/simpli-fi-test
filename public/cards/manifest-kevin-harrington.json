@@ -1,0 +1,22 @@
+{
+  "name": "Kevin Harrington | Shark Tank",
+  "short_name": "Kevin Harrington",
+  "description": "Professional ID Card",
+  "start_url": "/cards/kevin-harrington.html",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0a2647",
+  "background_color": "#FBF9F7",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
