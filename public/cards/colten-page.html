@@ -154,7 +154,7 @@
                     <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#ffd700_1px,transparent_1px)] [background-size:14px_14px]"></div>
 
                     <div class="relative mb-6 group cursor-pointer z-20" onclick="toggleQR()">
-                        <div class="w-48 h-48 rounded-full p-2.5 bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-2xl">
+                        <div class="w-36 h-36 rounded-full p-2.5 bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-2xl">
                             <div class="w-full h-full rounded-full overflow-hidden relative border-4 border-brand-accent">
                                 <img src="../assets/images/contacts/colten-page.png" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Colten&backgroundColor=1a237e'" alt="Colten Page" class="w-full h-full object-cover object-[50%_20%]">
                             </div>
@@ -545,6 +545,7 @@
         function toggleView() { document.body.classList.toggle('show-full'); }
 
         window.addEventListener('resize', resizeCard);
+        window.addEventListener('orientationchange', () => setTimeout(resizeCard, 100));
         window.addEventListener('load', resizeCard);
 
         window.addEventListener('load', async () => {

@@ -255,7 +255,7 @@
 
                     <!-- Profile Pic -->
                     <div class="relative mb-6 group cursor-pointer z-20" onclick="toggleQR()">
-                        <div class="w-48 h-48 rounded-full p-2.5 bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-2xl">
+                        <div class="w-36 h-36 rounded-full p-2.5 bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-2xl">
                             <div class="w-full h-full rounded-full overflow-hidden relative border-4 border-brand-accent">
                                 <img src="../assets/images/contacts/kevin-harrington.png" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Kevin&backgroundColor=0a2647'" alt="Kevin Harrington" class="w-full h-full object-cover object-[49%_-18%]" style="transform: scale(1.15)">
                             </div>
@@ -696,6 +696,7 @@
         }
 
         window.addEventListener('resize', resizeCard);
+        window.addEventListener('orientationchange', () => setTimeout(resizeCard, 100));
         window.addEventListener('load', resizeCard);
 
 
