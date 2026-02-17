@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="HFD x Simpli-FI Alpha: An income-enhanced portfolio designed to generate systematic premium income for tax-advantaged capital.">
+<meta property="og:title" content="Income-Enhanced Portfolio | HFD × Simpli-FI Alpha">
+<meta property="og:description" content="Institutional-grade volatility harvesting for DAFs, IRAs, and foundations.">
+<meta property="og:type" content="website">
+<title>Income-Enhanced Portfolio | HFD × Simpli-FI Alpha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --hfd-electric: #0066FF;
+  --hfd-deep: #0f172a;
+  --hfd-sky: #38bdf8;
+  --hfd-green: #10b981;
+  --hfd-green-dark: #059669;
+  --white: #ffffff;
+  --off-white: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-800: #1e293b;
+  --gradient-hero: linear-gradient(135deg, #020617 0%, #1e3a8a 100%);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
+  --shadow-md: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025);
+  --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+  --radius: 12px;
+  --header-height: 80px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: var(--header-height); }
+body {
+  font-family: 'Inter', sans-serif; color: var(--gray-800);
+  background: var(--white); line-height: 1.6; -webkit-font-smoothing: antialiased;
+}
+
+/* UTILITIES */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; }
+.reveal {
+  opacity: 0; transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* HEADER */
+header {
+  position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+  padding: 20px 0; transition: all 0.3s ease;
+}
+header.scrolled {
+  background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px);
+  padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+}
+.header-inner { display: flex; align-items: center; justify-content: space-between; }
+.logo-group { display: flex; align-items: center; gap: 16px; text-decoration: none; }
+.logo-hfd { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 24px; color: var(--white); letter-spacing: 1px; }
+.logo-hfd span { color: var(--hfd-green); }
+.logo-divider { width: 1px; height: 24px; background: rgba(255,255,255,0.2); }
+.logo-sfa {
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.9);
+  letter-spacing: 1px; text-transform: uppercase; text-decoration: none;
+}
+
+.desktop-nav { display: flex; align-items: center; gap: 32px; }
+.desktop-nav a {
+  color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px;
+  font-weight: 500; transition: color 0.2s;
+}
+.desktop-nav a:hover { color: var(--white); }
+.nav-cta {
+  background: var(--hfd-green); color: var(--white) !important;
+  padding: 10px 24px !important; border-radius: 6px; font-weight: 600 !important;
+  transition: all 0.2s !important;
+}
+.nav-cta:hover {
+  transform: translateY(-1px); background: var(--hfd-green-dark) !important;
+  box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+}
+.mobile-toggle { display: none; background: none; border: none; cursor: pointer; color: white; z-index: 1001; }
+.mobile-menu {
+  position: fixed; top: 0; right: 0; height: 100vh; width: 100%;
+  background: var(--hfd-deep); display: flex; flex-direction: column;
+  justify-content: center; align-items: center; gap: 30px;
+  transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); z-index: 999;
+}
+.mobile-menu.active { transform: translateX(0); }
+.mobile-menu a { font-size: 24px; color: white; text-decoration: none; font-family: 'Playfair Display', serif; }
+
+/* HERO */
+.hero {
+  min-height: 100vh; background: var(--gradient-hero);
+  display: flex; align-items: center; position: relative; overflow: hidden; padding-top: 80px;
+}
+.hero-bg-grid {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+  -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+  pointer-events: none;
+}
+.hero-glow {
+  position: absolute; top: -20%; right: -10%; width: 800px; height: 800px;
+  background: radial-gradient(circle, rgba(0,102,255,0.15) 0%, transparent 70%);
+  border-radius: 50%; filter: blur(80px); pointer-events: none;
+}
+.hero-content { position: relative; z-index: 2; }
+.hero h1 {
+  font-family: 'Playfair Display', serif; font-size: clamp(42px, 5vw, 72px);
+  font-weight: 700; color: var(--white); line-height: 1.1; margin-bottom: 24px; max-width: 850px;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(to right, var(--hfd-sky), var(--hfd-green));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  font-size: 18px; color: rgba(255,255,255,0.7); max-width: 600px;
+  margin-bottom: 56px; font-weight: 300; letter-spacing: 0.2px;
+}
+.hero-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px;
+  border-top: 1px solid rgba(255,255,255,0.15); padding-top: 40px; max-width: 700px;
+}
+.hero-stat-value {
+  font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; color: var(--white);
+}
+.hero-stat-value span { color: var(--hfd-green); font-size: 20px; vertical-align: top; margin-left: 2px; }
+.hero-stat-label {
+  font-size: 11px; color: rgba(255,255,255,0.6); text-transform: uppercase;
+  letter-spacing: 1.5px; margin-top: 8px; font-weight: 600;
+}
+.disclaimer-asterisk {
+  color: rgba(255,255,255,0.3); font-size: 11px; margin-top: 12px; display: block; max-width: 600px;
+}
+
+/* SECTIONS */
+section { padding: 100px 0; }
+.section-label {
+  font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--hfd-electric); margin-bottom: 16px; display: block;
+}
+.section-title {
+  font-family: 'Playfair Display', serif; font-size: 42px; color: var(--hfd-deep);
+  margin-bottom: 24px; font-weight: 700; line-height: 1.2;
+}
+.section-sub { font-size: 18px; color: var(--gray-500); max-width: 650px; }
+
+/* CARDS */
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 70px; }
+.card {
+  background: var(--white); border-radius: var(--radius); padding: 40px;
+  box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200);
+  transition: all 0.3s ease; position: relative; overflow: hidden;
+}
+.card::before {
+  content:''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+  background: var(--gray-200); transition: background 0.3s ease;
+}
+.card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
+.card:hover::before { background: var(--hfd-electric); }
+.card h3 {
+  font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 16px;
+  color: var(--hfd-deep); margin-top: 24px;
+}
+.card p { color: var(--gray-500); font-size: 15px; line-height: 1.7; }
+
+/* TAGS */
+.tag {
+  display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 100px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.tag.green { background: #dcfce7; color: #15803d; }
+.tag.blue { background: #e0f2fe; color: #0369a1; }
+.tag.orange { background: #ffedd5; color: #c2410c; }
+.tag.white { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; }
+
+/* PORTFOLIO TABLE */
+.table-wrapper {
+  background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-md);
+  border: 1px solid var(--gray-200); overflow: hidden; margin-top: 60px;
+}
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 800px; }
+th {
+  background: #f8fafc; color: var(--gray-500); font-size: 11px; text-transform: uppercase;
+  letter-spacing: 1px; padding: 20px 24px; text-align: left; font-weight: 700;
+  border-bottom: 1px solid var(--gray-200);
+}
+td {
+  padding: 18px 24px; border-bottom: 1px solid var(--gray-100); font-size: 15px; color: var(--gray-800);
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fdfdfd; }
+th.num, td.num { text-align: right; }
+.ticker { font-weight: 700; color: var(--hfd-deep); display: block; }
+.asset-name { font-size: 12px; color: var(--gray-500); }
+.table-footer {
+  background: var(--off-white); padding: 16px 24px; font-size: 13px; color: var(--gray-500);
+  border-top: 1px solid var(--gray-200); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+.table-footer strong { color: var(--hfd-deep); }
+
+/* PERFORMANCE */
+.perf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 60px; }
+.perf-card {
+  background: var(--white); border-radius: var(--radius); padding: 40px;
+  box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200);
+}
+.perf-card h3 {
+  font-family: 'Playfair Display', serif; font-size: 20px; color: var(--hfd-deep); margin-bottom: 24px;
+}
+.perf-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0; border-bottom: 1px solid var(--gray-100);
+}
+.perf-row:last-child { border-bottom: none; }
+.perf-label { font-size: 14px; color: var(--gray-500); }
+.perf-val { font-size: 14px; font-weight: 600; color: var(--hfd-deep); }
+.perf-val.green { color: var(--hfd-green-dark); }
+.perf-row.total {
+  border-top: 2px solid var(--hfd-electric); margin-top: 8px; padding-top: 16px; border-bottom: none;
+}
+.perf-row.total .perf-label { font-weight: 700; color: var(--hfd-deep); }
+.perf-row.total .perf-val { font-weight: 700; color: var(--hfd-electric); font-size: 16px; }
+
+/* SCENARIO TABLE */
+.scenario-section { margin-top: 80px; }
+.sc-row {
+  display: grid; grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
+  padding: 14px 0; border-bottom: 1px solid var(--gray-100); align-items: center; font-size: 14px;
+}
+.sc-row.sc-header {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--gray-500); font-weight: 700; border-bottom: 2px solid var(--gray-200); padding-bottom: 16px;
+}
+.sc-env { font-weight: 600; color: var(--hfd-deep); }
+.sc-sp { color: var(--gray-500); }
+.sc-ie { font-weight: 600; color: var(--hfd-electric); }
+.sc-adv.win { color: var(--hfd-green-dark); font-weight: 600; }
+.sc-adv.lose { color: var(--gray-400); }
+
+/* AUDIENCE & RISK */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-top: 60px; align-items: start; }
+.client-list { list-style: none; }
+.client-list li {
+  display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px;
+  color: var(--gray-800); font-weight: 500;
+}
+.client-list li svg { flex-shrink: 0; width: 20px; height: 20px; color: var(--hfd-green); margin-top: 2px; }
+.tax-note {
+  font-size: 13px; color: var(--gray-500); font-style: italic; margin-top: 32px;
+  padding: 16px 20px; background: var(--gray-100); border-radius: 8px;
+  border-left: 3px solid var(--hfd-electric);
+}
+.risk-card {
+  background: #fff5f5; border: 1px solid #fed7d7; padding: 40px; border-radius: var(--radius);
+}
+.risk-card h3 {
+  color: #9b2c2c; font-family: 'Playfair Display', serif; font-size: 20px;
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+}
+.risk-card p { font-size: 14px; color: #742a2a; line-height: 1.7; margin-bottom: 12px; }
+.risk-card p:last-child { margin-bottom: 0; }
+
+/* CTA */
+.cta-section {
+  background: var(--gradient-hero); padding: 100px 0; text-align: center;
+  position: relative; overflow: hidden;
+}
+.cta-section h2 {
+  font-family: 'Playfair Display', serif; font-size: 42px; color: var(--white);
+  margin-bottom: 16px; position: relative; z-index: 2;
+}
+.cta-section p {
+  color: rgba(255,255,255,0.7); font-size: 18px; margin-bottom: 40px;
+  position: relative; z-index: 2;
+}
+.btn {
+  display: inline-block; padding: 14px 32px; border-radius: 8px; font-weight: 600;
+  font-size: 16px; text-decoration: none; transition: all 0.2s; position: relative; z-index: 2;
+}
+.btn-green { background: var(--hfd-green); color: white; margin-right: 16px; }
+.btn-green:hover {
+  background: var(--hfd-green-dark); transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+}
+.btn-outline { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3); }
+.btn-outline:hover { border-color: white; background: rgba(255,255,255,0.05); }
+
+/* FOOTER */
+footer { background: var(--hfd-deep); padding: 80px 0 40px; color: rgba(255,255,255,0.5); font-size: 13px; }
+.footer-contact { color: rgba(255,255,255,0.4); font-size: 13px; margin-bottom: 32px; line-height: 1.8; }
+.footer-contact a { color: rgba(255,255,255,0.5); text-decoration: none; }
+.footer-contact a:hover { color: rgba(255,255,255,0.8); }
+.footer-legal {
+  border-top: 1px solid rgba(255,255,255,0.1); margin-top: 40px; padding-top: 40px;
+  display: grid; gap: 20px;
+}
+.disclaimer-text { line-height: 1.8; font-size: 12px; }
+.disclaimer-text strong { color: rgba(255,255,255,0.8); }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .hero h1 { font-size: 36px; }
+  .section-title { font-size: 32px; }
+  .grid-3, .grid-2, .perf-grid { grid-template-columns: 1fr; gap: 24px; }
+  .hero-stats { grid-template-columns: 1fr; gap: 24px; }
+  .sc-row { grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; }
+  .desktop-nav { display: none; }
+  .mobile-toggle { display: block; }
+  .logo-sfa { display: none; }
+  .table-footer { flex-direction: column; }
+  .cta-section h2 { font-size: 32px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Mobile Navigation -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#strategy" onclick="toggleMenu()">Strategy</a>
+  <a href="#portfolio" onclick="toggleMenu()">Portfolio</a>
+  <a href="#performance" onclick="toggleMenu()">Performance</a>
+  <a href="#risks" onclick="toggleMenu()">Risk Profile</a>
+  <a href="#contact" class="nav-cta" onclick="toggleMenu()">Adviser Access</a>
+</div>
+
+<header id="header">
+  <div class="container header-inner">
+    <a href="#" class="logo-group">
+      <div class="logo-hfd">HF<span>D</span></div>
+      <div class="logo-divider"></div>
+      <a href="https://www.simpli-fi-alpha.com" target="_blank" class="logo-sfa">Simpli-FI Alpha</a>
+    </a>
+    <nav class="desktop-nav">
+      <a href="#strategy">Strategy</a>
+      <a href="#portfolio">Portfolio</a>
+      <a href="#performance">Performance</a>
+      <a href="#risks">Risk Profile</a>
+      <a href="#contact" class="nav-cta">Adviser Access</a>
+    </nav>
+    <button class="mobile-toggle" aria-label="Open Menu" onclick="toggleMenu()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+
+<!-- ═══════════════════════════════════════════ HERO ═══════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="container hero-content">
+    <div class="reveal">
+      <span class="tag white" style="margin-bottom: 24px;">Institutional Grade</span>
+      <h1>Add a Second Dimension to <br><em>Portfolio Yield.</em></h1>
+      <p class="hero-sub">A systematic options overlay designed to generate income from volatility, creating a yield buffer that compounds tax-free in DAFs, IRAs, and foundations.</p>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-value">9–12<span>%</span></div>
+          <div class="hero-stat-label">Modeled Net Return*</div>
+        </div>
+        <div>
+          <div class="hero-stat-value">0.68<span>&beta;</span></div>
+          <div class="hero-stat-label">Modeled Portfolio Beta*</div>
+        </div>
+        <div>
+          <div class="hero-stat-value">~5.8<span>%</span></div>
+          <div class="hero-stat-label">Annual Income Yield</div>
+        </div>
+      </div>
+      <span class="disclaimer-asterisk">*Modeled from historical asset class behavior and options pricing as of February 2026. Past performance is not indicative of future results. See Material Assumptions in footer.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ STRATEGY ═══════════════════════════════════════ -->
+<section id="strategy">
+  <div class="container">
+    <span class="section-label">The Mechanics</span>
+    <h2 class="section-title">We Don't Just Hold. We Harvest.</h2>
+    <p class="section-sub">Traditional portfolios rely on one engine: asset appreciation. We add a second: systematic volatility harvesting.</p>
+    <div class="grid-3 reveal">
+      <div class="card">
+        <span class="tag blue">Step 1</span>
+        <h3>Sell Volatility</h3>
+        <p>We sell cash-secured puts on high-quality ETFs at strikes 7–10% below market. This generates immediate cash premiums while waiting for a better entry price. If the market stays flat or rises, we keep the premium and repeat.</p>
+      </div>
+      <div class="card">
+        <span class="tag green">Step 2</span>
+        <h3>Acquire &amp; Enhance</h3>
+        <p>If assigned, we acquire the asset at a structural discount. We then sell covered calls to generate a second income stream. Dividends from quality holdings like SCHD and TLT add a third source of yield.</p>
+      </div>
+      <div class="card">
+        <span class="tag orange">Step 3</span>
+        <h3>Compound Tax-Free</h3>
+        <p>In a DAF or IRA, all three income streams — option premium, dividends, and capital gains — compound without tax drag. This is the structural advantage that makes the strategy work.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ PORTFOLIO ═══════════════════════════════════════════ -->
+<section id="portfolio" style="background: var(--off-white);">
+  <div class="container">
+    <span class="section-label">The Core Holdings</span>
+    <h2 class="section-title">Liquid. Diversified. Robust.</h2>
+    <p class="section-sub">Eight institutional-grade ETFs across six asset classes. Every position trades over 18 million shares daily with deep options liquidity.</p>
+    <div class="table-wrapper reveal">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Ticker / Asset</th>
+              <th>Asset Class</th>
+              <th class="num">Allocation</th>
+              <th>Role</th>
+              <th class="num">Div Yield</th>
+              <th style="text-align:center">Premium Potential</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="ticker">SPY</span><span class="asset-name">S&P 500</span></td>
+              <td>US Large Cap</td>
+              <td class="num">30%</td>
+              <td>Core Anchor</td>
+              <td class="num">1.3%</td>
+              <td style="text-align:center"><span class="tag blue">Moderate</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">QQQ</span><span class="asset-name">Nasdaq-100</span></td>
+              <td>US Tech/Growth</td>
+              <td class="num">15%</td>
+              <td>Growth Engine</td>
+              <td class="num">0.6%</td>
+              <td style="text-align:center"><span class="tag green">High</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">TLT</span><span class="asset-name">20yr Treasury</span></td>
+              <td>Fixed Income</td>
+              <td class="num">18%</td>
+              <td>Deflation Hedge</td>
+              <td class="num">3.8%</td>
+              <td style="text-align:center"><span class="tag blue">Moderate</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">EFA</span><span class="asset-name">Developed Int'l</span></td>
+              <td>EAFE Equity</td>
+              <td class="num">12%</td>
+              <td>Global Diversifier</td>
+              <td class="num">2.8%</td>
+              <td style="text-align:center"><span class="tag blue">Moderate</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">XLE</span><span class="asset-name">Energy Select</span></td>
+              <td>Energy</td>
+              <td class="num">8%</td>
+              <td>Inflation Hedge</td>
+              <td class="num">3.2%</td>
+              <td style="text-align:center"><span class="tag green">High</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">SCHD</span><span class="asset-name">Dividend Equity</span></td>
+              <td>US Dividend</td>
+              <td class="num">5%</td>
+              <td>Income Anchor</td>
+              <td class="num">3.8%</td>
+              <td style="text-align:center"><span class="tag blue">Moderate</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">GLD</span><span class="asset-name">Gold Trust</span></td>
+              <td>Commodity</td>
+              <td class="num">5%</td>
+              <td>Crisis Hedge</td>
+              <td class="num">0.0%</td>
+              <td style="text-align:center"><span class="tag orange">High (Vol)</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">IWM</span><span class="asset-name">Russell 2000</span></td>
+              <td>US Small Cap</td>
+              <td class="num">5%</td>
+              <td>Domestic Breadth</td>
+              <td class="num">1.3%</td>
+              <td style="text-align:center"><span class="tag green">High</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span>+ 2% Cash Buffer &nbsp;|&nbsp; Total: <strong>100%</strong></span>
+        <span>Wtd Div Yield: <strong>~2.3%</strong> &nbsp;|&nbsp; Wtd Premium: <strong>~3.8%</strong> &nbsp;|&nbsp; Combined: <strong style="color: var(--hfd-green-dark);">~5.8%</strong></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ PERFORMANCE ═════════════════════════════════════════ -->
+<section id="performance">
+  <div class="container">
+    <span class="section-label">Modeled Performance</span>
+    <h2 class="section-title">Comparable Returns. Less Volatility.</h2>
+    <p class="section-sub">Designed to deliver broad-market returns over a full cycle with meaningfully less volatility and a persistent income buffer.</p>
+
+    <div class="perf-grid reveal">
+      <div class="perf-card">
+        <h3>Income Profile (Net of 1.0% Fee)</h3>
+        <div class="perf-row"><span class="perf-label">Dividend Income</span><span class="perf-val">2.3%</span></div>
+        <div class="perf-row"><span class="perf-label">Options Premium (Net Realized)</span><span class="perf-val">2.0–3.0%</span></div>
+        <div class="perf-row"><span class="perf-label">Management Fee</span><span class="perf-val">-1.0%</span></div>
+        <div class="perf-row total"><span class="perf-label">Net Income Buffer</span><span class="perf-val">3.3–4.3%</span></div>
+      </div>
+      <div class="perf-card">
+        <h3>Volatility vs. S&P 500</h3>
+        <div class="perf-row"><span class="perf-label">Portfolio Beta</span><span class="perf-val green">0.68–0.75 vs 1.00</span></div>
+        <div class="perf-row"><span class="perf-label">Max Drawdown (Modeled)</span><span class="perf-val green">-22 to -32% vs -34 to -55%</span></div>
+        <div class="perf-row"><span class="perf-label">Sharpe Ratio</span><span class="perf-val green">0.85–1.10 vs 0.65–0.75</span></div>
+        <div class="perf-row"><span class="perf-label">Annualized Vol</span><span class="perf-val green">11–14% vs 15–16%</span></div>
+        <div class="perf-row total"><span class="perf-label">Modeled Net Return</span><span class="perf-val">9–12% annually</span></div>
+      </div>
+    </div>
+
+    <!-- SCENARIO ANALYSIS -->
+    <div class="scenario-section reveal">
+      <span class="section-label">Scenario Analysis</span>
+      <h2 class="section-title" style="font-size: 28px;">Income-Enhanced vs. S&P 500</h2>
+      <div class="sc-row sc-header">
+        <div>Market Environment</div>
+        <div>S&P 500</div>
+        <div>Income-Enhanced</div>
+        <div>Advantage</div>
+      </div>
+      <div class="sc-row">
+        <div class="sc-env">Strong Bull (+20%)</div>
+        <div class="sc-sp">+20%</div>
+        <div class="sc-ie">+14%</div>
+        <div class="sc-adv lose">S&P by ~6%</div>
+      </div>
+      <div class="sc-row">
+        <div class="sc-env">Normal (+10%)</div>
+        <div class="sc-sp">+10%</div>
+        <div class="sc-ie">+11%</div>
+        <div class="sc-adv win">≈ Even</div>
+      </div>
+      <div class="sc-row">
+        <div class="sc-env">Flat (0%)</div>
+        <div class="sc-sp">0%</div>
+        <div class="sc-ie">+4%</div>
+        <div class="sc-adv win">Income-Enhanced +4%</div>
+      </div>
+      <div class="sc-row">
+        <div class="sc-env">Mild Bear (-10%)</div>
+        <div class="sc-sp">-10%</div>
+        <div class="sc-ie">-4%</div>
+        <div class="sc-adv win">Income-Enhanced +6%</div>
+      </div>
+      <div class="sc-row">
+        <div class="sc-env">Bear (-20%)</div>
+        <div class="sc-sp">-20%</div>
+        <div class="sc-ie">-13%</div>
+        <div class="sc-adv win">Income-Enhanced +7%</div>
+      </div>
+      <div class="sc-row" style="border-bottom: none;">
+        <div class="sc-env">Crisis (-35%)</div>
+        <div class="sc-sp">-35%</div>
+        <div class="sc-ie">-25 to -30%</div>
+        <div class="sc-adv win">Income-Enhanced +5–10%</div>
+      </div>
+      <p style="font-size: 12px; color: var(--gray-400); margin-top: 20px; font-style: italic; line-height: 1.6;">
+        Risk metrics reflect historical volatility and modeled drawdowns. Options strategies may experience outsized losses during rapid market dislocations that exceed modeled scenarios. These projections are not guarantees of future performance.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ AUDIENCE & RISKS ═══════════════════════════════════ -->
+<section id="risks" style="background: var(--off-white);">
+  <div class="container">
+    <div class="grid-2 reveal">
+      <div>
+        <span class="section-label">Ideal Client Profile</span>
+        <h2 class="section-title">Designed for Tax-Advantaged Compounding.</h2>
+        <p style="margin-bottom: 24px; color: var(--gray-500);">This strategy generates significant short-term capital gains via option premiums. It is structurally optimized for accounts where those gains compound tax-free.</p>
+        <ul class="client-list">
+          <li>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span><strong>Donor Advised Funds:</strong> Tax-free growth for philanthropy. Premium income and dividends compound without drag.</span>
+          </li>
+          <li>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span><strong>Foundations &amp; Endowments:</strong> Consistent income for grant-making with a yield buffer that softens spending-rate risk.</span>
+          </li>
+          <li>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span><strong>IRA / Roth IRA:</strong> Tax-sheltered accumulation. The concave payoff is offset by decades of compounding.</span>
+          </li>
+          <li>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span><strong>Family &amp; Legacy Accounts:</strong> Multi-generational wealth building with institutional discipline and full liquidity.</span>
+          </li>
+        </ul>
+        <div class="tax-note">
+          <strong>Taxable Account Warning:</strong> In standard brokerage accounts, option premiums are generally treated as short-term capital gains (ordinary income rates), which may significantly reduce after-tax returns. Consult your tax advisor before implementing in a taxable account.
+        </div>
+      </div>
+      <div class="risk-card">
+        <h3>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Risk Disclosure
+        </h3>
+        <p><strong>This Is Not a Bond Replacement.</strong> This strategy involves equity risk. Selling puts creates an obligation to buy shares during market declines. When the market drops sharply, the portfolio will draw down.</p>
+        <p><strong>Concave Payoff Profile.</strong> Options strategies produce frequent small gains and infrequent larger losses. Standard risk metrics like Sharpe ratio may overstate risk-adjusted performance relative to strategies with symmetric payoffs.</p>
+        <p><strong>Drawdown Risk.</strong> While premiums and dividends provide a buffer, significant market crashes (>20% drops) will result in real portfolio losses. This is not a principal-protected product. There is no structural floor.</p>
+        <p><strong>Correlation Regime Risk.</strong> Historical correlations between asset classes (e.g., stocks vs. bonds) may not persist. During the 2022 inflation shock, both equities and long-duration bonds declined simultaneously.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ CTA ═════════════════════════════════════════════ -->
+<section class="cta-section" id="contact">
+  <div class="hero-bg-grid"></div>
+  <div class="container">
+    <h2>Ready to Add a Second Dimension?</h2>
+    <p>Schedule a conversation to explore whether this strategy fits your investment framework.</p>
+    <a href="mailto:info@simpli-fi-alpha.com" class="btn btn-green">Start a Conversation</a>
+    <a href="tel:+19403730151" class="btn btn-outline">(940) 373-0151</a>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════════════════════════════════════ FOOTER ═══════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <div class="logo-group" style="opacity: 0.5; margin-bottom: 24px;">
+      <div class="logo-hfd">HF<span>D</span></div>
+      <div class="logo-divider"></div>
+      <a href="https://www.simpli-fi-alpha.com" target="_blank" class="logo-sfa" style="color: rgba(255,255,255,0.9);">Simpli-FI Alpha</a>
+    </div>
+    <div class="footer-contact">
+      513 W Oak St, Ste 105, Denton, TX 76201 &nbsp;|&nbsp; (940) 373-0151 &nbsp;|&nbsp; <a href="mailto:info@simpli-fi-alpha.com">info@simpli-fi-alpha.com</a><br>
+      Registered Investment Adviser — Texas State Securities Board &nbsp;|&nbsp; <a href="https://adviserinfo.sec.gov/firm/summary/331746" target="_blank" rel="noopener">CRD #331746</a> &nbsp;|&nbsp; Also registered in WA and ID
+    </div>
+    <div class="footer-legal">
+      <p class="disclaimer-text"><strong>Material Assumptions:</strong> Modeled return ranges are based on historical asset class appreciation (7–10% annualized for equities), current dividend yields, and option premium estimates derived from implied volatility levels as of February 2026. Realized option premium will vary based on market conditions, execution timing, and assignment frequency. Beta and drawdown figures are modeled from historical correlations which may not persist in future market regimes. Options strategies have a concave payoff profile — frequent small gains and infrequent larger losses — which may not be fully reflected in standard risk metrics such as Sharpe ratio.</p>
+      <p class="disclaimer-text"><strong>Regulatory Notice:</strong> Simpli-FI Alpha LLC is a Registered Investment Adviser ("RIA"). This material is for informational purposes only and does not constitute an offer to sell or a solicitation of an offer to buy any security or investment advisory services. All investments involve risk, including possible loss of principal. Options strategies involve additional risks, including losses exceeding modeled scenarios during rapid market dislocations. This strategy is optimized for tax-advantaged accounts; in taxable accounts, option premiums are generally treated as short-term capital gains. For additional information, including fees and services, please review our Form ADV Part 2A, available upon request.</p>
+      <p class="disclaimer-text">&copy; 2026 Simpli-FI Alpha LLC. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Header Scroll Effect
+const header = document.getElementById('header');
+window.addEventListener('scroll', () => { header.classList.toggle('scrolled', window.scrollY > 50); });
+
+// Mobile Menu
+function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('active'); }
+
+// Reveal Animation
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
+  });
+}, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
