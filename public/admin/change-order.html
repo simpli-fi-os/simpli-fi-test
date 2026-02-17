@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Change Order | Simpli-FI ID</title>
+    <title>Change Order | Simpli-FI ID Admin</title>
     <link rel="icon" href="https://raw.githubusercontent.com/simpli-fi-os/simpli-fi-id/d59a8cb075df62d56e3ba6549131ae6cd773dbb1/ID.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@0.294.0"></script>
@@ -12,9 +12,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        brand: { primary: '#1e293b', accent: '#fbbf24', surface: '#F3F4F6', canvas: '#FBF9F7' }
-                    },
+                    colors: { brand: { primary: '#1e293b', accent: '#fbbf24', surface: '#F3F4F6', canvas: '#FBF9F7' } },
                     fontFamily: { sans: ['Inter', 'sans-serif'], serif: ['Playfair Display', 'serif'] }
                 }
             }
@@ -22,6 +20,13 @@
     </script>
     <style>
         body { background-color: #FBF9F7; }
+        #login-gate { backdrop-filter: blur(8px); }
+        .toast { animation: slideUp 0.3s ease-out, fadeOut 0.3s ease-in 2.7s; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; } }
+        input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; }
+        input[type="range"]::-webkit-slider-track { height: 4px; border-radius: 2px; background: #e2e8f0; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #fbbf24; border: 2px solid #1e293b; cursor: pointer; margin-top: -6px; }
         .guide-h { position: absolute; left: 0; right: 0; height: 1px; background: rgba(251,191,36,0.5); pointer-events: none; z-index: 30; }
         .guide-v { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(251,191,36,0.5); pointer-events: none; z-index: 30; }
         .guide-label { position: absolute; font-size: 8px; color: #fbbf24; font-weight: 700; z-index: 31; pointer-events: none; text-shadow: 0 0 3px rgba(0,0,0,0.9); }
@@ -29,14 +34,20 @@
         .card-circle:active { cursor: grabbing; }
         .card-circle img { pointer-events: none; user-select: none; -webkit-user-drag: none; }
         .ring-active { box-shadow: 0 0 0 3px #fbbf24, 0 8px 25px rgba(0,0,0,0.15); }
-
-        /* Login gate */
-        #login-gate { backdrop-filter: blur(8px); }
-
-        /* Toast */
-        .toast { animation: slideUp 0.3s ease-out, fadeOut 0.3s ease-in 2.7s; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes fadeOut { to { opacity: 0; } }
+        .tab-btn.active { background: #1e293b; color: white; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .field-input { width: 100%; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; transition: border 0.2s; }
+        .field-input:focus { outline: none; border-color: #fbbf24; box-shadow: 0 0 0 2px rgba(251,191,36,0.2); }
+        textarea.field-input { resize: vertical; min-height: 60px; }
+        .color-swatch { width: 32px; height: 32px; border-radius: 8px; border: 2px solid #e2e8f0; cursor: pointer; }
+        .social-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+        .card-dirty { box-shadow: 0 0 0 2px #fbbf24; }
+        @keyframes pulse-gold { 0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.4); } 50% { box-shadow: 0 0 0 6px rgba(251,191,36,0); } }
+        .pulse-commit { animation: pulse-gold 2s infinite; }
+        .highlight-row { display: flex; gap: 6px; margin-bottom: 6px; }
+        .highlight-row input:first-child { width: 35%; }
+        .highlight-row input:last-of-type { flex: 1; }
     </style>
 </head>
 <body class="min-h-screen">
@@ -48,21 +59,16 @@
                 <i data-lucide="shield" class="w-8 h-8 text-brand-primary"></i>
             </div>
             <h1 class="font-serif text-2xl font-bold text-brand-primary mb-1">Admin Access</h1>
-            <p class="text-xs text-slate-400 mb-6">Change Order — Photo Position Tool</p>
-
+            <p class="text-xs text-slate-400 mb-6">Change Order — Full Card Editor</p>
             <div class="space-y-3">
                 <input id="login-pass" type="password" placeholder="Enter admin password"
                     class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20"
                     onkeydown="if(event.key==='Enter') attemptLogin()">
-                <button onclick="attemptLogin()" class="w-full py-3 bg-brand-primary text-white rounded-xl font-bold text-sm hover:bg-brand-accent hover:text-brand-primary transition">
-                    Sign In
-                </button>
+                <button onclick="attemptLogin()" class="w-full py-3 bg-brand-primary text-white rounded-xl font-bold text-sm hover:bg-brand-accent hover:text-brand-primary transition">Sign In</button>
             </div>
-
             <div class="mt-4 pt-4 border-t border-gray-100">
                 <button onclick="bypassLogin()" class="text-xs text-slate-400 hover:text-brand-accent transition flex items-center gap-1 mx-auto">
-                    <i data-lucide="zap" class="w-3 h-3"></i>
-                    Dev Bypass (pre-launch only)
+                    <i data-lucide="zap" class="w-3 h-3"></i> Dev Bypass (pre-launch only)
                 </button>
             </div>
             <p id="login-error" class="text-red-500 text-xs mt-3 hidden">Invalid password</p>
@@ -71,320 +77,680 @@
 
     <!-- MAIN APP -->
     <div id="main-app" class="hidden">
-
         <!-- Header -->
         <div class="bg-brand-primary text-white p-4 sticky top-0 z-50 shadow-lg">
-            <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-2">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-full bg-brand-accent flex items-center justify-center">
-                        <i data-lucide="move" class="w-4 h-4 text-brand-primary"></i>
+                        <i data-lucide="settings" class="w-4 h-4 text-brand-primary"></i>
                     </div>
                     <div>
                         <h1 class="text-lg font-bold font-serif leading-none">Change Order</h1>
-                        <p class="text-[10px] text-white/50 uppercase tracking-widest">Admin Photo Positioning</p>
+                        <p class="text-[10px] text-white/50 uppercase tracking-widest">Full Card Editor</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <button onclick="toggleGuides()" id="guide-toggle" class="px-3 py-1.5 rounded-lg bg-white/10 text-xs font-bold hover:bg-brand-accent hover:text-brand-primary transition flex items-center gap-1.5">
-                        <i data-lucide="crosshair" class="w-3 h-3"></i> Guides: ON
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="collapseAll()" class="px-3 py-1.5 rounded-lg bg-white/10 text-xs font-bold hover:bg-brand-accent hover:text-brand-primary transition flex items-center gap-1.5">
+                        <i data-lucide="minimize-2" class="w-3 h-3"></i> Collapse
                     </button>
-                    <button onclick="exportAll()" class="px-3 py-1.5 rounded-lg bg-brand-accent text-brand-primary text-xs font-bold hover:bg-white transition flex items-center gap-1.5">
-                        <i data-lucide="clipboard-copy" class="w-3 h-3"></i> Export All
+                    <button onclick="commitAll()" id="commit-all-btn" class="px-4 py-1.5 rounded-lg bg-brand-accent text-brand-primary text-xs font-bold hover:bg-white transition flex items-center gap-1.5 hidden">
+                        <i data-lucide="save" class="w-3 h-3"></i> Commit All Changes
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Main Grid: All cards at once -->
-        <div class="max-w-7xl mx-auto p-6">
-
-            <!-- Instructions -->
-            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3">
+        <!-- Instructions -->
+        <div class="max-w-6xl mx-auto px-4 pt-4">
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 flex items-start gap-3">
                 <i data-lucide="info" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>
                 <div class="text-xs text-amber-800 leading-relaxed">
-                    <strong>How to use:</strong> Drag any photo circle to reposition. Use sliders for fine control.
-                    The gold horizontal line = 3/4 mark (eyes should sit here). Gold vertical = center.
-                    Click <strong>Export All</strong> to copy all positions, then paste to Claude to apply.
+                    <strong>How to use:</strong> Click a card to expand its editor. Edit any field across the tabs.
+                    <strong>Commit</strong> copies a change order with only the modified fields to your clipboard — then paste it to Claude to apply.
                 </div>
-            </div>
-
-            <!-- Cards Grid -->
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" id="cards-container">
-                <!-- Generated by JS -->
-            </div>
-
-            <!-- Export Panel (hidden until Export clicked) -->
-            <div id="export-panel" class="hidden mt-8 bg-slate-900 rounded-2xl p-6 shadow-xl">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-white font-bold text-sm flex items-center gap-2">
-                        <i data-lucide="code-2" class="w-4 h-4 text-brand-accent"></i> Export — All Card Positions
-                    </h3>
-                    <button onclick="copyExport()" class="px-4 py-2 bg-brand-accent text-brand-primary rounded-lg text-xs font-bold hover:bg-white transition flex items-center gap-1.5">
-                        <i data-lucide="copy" class="w-3 h-3"></i> <span id="copy-btn-text">Copy to Clipboard</span>
-                    </button>
-                </div>
-                <pre id="export-code" class="text-brand-accent text-xs font-mono bg-black/30 rounded-xl p-4 overflow-x-auto select-all whitespace-pre-wrap"></pre>
             </div>
         </div>
+
+        <!-- Cards List -->
+        <div class="max-w-6xl mx-auto px-4 pb-12 space-y-3" id="cards-container"></div>
     </div>
 
     <!-- Toast Container -->
     <div id="toast-container" class="fixed bottom-6 right-6 z-[200] space-y-2"></div>
 
-    <script>
-        // ==========================================
-        // CARD DATA (source of truth for positions)
-        // ==========================================
-        const cards = [
-            { id: 'kevin-harrington', name: 'Kevin Harrington', title: 'Entrepreneur & Investor', company: 'Shark Tank', img: '../assets/images/contacts/kevin-harrington.png', posX: 50, posY: 18, color: '#0a2647' },
-            { id: 'mike-calhoun', name: 'Mike Calhoun', title: 'Founder & CEO', company: 'Board of Advisors', img: '../assets/images/contacts/mike-calhoun.png', posX: 50, posY: 18, color: '#1e3a5f' },
-            { id: 'rhonda-klch', name: 'Rhonda Klch', title: 'Managing Partner', company: 'Equity First', img: '../assets/images/contacts/rhonda-klch.png', posX: 55, posY: 20, color: '#2d4a7a' },
-            { id: 'rhonda-swan', name: 'Rhonda Swan', title: 'CEO & Founder', company: 'Unstoppable Branding', img: '../assets/images/contacts/rhonda-swan.png', posX: 50, posY: 15, color: '#1a1a2e' },
-            { id: 'jeff-hayzlett', name: 'Jeff Hayzlett', title: 'Chairman & CEO', company: 'C-Suite Network', img: '../assets/images/contacts/jeff-hayzlett.png', posX: 50, posY: 20, color: '#1b2838' },
-            { id: 'ty-crandall', name: 'Ty Crandall', title: 'CEO', company: 'Credit Suite', img: '../assets/images/contacts/ty-crandall.png', posX: 50, posY: 18, color: '#003d5c' },
-            { id: 'rich-goldstein', name: 'Rich Goldstein', title: 'Founding Partner', company: 'Goldstein Patent Law', img: '../assets/images/contacts/rich-goldstein.png', posX: 50, posY: 20, color: '#1a1a1a' },
-            { id: 'carl-gould', name: 'Carl Gould', title: 'CEO & Strategist', company: '7 Stage Advisors', img: '../assets/images/contacts/carl-gould.png', posX: 50, posY: 15, color: '#2c3e50' },
-        ];
+<script>
+// ==========================================
+// SOCIAL PLATFORM OPTIONS
+// ==========================================
+const PLATFORMS = ['website','linkedin','instagram','facebook','twitter','youtube','tiktok','email','ba','other'];
+const PLATFORM_LABELS = { website:'Website', linkedin:'LinkedIn', instagram:'Instagram', facebook:'Facebook', twitter:'X / Twitter', youtube:'YouTube', tiktok:'TikTok', email:'Email', ba:'Board of Advisors', other:'Other' };
 
-        let guidesOn = true;
-        let activeIndex = null;
-        let dragState = null;
+// ==========================================
+// CARD DATA (source of truth)
+// ==========================================
+const cards = [
+  {
+    id: 'hunter', name: 'Hunter Lott', title: 'Co-Founder & Managing Partner', company: 'Simpli-FI Alpha LLC', companyTagline: 'Investment Stewardship',
+    phone: '(940) 373-0151', email: 'hunter.lott@simpli-fi-alpha.com', website: 'https://www.simpli-fi-alpha.com', calendarUrl: 'https://calendar.app.google/ZBGrPEYJsonQmnwL8', location: '513 W Oak St, Ste 105\nDenton, TX 76201',
+    socials: [ { platform: 'website', url: 'https://www.simpli-fi-alpha.com' }, { platform: 'email', url: 'mailto:hunter.lott@simpli-fi-alpha.com' } ],
+    img: '../assets/images/hunter-lott.png', logo: '../assets/images/alpha-logo.png', logoInitials: '', posX: 50, posY: 0, zoom: 100,
+    colors: { primary: '#003b46', accent: '#fca311', canvas: '#ebe9e5', surface: '#e1dfdb' },
+    bio: 'My background in high-stakes leadership\u2014as a Captain in the United States Marine Corps, Denton Fire Department Captain, and trustee on a firefighter pension fund board\u2014has defined my approach to risk. Today, I apply that same institutional precision to financial stewardship, helping clients navigate market trends with confidence and discipline.',
+    mission: 'Connecting with qualified partners to raise capital for the Simpli-FI Legacy Fund\u2014delivering uncorrelated, income-generating returns for families and institutions.',
+    highlightsTitle: 'Who We Serve',
+    highlights: [
+      { label: 'HNW & Family Offices', text: 'Diversified hedges for large portfolios.' },
+      { label: 'Retirees', text: 'Consistent cash flow & peace of mind.' },
+      { label: 'Businesses', text: 'Passive income for resilience.' },
+      { label: 'Pensions & Non-Profits', text: 'Risk-adjusted returns for long-term goals.' }
+    ],
+    vcfPath: '/vcf/hunter-lott.vcf', qrColor: '003b46'
+  },
+  {
+    id: 'lindsey', name: 'Lindsey Lott', title: 'Founder & Lead Organizer', company: 'Simpli-FI Life', companyTagline: 'Systems for Home & Business',
+    phone: '(214) 769-3343', email: 'Lindsey@simpli-fi-life.com', website: 'https://new.simpli-fi-life.com', calendarUrl: '', location: '',
+    socials: [ { platform: 'website', url: 'https://new.simpli-fi-life.com' }, { platform: 'email', url: 'mailto:Lindsey@simpli-fi-life.com' } ],
+    img: 'https://raw.githubusercontent.com/simpli-fi-os/assets/abc740cc26a619c8153bbfeafbcb85c23879fcdf/lindsey-lott.jpg', logo: '', logoInitials: 'S', posX: 50, posY: 0, zoom: 100,
+    colors: { primary: '#2d2a26', accent: '#7178c8', canvas: '#fbf9f7', surface: '#F0EFEB' },
+    bio: 'My appreciation for organization & systems began as a Pediatric Nurse in the ER, where structure is essential. However, those skills were truly put to the test\u2014and refined\u2014as I transitioned to raising and homeschooling our four children. Today, I apply that unique blend of clinical precision and practical space management to help families and businesses eliminate chaos. I am also happily married to Hunter Lott.',
+    mission: 'Connecting 20 new business owners and program managers in the next 60 days to help them organize their physical spaces and inventory.',
+    highlightsTitle: '', highlights: [],
+    vcfPath: '/vcf/lindsey-lott.vcf', qrColor: '7178C8'
+  },
+  {
+    id: 'kevin-harrington', name: 'Kevin Harrington', title: 'Entrepreneur & Investor', company: 'Shark Tank', companyTagline: 'Original Shark',
+    phone: '', email: '', website: 'http://www.kevinharrington.tv', calendarUrl: '', location: '',
+    socials: [ { platform: 'website', url: 'http://www.kevinharrington.tv' }, { platform: 'linkedin', url: 'https://www.linkedin.com/in/kevinharringtontv' }, { platform: 'twitter', url: 'https://twitter.com/HarringtonKevin' }, { platform: 'facebook', url: 'https://www.facebook.com/officialkevinharrington' }, { platform: 'instagram', url: 'https://www.instagram.com/realkevinharrington/' }, { platform: 'ba', url: 'https://advisors.boardofadvisors.com/profile/kevin+harrington' } ],
+    img: '../assets/images/contacts/kevin-harrington.png', logo: '', logoInitials: 'KH', posX: 49, posY: -18, zoom: 115,
+    colors: { primary: '#0a2647', accent: '#f5a623', canvas: '#f0ede8', surface: '#e4e0da' },
+    bio: "Kevin Harrington is an Original Shark on the Emmy-winning ABC hit TV show Shark Tank. He is the Inventor of the Infomercial, As Seen On TV Pioneer, and Co-Founder of the Electronic Retailers Association and Entrepreneurs' Organization. Kevin has launched over 20 businesses that have grown to over $100 million in sales each and over 500 products generating more than $5 billion in sales worldwide.",
+    mission: 'Leveraging 40 years of business-building experience and a global rolodex to help companies increase distribution, navigate the digital marketplace, and achieve exponential growth.',
+    highlightsTitle: 'Highlights',
+    highlights: [ { label: 'Over $5 Billion', text: 'in Global Sales' }, { label: '20 Companies', text: 'exceeding $100 Million each' }, { label: '500+ Products', text: 'launched worldwide' }, { label: 'Original Shark', text: 'on Shark Tank' } ],
+    vcfPath: '/vcf/kevin-harrington.vcf', qrColor: '0a2647'
+  },
+  {
+    id: 'mike-calhoun', name: 'Mike Calhoun', title: 'Founder & CEO', company: 'Board of Advisors', companyTagline: 'Solving Problems, Sharing Strategies',
+    phone: '', email: '', website: 'http://www.bizblueprint.com', calendarUrl: '', location: 'Indian Shores, FL',
+    socials: [ { platform: 'website', url: 'http://www.bizblueprint.com' }, { platform: 'linkedin', url: 'https://www.linkedin.com/in/mikecalhoun' }, { platform: 'ba', url: 'https://advisors.boardofadvisors.com/profile/mike+calhoun' } ],
+    img: '../assets/images/contacts/mike-calhoun.png', logo: '', logoInitials: 'BA', posX: 46, posY: -18, zoom: 115,
+    colors: { primary: '#1e3a5f', accent: '#e8a317', canvas: '#f0ede8', surface: '#e4e0da' },
+    bio: "Mike Calhoun has over 27 years of consecutive entrepreneurial ownership experience. As Founder & CEO of Board of Advisors, he established a global community of wildly successful entrepreneurs to work together with the mindset of competitively contributing to each other. He is also the founder of BizBlueprint, a global digital design and marketing company. Mike is an advisor, owner, and investor in multiple companies and brands.",
+    mission: "Building the world's greatest community for founders, entrepreneurs, CEOs, investors, and high-level decision makers \u2014 where anything is possible.",
+    highlightsTitle: 'Highlights',
+    highlights: [ { label: 'Created Board of Advisors', text: 'in 2016' }, { label: 'Built BizBlueprint', text: 'Web Development' }, { label: '27+ years', text: 'consecutive entrepreneurial ownership' }, { label: 'Advisor & investor', text: 'in multiple companies' } ],
+    vcfPath: '/vcf/mike-calhoun.vcf', qrColor: '1e3a5f'
+  },
+  {
+    id: 'rhonda-klch', name: 'Rhonda Klch', title: 'Managing Partner', company: 'Equity First Consultants', companyTagline: 'Building Better Financial Futures',
+    phone: '', email: '', website: 'https://www.equityfirst.com', calendarUrl: '', location: 'New York / Florida',
+    socials: [ { platform: 'website', url: 'https://www.equityfirst.com' }, { platform: 'linkedin', url: 'https://www.linkedin.com/in/rhondaklch' }, { platform: 'facebook', url: 'https://www.facebook.com/rhonda.klch' }, { platform: 'instagram', url: 'https://www.instagram.com/rhondaklch/' }, { platform: 'youtube', url: 'https://www.youtube.com/@rhondaklch' }, { platform: 'ba', url: 'https://advisors.boardofadvisors.com/profile/rhonda+klch' } ],
+    img: '../assets/images/contacts/rhonda-klch.png', logo: '', logoInitials: 'EF', posX: 92, posY: -10, zoom: 103,
+    colors: { primary: '#2d4a7a', accent: '#c9a84c', canvas: '#f5f2ed', surface: '#e8e4dd' },
+    bio: 'Rhonda Klch is a distinguished figure in personal and corporate business credit with over two decades of expertise. As Managing Partner at Equity First Consultants, she has cemented her reputation through a commitment to excellence and innovative solutions. Her experience encompasses coaching, consulting, and actively investing in real estate across New York and Florida, with a focus on assignments, flips, rentals, and rehabilitation.',
+    mission: 'Empowering individuals and businesses to build better financial futures through comprehensive credit consulting and strategic real estate investment guidance.',
+    highlightsTitle: 'Highlights',
+    highlights: [ { label: 'Money 2.0 Conference', text: 'Leadership Recipient & Keynote Speaker' }, { label: 'LI Business News', text: 'Diversity in Business Award' }, { label: '20+ years', text: 'financial consulting expertise' }, { label: 'Power Women LI', text: '& Top Female Executive honoree' } ],
+    vcfPath: '/vcf/rhonda-klch.vcf', qrColor: '2d4a7a'
+  },
+  {
+    id: 'rhonda-swan', name: 'Rhonda Swan', title: 'CEO & Founder', company: 'Unstoppable Branding Agency', companyTagline: 'Agency',
+    phone: '', email: '', website: 'https://unstoppablebrandingagency.com', calendarUrl: '', location: '',
+    socials: [ { platform: 'website', url: 'https://unstoppablebrandingagency.com' }, { platform: 'linkedin', url: 'https://www.linkedin.com/in/rhondaswan' }, { platform: 'instagram', url: 'https://www.instagram.com/rhondaswan/' }, { platform: 'facebook', url: 'https://www.facebook.com/UnstoppableBrandingAgency' }, { platform: 'youtube', url: 'https://www.youtube.com/@UnstoppableBrandingAgency' }, { platform: 'ba', url: 'https://advisors.boardofadvisors.com/profile/rhonda+swan' } ],
+    img: '../assets/images/contacts/rhonda-swan.png', logo: '', logoInitials: 'UBA', posX: 40, posY: -39, zoom: 149,
+    colors: { primary: '#1a1a2e', accent: '#d4af37', canvas: '#f5f2ed', surface: '#e8e4dd' },
+    bio: 'Rhonda Swan is an international speaker, bestselling author, and the founder and CEO of Unstoppable Branding Agency. After leaving the corporate world in 2003, Rhonda built UBA while traveling the world with her family, operating in over 50 countries and touching all seven continents. She is also the executive producer and host of The Rhonda Swan Show, syndicated via USA Today.',
+    mission: 'Building brand credibility through strategic media placement and Google indexing, ensuring clients are recognized as industry authorities online. Positioning entrepreneurs and CEOs for long-term digital visibility.',
+    highlightsTitle: 'Highlights',
+    highlights: [ { label: '300+ clients', text: 'featured in Forbes, Entrepreneur, USA Today' }, { label: '$25M+', text: 'in client media value and sales impact' }, { label: 'NASDAQ & NYSE', text: 'hosted interviews' }, { label: '50+ countries', text: 'across all 7 continents' } ],
+    vcfPath: '/vcf/rhonda-swan.vcf', qrColor: '1a1a2e'
+  },
+  {
+    id: 'jeff-hayzlett', name: 'Jeff Hayzlett', title: 'Chairman & CEO', company: 'C-Suite Network', companyTagline: 'Think Big, Act Bigger',
+    phone: '', email: '', website: 'https://c-suitenetwork.com', calendarUrl: '', location: 'South Dakota',
+    socials: [ { platform: 'website', url: 'https://c-suitenetwork.com' }, { platform: 'twitter', url: 'https://twitter.com/jeffhayzlett' }, { platform: 'facebook', url: 'https://www.facebook.com/thecsuitenetwork/' }, { platform: 'instagram', url: 'https://www.instagram.com/jeffhayzlett/' }, { platform: 'linkedin', url: 'https://www.linkedin.com/in/jeffhayzlett/' }, { platform: 'ba', url: 'https://advisors.boardofadvisors.com/profile/jeff+hayzlett' } ],
+    img: '../assets/images/contacts/jeff-hayzlett.png', logo: '', logoInitials: 'CSN', posX: 77, posY: -17, zoom: 118,
+    colors: { primary: '#1b2838', accent: '#c5922e', canvas: '#f0ede8', surface: '#e4e0da' },
+    bio: "Jeffrey Hayzlett is a primetime television host, business podcast host, global business celebrity, speaker, best-selling author, and Chairman of C-Suite Network. He is the author of The Mirror Test, Running the Gauntlet, and Think Big Act Bigger. A member of the CPAE Speaker Hall of Fame, he has appeared as a guest celebrity judge on NBC's Celebrity Apprentice and is a turnaround architect of the highest order.",
+    mission: 'Leading C-Suite Network as the most trusted network of C-Suite leaders, while delivering strategic business, marketing, and PR consulting for high-growth businesses globally.',
+    highlightsTitle: 'Highlights',
+    highlights: [ { label: 'C-Suite Network', text: "world's most trusted C-Suite leader network" }, { label: 'CPAE Speaker', text: 'Hall of Fame member' }, { label: '3 best-selling', text: 'business books' }, { label: 'Celebrity Apprentice', text: 'judge & primetime TV host' } ],
+    vcfPath: '/vcf/jeff-hayzlett.vcf', qrColor: '1b2838'
+  },
+  {
+    id: 'ty-crandall', name: 'Ty Crandall', title: 'CEO', company: 'Credit Suite', companyTagline: 'Business Credit & Financing Expert',
+    phone: '', email: '', website: 'https://www.creditsuite.com', calendarUrl: '', location: 'Tampa, FL area',
+    socials: [ { platform: 'website', url: 'https://www.creditsuite.com' }, { platform: 'twitter', url: 'https://twitter.com/creditsuite' }, { platform: 'facebook', url: 'https://www.facebook.com/CreditSuite' }, { platform: 'instagram', url: 'https://www.instagram.com/creditsuite' }, { platform: 'linkedin', url: 'https://www.linkedin.com/company/credit-suite' }, { platform: 'youtube', url: 'https://www.youtube.com/creditsuite' }, { platform: 'ba', url: 'https://advisors.boardofadvisors.com/profile/ty+crandall' } ],
+    img: '../assets/images/contacts/ty-crandall.png', logo: '', logoInitials: 'CS', posX: 50, posY: -24, zoom: 129,
+    colors: { primary: '#003d5c', accent: '#27ae60', canvas: '#f0ede8', surface: '#e4e0da' },
+    bio: 'Ty Crandall is an internationally known speaker, author, and business credit expert with over 16 years of financial experience. He is the authority in business credit building, scoring, and repair. Author of Perfect Credit and the best-selling Business Credit Decoded, Ty serves as CEO of Credit Suite where he has helped over 15,000 businesses obtain business credit.',
+    mission: 'Helping businesses obtain business credit and financing, while building the largest business credit provider network in the world.',
+    highlightsTitle: 'Highlights',
+    highlights: [ { label: '20 years', text: 'of financial experience' }, { label: '15,000+ businesses', text: 'helped obtain business credit' }, { label: "Entrepreneur magazine's", text: 'top entrepreneurial company' }, { label: 'Author', text: 'of Perfect Credit & Business Credit Decoded' } ],
+    vcfPath: '/vcf/ty-crandall.vcf', qrColor: '003d5c'
+  },
+  {
+    id: 'rich-goldstein', name: 'Rich Goldstein', title: 'Founding Partner', company: 'Goldstein Patent Law', companyTagline: 'Protecting Innovation, Powering Growth',
+    phone: '', email: '', website: 'https://www.goldsteinpatentlaw.com', calendarUrl: '', location: '',
+    socials: [ { platform: 'website', url: 'https://www.goldsteinpatentlaw.com' }, { platform: 'linkedin', url: 'https://www.linkedin.com/in/richgoldstein' }, { platform: 'ba', url: 'https://advisors.boardofadvisors.com/profile/rich+goldstein' } ],
+    img: '../assets/images/contacts/rich-goldstein.png', logo: '', logoInitials: 'GPL', posX: 49, posY: -42, zoom: 142,
+    colors: { primary: '#1a1a1a', accent: '#b8860b', canvas: '#f5f2ed', surface: '#e8e4dd' },
+    bio: 'Rich Goldstein has built a career on working with individual inventors and start-up companies. He has given critical advice to more than 10,000 inventors and obtained nearly 2,000 patents for his clients. He is the best-selling author of The ABA Consumer Guide to Obtaining a Patent and works directly with executives to help them make effective decisions to protect their IP.',
+    mission: 'Helping inventors, startups, and executives protect their intellectual property, meet their business goals, and leverage the value of what they have already created.',
+    highlightsTitle: 'Highlights',
+    highlights: [ { label: '10,000+ inventors', text: 'advised on patent strategy' }, { label: 'Nearly 2,000 patents', text: 'obtained for clients' }, { label: 'Best-selling author', text: 'The ABA Consumer Guide to Obtaining a Patent' }, { label: 'Works with executives', text: 'on IP strategy & business goals' } ],
+    vcfPath: '/vcf/rich-goldstein.vcf', qrColor: '1a1a1a'
+  },
+  {
+    id: 'carl-gould', name: 'Carl Gould', title: 'CEO & Hypergrowth Strategist', company: '7 Stage Advisors', companyTagline: 'Scaling Businesses to the Next Level',
+    phone: '', email: '', website: 'https://www.7stageadvisors.com', calendarUrl: '', location: '',
+    socials: [ { platform: 'website', url: 'https://www.7stageadvisors.com' }, { platform: 'linkedin', url: 'https://www.linkedin.com/in/carlgould' }, { platform: 'ba', url: 'https://advisors.boardofadvisors.com/profile/carl+gould' } ],
+    img: '../assets/images/contacts/carl-gould.png', logo: '', logoInitials: '7SA', posX: 21, posY: -34, zoom: 131,
+    colors: { primary: '#2c3e50', accent: '#e67e22', canvas: '#f0ede8', surface: '#e4e0da' },
+    bio: "Carl Gould is a worldwide leading authority on business and entrepreneurship. He built three multi-million dollar businesses by age 40. His company, 7 Stage Advisors, has mentored the launch of over 5,000 businesses and advised over 100 Inc. 500/5000 companies including Walgreens, Walmart, IBM, and the US Army. He has certified over 7,000 business coaches worldwide and co-authored Blueprint for Success with Stephen R. Covey.",
+    mission: 'Helping organizations grow to the next level through proven hypergrowth strategies, executive coaching, and business mentoring across 35 countries worldwide.',
+    highlightsTitle: 'Highlights',
+    highlights: [ { label: '100+ companies', text: 'put into the Inc. 5,000' }, { label: '10x growth', text: 'for 4 companies at BA' }, { label: '3 largest coaching programs', text: 'in the world' }, { label: '7,000+ coaches', text: 'certified in 35 countries' } ],
+    vcfPath: '/vcf/carl-gould.vcf', qrColor: '2c3e50'
+  },
+  {
+    id: 'colten-page', name: 'Colten Page', title: 'Chief Sales Officer & Equity Partner', company: 'Platinum Payment Systems', companyTagline: 'Payment Solutions',
+    phone: '', email: '', website: 'https://www.platpay.com', calendarUrl: '', location: '',
+    socials: [ { platform: 'website', url: 'https://www.platpay.com' }, { platform: 'linkedin', url: 'https://www.linkedin.com/company/platpay' }, { platform: 'facebook', url: 'https://www.facebook.com/platpay' }, { platform: 'instagram', url: 'https://www.instagram.com/platpay/' }, { platform: 'ba', url: 'https://advisors.boardofadvisors.com/profile/colten+page' } ],
+    img: '../assets/images/contacts/colten-page.png', logo: '', logoInitials: 'CP', posX: 50, posY: 20, zoom: 100,
+    colors: { primary: '#1a237e', accent: '#ffd700', canvas: '#eef0f5', surface: '#dfe2ea' },
+    bio: "Colten Page is the Chief Sales Officer and Equity Partner at Platinum Payment Systems (PlatPay), where he leads sales strategy and business development for diverse merchant and business payment solutions. With a background spanning financial advisory, wealth management, and sales leadership, Colten brings a results-driven approach to helping businesses optimize their payment processing. His experience includes roles in financial consulting and entrepreneurship, supported by studies in Accounting and Finance at Utah Valley University.",
+    mission: 'Empowering businesses with innovative payment solutions and strategic partnerships to drive growth and streamline operations.',
+    highlightsTitle: 'Highlights',
+    highlights: [ { label: 'CSO & Equity Partner', text: 'at PlatPay' }, { label: 'Merchant Processing', text: 'across US & Canada' }, { label: 'Financial Advisory', text: '& Wealth Management background' }, { label: 'Board of Advisors', text: 'Member' } ],
+    vcfPath: '/vcf/colten-page.vcf', qrColor: '1a237e'
+  },
+  {
+    id: 'jessica-haley', name: 'Jessica Haley', title: 'Founder & Performance Coach', company: 'AVA Jewelry', companyTagline: 'Jewelry & Coaching',
+    phone: '(757) 817-8065', email: 'jesshaleyconsulting@gmail.com', website: 'https://thejessicahaley.com', calendarUrl: '', location: 'Lutz, FL',
+    socials: [ { platform: 'website', url: 'https://thejessicahaley.com' }, { platform: 'linkedin', url: 'https://www.linkedin.com/in/thejessicahaley/' }, { platform: 'instagram', url: 'https://www.instagram.com/thejessicahaley/' }, { platform: 'facebook', url: 'https://www.facebook.com/thejessicahaley' }, { platform: 'twitter', url: 'https://x.com/thejesshaley' }, { platform: 'ba', url: 'https://advisors.boardofadvisors.com/profile/jessica+haley' } ],
+    img: '../assets/images/contacts/jessica-haley.png', logo: '', logoInitials: 'AVA', posX: 50, posY: 15, zoom: 130,
+    colors: { primary: '#1a1a2e', accent: '#d4af37', canvas: '#f5f2ed', surface: '#e8e4dd' },
+    bio: 'Jessica Haley is a dynamic entrepreneur, performance coach, and founder of AVA Jewelry. With a passion for empowering others, she combines her business acumen with coaching expertise to help individuals and organizations achieve peak performance. Based in Lutz, Florida, Jessica is an active member of the Board of Advisors community.',
+    mission: 'Empowering entrepreneurs and professionals to achieve peak performance through coaching, community, and authentic connection.',
+    highlightsTitle: 'Highlights',
+    highlights: [ { label: 'AVA Jewelry', text: 'Founder' }, { label: 'Performance Coach', text: 'Individual & organizational coaching' }, { label: 'Board of Advisors', text: 'Active member' }, { label: 'Based in', text: 'Lutz, Florida' } ],
+    vcfPath: '/vcf/jessica-haley.vcf', qrColor: '1a1a2e'
+  },
+  {
+    id: 'krista-cordier', name: 'Krista Cordier', title: 'Principal & Director of Business Operations', company: 'Option Spreaders', companyTagline: 'Options Trading & Finance',
+    phone: '(813) 493-5831', email: 'kcordier@optionspreaders.com', website: 'https://www.optionspreaders.com', calendarUrl: '', location: 'Tampa, FL',
+    socials: [ { platform: 'website', url: 'https://www.optionspreaders.com' }, { platform: 'linkedin', url: 'https://www.linkedin.com/in/krista-cordier/' }, { platform: 'instagram', url: 'https://www.instagram.com/kristacordier/' }, { platform: 'ba', url: 'https://advisors.boardofadvisors.com/profile/krista+cordier' } ],
+    img: '../assets/images/contacts/krista-cordier.png', logo: '', logoInitials: 'OS', posX: 50, posY: 10, zoom: 135,
+    colors: { primary: '#1a1a2e', accent: '#d4af37', canvas: '#f5f2ed', surface: '#e8e4dd' },
+    bio: 'Krista Cordier is the Principal and Director of Business Operations at Option Spreaders, where she oversees strategic operations and business development in the options trading space. She also contributes to the Cordier Commodity Report. Based in Tampa, Florida, Krista is an active member of the Board of Advisors community.',
+    mission: 'Driving operational excellence and strategic growth in the options trading industry while building meaningful professional connections.',
+    highlightsTitle: 'Highlights',
+    highlights: [ { label: 'Option Spreaders', text: 'Principal & Director of Business Operations' }, { label: 'Cordier Commodity Report', text: 'Contributor' }, { label: 'Board of Advisors', text: 'Active member' }, { label: 'Based in', text: 'Tampa, Florida' } ],
+    vcfPath: '/vcf/krista-cordier.vcf', qrColor: '1a1a2e'
+  }
+];
 
-        // ==========================================
-        // AUTH
-        // ==========================================
-        function attemptLogin() {
-            const pass = document.getElementById('login-pass').value;
-            // Future: check against real auth
-            if (pass === 'simpli2025') {
-                showApp();
-            } else {
-                document.getElementById('login-error').classList.remove('hidden');
-            }
+// Deep clone for dirty tracking
+const originals = JSON.parse(JSON.stringify(cards));
+
+let guidesOn = true;
+let dragState = null;
+let expandedCard = -1;
+
+// ==========================================
+// AUTH
+// ==========================================
+function attemptLogin() {
+    if (document.getElementById('login-pass').value === 'simpli2025') showApp();
+    else document.getElementById('login-error').classList.remove('hidden');
+}
+function bypassLogin() { showApp(); }
+function showApp() {
+    document.getElementById('login-gate').classList.add('hidden');
+    document.getElementById('main-app').classList.remove('hidden');
+    buildCards();
+    lucide.createIcons();
+}
+
+// ==========================================
+// DIRTY TRACKING
+// ==========================================
+function isDirty(i) {
+    return JSON.stringify(cards[i]) !== JSON.stringify(originals[i]);
+}
+function anyDirty() { return cards.some((_, i) => isDirty(i)); }
+
+function getChanges(i) {
+    const c = cards[i], o = originals[i], changes = {};
+    // Simple fields
+    ['name','title','company','companyTagline','phone','email','website','calendarUrl','location','img','logo','logoInitials','bio','mission','highlightsTitle','vcfPath','qrColor'].forEach(k => {
+        if (c[k] !== o[k]) changes[k] = { from: o[k], to: c[k] };
+    });
+    // Photo
+    if (c.posX !== o.posX || c.posY !== o.posY || c.zoom !== o.zoom) {
+        changes.photo = { posX: c.posX, posY: c.posY, zoom: c.zoom };
+    }
+    // Colors
+    ['primary','accent','canvas','surface'].forEach(k => {
+        if (c.colors[k] !== o.colors[k]) {
+            if (!changes.colors) changes.colors = {};
+            changes.colors[k] = { from: o.colors[k], to: c.colors[k] };
         }
+    });
+    // Socials
+    if (JSON.stringify(c.socials) !== JSON.stringify(o.socials)) changes.socials = c.socials;
+    // Highlights
+    if (JSON.stringify(c.highlights) !== JSON.stringify(o.highlights)) changes.highlights = c.highlights;
+    return changes;
+}
 
-        function bypassLogin() {
-            showApp();
-        }
+function updateDirtyUI() {
+    cards.forEach((_, i) => {
+        const row = document.getElementById(`card-row-${i}`);
+        const badge = document.getElementById(`dirty-${i}`);
+        if (isDirty(i)) { row.classList.add('card-dirty'); badge.classList.remove('hidden'); }
+        else { row.classList.remove('card-dirty'); badge.classList.add('hidden'); }
+    });
+    const btn = document.getElementById('commit-all-btn');
+    if (anyDirty()) { btn.classList.remove('hidden'); btn.classList.add('pulse-commit'); }
+    else { btn.classList.add('hidden'); btn.classList.remove('pulse-commit'); }
+}
 
-        function showApp() {
-            document.getElementById('login-gate').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            lucide.createIcons();
-        }
+// ==========================================
+// BUILD UI
+// ==========================================
+function buildCards() {
+    const container = document.getElementById('cards-container');
+    container.innerHTML = '';
+    cards.forEach((card, i) => {
+        const div = document.createElement('div');
+        div.id = `card-row-${i}`;
+        div.className = 'bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-shadow';
+        div.innerHTML = buildCardRow(card, i);
+        container.appendChild(div);
+    });
+    lucide.createIcons();
+}
 
-        // ==========================================
-        // BUILD CARDS UI
-        // ==========================================
-        function buildCards() {
-            const container = document.getElementById('cards-container');
-            container.innerHTML = '';
+function buildCardRow(card, i) {
+    return `
+    <!-- Header Row (always visible) -->
+    <div class="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition" onclick="toggleExpand(${i})">
+        <div class="w-14 h-14 rounded-full border-3 overflow-hidden shrink-0 card-circle" style="border: 3px solid ${card.colors.primary}">
+            <img src="${card.img}" alt="${card.name}" class="w-full h-full object-cover" style="object-position: ${card.posX}% ${card.posY}%; transform: scale(${card.zoom / 100});">
+        </div>
+        <div class="flex-1 min-w-0">
+            <h3 class="font-serif font-bold text-sm text-brand-primary leading-none">${card.name}</h3>
+            <p class="text-[11px] text-slate-400 mt-0.5">${card.title} &mdash; ${card.company}</p>
+        </div>
+        <span id="dirty-${i}" class="hidden px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full">MODIFIED</span>
+        <button onclick="event.stopPropagation(); commitSingle(${i})" class="px-3 py-1.5 rounded-lg bg-brand-accent text-brand-primary text-[10px] font-bold hover:bg-brand-primary hover:text-white transition ${isDirty(i)?'':'hidden'}" id="commit-btn-${i}">
+            <i data-lucide="save" class="w-3 h-3 inline"></i> Commit
+        </button>
+        <i data-lucide="${expandedCard === i ? 'chevron-up' : 'chevron-down'}" class="w-5 h-5 text-slate-300 shrink-0"></i>
+    </div>
 
-            cards.forEach((card, i) => {
-                const div = document.createElement('div');
-                div.className = 'bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden';
-                div.innerHTML = `
-                    <!-- Card Header -->
-                    <div class="p-1.5" style="background: ${card.color}">
-                        <p class="text-[9px] text-white/60 text-center font-bold uppercase tracking-widest truncate">${card.company}</p>
+    <!-- Expandable Editor -->
+    <div id="editor-${i}" class="${expandedCard === i ? '' : 'hidden'} border-t border-gray-100">
+        <!-- Tabs -->
+        <div class="flex gap-1 px-4 pt-3 pb-2 bg-gray-50 overflow-x-auto">
+            ${['Photo','Info','Contact','Social','Colors','Content'].map((t, ti) =>
+                `<button class="tab-btn px-3 py-1.5 rounded-lg text-[11px] font-bold transition whitespace-nowrap ${ti===0?'active':'bg-white text-slate-500 hover:bg-gray-100'}" onclick="switchTab(${i}, ${ti}, this)">${t}</button>`
+            ).join('')}
+        </div>
+
+        <!-- Tab Panels -->
+        <div class="px-4 pb-4">
+            ${buildPhotoTab(card, i)}
+            ${buildInfoTab(card, i)}
+            ${buildContactTab(card, i)}
+            ${buildSocialTab(card, i)}
+            ${buildColorsTab(card, i)}
+            ${buildContentTab(card, i)}
+        </div>
+    </div>`;
+}
+
+function buildPhotoTab(card, i) {
+    return `<div class="tab-panel active" data-tab="${i}-0">
+        <div class="flex gap-6 pt-3">
+            <div class="relative">
+                <div class="w-36 h-36 rounded-full border-4 shadow-lg overflow-hidden card-circle relative" style="border-color: ${card.colors.primary}" data-index="${i}" onmousedown="startDrag(event, ${i})" ontouchstart="startDrag(event, ${i})">
+                    <img id="img-${i}" src="${card.img}" alt="${card.name}" class="w-full h-full object-cover" style="object-position: ${card.posX}% ${card.posY}%; transform: scale(${card.zoom / 100});">
+                    <div class="guide-h guide-line" style="top: 25%"></div>
+                    <div class="guide-v guide-line" style="left: 50%"></div>
+                    <div class="guide-label guide-line" style="top: 23%; right: 3px;">3/4</div>
+                </div>
+            </div>
+            <div class="flex-1 space-y-2 pt-2">
+                ${['X','Y','Zoom'].map((label, si) => {
+                    const key = si===0?'posX':si===1?'posY':'zoom';
+                    const min = si===2?50:-50, max = si===2?250:150;
+                    return `<div class="flex items-center gap-2">
+                        <span class="text-[10px] text-slate-400 font-bold w-10">${label}</span>
+                        <input type="range" id="slider-${key}-${i}" min="${min}" max="${max}" value="${card[key]}" class="flex-1" oninput="updatePhoto(${i}, '${key}', this.value)">
+                        <span id="val-${key}-${i}" class="text-[11px] font-mono font-bold text-brand-primary w-12 text-right">${card[key]}${si===2?'%':'%'}</span>
+                    </div>`;
+                }).join('')}
+                <div class="bg-slate-900 rounded-lg px-2.5 py-1.5 mt-2">
+                    <code id="class-${i}" class="text-brand-accent text-[10px] font-mono font-bold">object-[${card.posX}%_${card.posY}%]${card.zoom!==100?` scale(${(card.zoom/100).toFixed(2)})`:''}</code>
+                </div>
+                <div class="mt-1">
+                    <label class="text-[10px] text-slate-400 font-bold">Image Path</label>
+                    <input class="field-input text-[11px]" value="${card.img}" onchange="cards[${i}].img=this.value; updateDirtyUI();">
+                </div>
+                <div class="mt-1">
+                    <label class="text-[10px] text-slate-400 font-bold">Logo Path (or leave empty)</label>
+                    <input class="field-input text-[11px]" value="${card.logo}" onchange="cards[${i}].logo=this.value; updateDirtyUI();">
+                </div>
+                <div class="mt-1">
+                    <label class="text-[10px] text-slate-400 font-bold">Logo Initials (fallback)</label>
+                    <input class="field-input text-[11px] w-20" value="${card.logoInitials}" onchange="cards[${i}].logoInitials=this.value; updateDirtyUI();">
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+function buildInfoTab(card, i) {
+    return `<div class="tab-panel" data-tab="${i}-1">
+        <div class="grid grid-cols-2 gap-3 pt-3">
+            ${fieldHTML('Name', 'name', card.name, i)}
+            ${fieldHTML('Title', 'title', card.title, i)}
+            ${fieldHTML('Company', 'company', card.company, i)}
+            ${fieldHTML('Tagline', 'companyTagline', card.companyTagline, i)}
+        </div>
+        <div class="mt-3">
+            ${textareaHTML('Bio (About section)', 'bio', card.bio, i)}
+        </div>
+        <div class="mt-3">
+            ${textareaHTML('Current Mission', 'mission', card.mission, i)}
+        </div>
+    </div>`;
+}
+
+function buildContactTab(card, i) {
+    return `<div class="tab-panel" data-tab="${i}-2">
+        <div class="grid grid-cols-2 gap-3 pt-3">
+            ${fieldHTML('Phone', 'phone', card.phone, i)}
+            ${fieldHTML('Email', 'email', card.email, i)}
+            ${fieldHTML('Website', 'website', card.website, i)}
+            ${fieldHTML('Calendar/Booking URL', 'calendarUrl', card.calendarUrl, i)}
+        </div>
+        <div class="mt-3">
+            ${textareaHTML('Location / Address', 'location', card.location, i, 2)}
+        </div>
+        <div class="mt-3 bg-slate-50 p-3 rounded-xl">
+            <p class="text-[10px] text-slate-400 font-bold mb-1">VCF Path (read-only)</p>
+            <code class="text-[11px] text-slate-600">${card.vcfPath}</code>
+        </div>
+    </div>`;
+}
+
+function buildSocialTab(card, i) {
+    return `<div class="tab-panel" data-tab="${i}-3">
+        <div class="pt-3" id="socials-${i}">
+            ${card.socials.map((s, si) => socialRowHTML(i, si, s)).join('')}
+        </div>
+        <button onclick="addSocial(${i})" class="mt-2 px-3 py-1.5 rounded-lg bg-brand-accent/10 text-brand-primary text-[11px] font-bold hover:bg-brand-accent/20 transition flex items-center gap-1">
+            <i data-lucide="plus" class="w-3 h-3"></i> Add Social Link
+        </button>
+    </div>`;
+}
+
+function buildColorsTab(card, i) {
+    return `<div class="tab-panel" data-tab="${i}-4">
+        <div class="grid grid-cols-2 gap-4 pt-3">
+            ${['primary','accent','canvas','surface'].map(k => `
+                <div>
+                    <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">${k}</label>
+                    <div class="flex items-center gap-2 mt-1">
+                        <input type="color" class="color-swatch" value="${card.colors[k]}" onchange="cards[${i}].colors.${k}=this.value; this.nextElementSibling.value=this.value; updateDirtyUI();">
+                        <input class="field-input text-[11px] font-mono w-24" value="${card.colors[k]}" onchange="cards[${i}].colors.${k}=this.value; this.previousElementSibling.value=this.value; updateDirtyUI();">
                     </div>
+                </div>
+            `).join('')}
+        </div>
+        <div class="mt-4 p-3 rounded-xl flex gap-2" id="color-preview-${i}" style="background: ${card.colors.canvas}">
+            <div class="px-3 py-2 rounded-lg text-white text-[10px] font-bold" style="background: ${card.colors.primary}">Primary</div>
+            <div class="px-3 py-2 rounded-lg text-[10px] font-bold" style="background: ${card.colors.accent}; color: ${card.colors.primary}">Accent</div>
+            <div class="px-3 py-2 rounded-lg text-[10px] font-bold border" style="background: ${card.colors.surface}; color: ${card.colors.primary}">Surface</div>
+        </div>
+    </div>`;
+}
 
-                    <!-- Preview Circle -->
-                    <div class="flex justify-center pt-5 pb-3 px-4">
-                        <div class="relative">
-                            <div class="w-32 h-32 rounded-full border-4 shadow-lg overflow-hidden card-circle relative"
-                                 style="border-color: ${card.color}"
-                                 data-index="${i}"
-                                 onmousedown="startDrag(event, ${i})" ontouchstart="startDrag(event, ${i})">
-                                <img id="img-${i}" src="${card.img}" alt="${card.name}"
-                                     class="w-full h-full object-cover"
-                                     style="object-position: ${card.posX}% ${card.posY}%">
-                                <!-- Guides -->
-                                <div class="guide-h guide-line" style="top: 25%"></div>
-                                <div class="guide-v guide-line" style="left: 50%"></div>
-                                <div class="guide-label guide-line" style="top: 23%; right: 3px;">3/4</div>
-                            </div>
-                        </div>
-                    </div>
+function buildContentTab(card, i) {
+    return `<div class="tab-panel" data-tab="${i}-5">
+        <div class="pt-3">
+            <label class="text-[10px] text-slate-400 font-bold">Section Title</label>
+            <input class="field-input text-[11px] w-48 mb-3" value="${card.highlightsTitle}" onchange="cards[${i}].highlightsTitle=this.value; updateDirtyUI();">
+            <div id="highlights-${i}">
+                ${card.highlights.map((h, hi) => highlightRowHTML(i, hi, h)).join('')}
+            </div>
+            <button onclick="addHighlight(${i})" class="mt-2 px-3 py-1.5 rounded-lg bg-brand-accent/10 text-brand-primary text-[11px] font-bold hover:bg-brand-accent/20 transition flex items-center gap-1">
+                <i data-lucide="plus" class="w-3 h-3"></i> Add Highlight
+            </button>
+        </div>
+    </div>`;
+}
 
-                    <!-- Name -->
-                    <div class="text-center px-3 pb-2">
-                        <h3 class="font-serif font-bold text-sm text-brand-primary leading-none">${card.name}</h3>
-                        <p class="text-[9px] text-slate-400 mt-0.5">${card.title}</p>
-                    </div>
+// ==========================================
+// FIELD HELPERS
+// ==========================================
+function fieldHTML(label, key, val, i) {
+    return `<div>
+        <label class="text-[10px] text-slate-400 font-bold">${label}</label>
+        <input class="field-input" value="${escAttr(val)}" onchange="cards[${i}].${key}=this.value; updateDirtyUI();">
+    </div>`;
+}
+function textareaHTML(label, key, val, i, rows) {
+    return `<div>
+        <label class="text-[10px] text-slate-400 font-bold">${label}</label>
+        <textarea class="field-input" rows="${rows||3}" onchange="cards[${i}].${key}=this.value; updateDirtyUI();">${escHTML(val)}</textarea>
+    </div>`;
+}
+function socialRowHTML(i, si, s) {
+    return `<div class="social-row" id="social-${i}-${si}">
+        <select class="field-input text-[11px] w-32" onchange="cards[${i}].socials[${si}].platform=this.value; updateDirtyUI();">
+            ${PLATFORMS.map(p => `<option value="${p}" ${s.platform===p?'selected':''}>${PLATFORM_LABELS[p]}</option>`).join('')}
+        </select>
+        <input class="field-input text-[11px] flex-1" value="${escAttr(s.url)}" placeholder="URL" onchange="cards[${i}].socials[${si}].url=this.value; updateDirtyUI();">
+        <button onclick="removeSocial(${i}, ${si})" class="text-red-400 hover:text-red-600 transition shrink-0"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+    </div>`;
+}
+function highlightRowHTML(i, hi, h) {
+    return `<div class="highlight-row">
+        <input class="field-input text-[11px]" value="${escAttr(h.label)}" placeholder="Label" onchange="cards[${i}].highlights[${hi}].label=this.value; updateDirtyUI();">
+        <input class="field-input text-[11px]" value="${escAttr(h.text)}" placeholder="Description" onchange="cards[${i}].highlights[${hi}].text=this.value; updateDirtyUI();">
+        <button onclick="removeHighlight(${i}, ${hi})" class="text-red-400 hover:text-red-600 transition shrink-0"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+    </div>`;
+}
+function escAttr(s) { return (s||'').replace(/"/g, '&quot;'); }
+function escHTML(s) { return (s||'').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
-                    <!-- Sliders -->
-                    <div class="px-4 pb-4 space-y-2">
-                        <div class="flex items-center gap-2">
-                            <span class="text-[9px] text-slate-400 font-bold w-4">X</span>
-                            <input type="range" min="0" max="100" value="${card.posX}"
-                                   class="flex-1 accent-amber-400 h-1"
-                                   oninput="updatePos(${i}, 'x', this.value)">
-                            <span id="val-x-${i}" class="text-[10px] font-mono font-bold text-brand-primary w-8 text-right">${card.posX}%</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-[9px] text-slate-400 font-bold w-4">Y</span>
-                            <input type="range" min="0" max="100" value="${card.posY}"
-                                   class="flex-1 accent-amber-400 h-1"
-                                   oninput="updatePos(${i}, 'y', this.value)">
-                            <span id="val-y-${i}" class="text-[10px] font-mono font-bold text-brand-primary w-8 text-right">${card.posY}%</span>
-                        </div>
+// ==========================================
+// INTERACTIONS
+// ==========================================
+function toggleExpand(i) {
+    expandedCard = expandedCard === i ? -1 : i;
+    buildCards();
+}
+function collapseAll() { expandedCard = -1; buildCards(); }
 
-                        <!-- Tailwind class -->
-                        <div class="bg-slate-900 rounded-lg px-2.5 py-1.5 flex items-center justify-between mt-1">
-                            <code id="class-${i}" class="text-brand-accent text-[10px] font-mono font-bold">object-[${card.posX}%_${card.posY}%]</code>
-                            <button onclick="copySingle(${i})" class="text-white/40 hover:text-brand-accent transition">
-                                <i data-lucide="copy" class="w-3 h-3"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(div);
+function switchTab(cardIdx, tabIdx, btn) {
+    // Deactivate all tabs/panels for this card
+    btn.parentElement.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.classList.add('bg-white','text-slate-500'); });
+    btn.classList.add('active'); btn.classList.remove('bg-white','text-slate-500');
+    document.querySelectorAll(`[data-tab^="${cardIdx}-"]`).forEach(p => p.classList.remove('active'));
+    document.querySelector(`[data-tab="${cardIdx}-${tabIdx}"]`).classList.add('active');
+}
+
+function updatePhoto(i, key, val) {
+    val = parseInt(val);
+    cards[i][key] = val;
+    const img = document.getElementById(`img-${i}`);
+    if (img) {
+        img.style.objectPosition = `${cards[i].posX}% ${cards[i].posY}%`;
+        img.style.transform = `scale(${cards[i].zoom / 100})`;
+    }
+    const el = document.getElementById(`val-${key}-${i}`);
+    if (el) el.textContent = val + '%';
+    const cls = document.getElementById(`class-${i}`);
+    if (cls) cls.textContent = `object-[${cards[i].posX}%_${cards[i].posY}%]${cards[i].zoom!==100?` scale(${(cards[i].zoom/100).toFixed(2)})`:''}`;
+    updateDirtyUI();
+}
+
+function addSocial(i) {
+    cards[i].socials.push({ platform: 'linkedin', url: '' });
+    buildCards(); updateDirtyUI();
+}
+function removeSocial(i, si) {
+    cards[i].socials.splice(si, 1);
+    buildCards(); updateDirtyUI();
+}
+function addHighlight(i) {
+    cards[i].highlights.push({ label: '', text: '' });
+    buildCards(); updateDirtyUI();
+}
+function removeHighlight(i, hi) {
+    cards[i].highlights.splice(hi, 1);
+    buildCards(); updateDirtyUI();
+}
+
+// ==========================================
+// DRAG TO ADJUST PHOTO
+// ==========================================
+function startDrag(e, index) {
+    e.preventDefault();
+    const touch = e.touches ? e.touches[0] : e;
+    const rect = e.currentTarget.getBoundingClientRect();
+    dragState = { index, startX: touch.clientX, startY: touch.clientY, origPosX: cards[index].posX, origPosY: cards[index].posY, circleSize: rect.width };
+    e.currentTarget.classList.add('ring-active');
+}
+document.addEventListener('mousemove', onDrag);
+document.addEventListener('touchmove', onDrag, { passive: false });
+document.addEventListener('mouseup', endDrag);
+document.addEventListener('touchend', endDrag);
+
+function onDrag(e) {
+    if (!dragState) return;
+    e.preventDefault();
+    const touch = e.touches ? e.touches[0] : e;
+    const sensitivity = 150 / dragState.circleSize;
+    const newX = Math.round(Math.max(-50, Math.min(150, dragState.origPosX - (touch.clientX - dragState.startX) * sensitivity)));
+    const newY = Math.round(Math.max(-50, Math.min(150, dragState.origPosY - (touch.clientY - dragState.startY) * sensitivity)));
+    updatePhoto(dragState.index, 'posX', newX);
+    updatePhoto(dragState.index, 'posY', newY);
+    // Sync sliders
+    const sx = document.getElementById(`slider-posX-${dragState.index}`);
+    const sy = document.getElementById(`slider-posY-${dragState.index}`);
+    if (sx) sx.value = newX;
+    if (sy) sy.value = newY;
+}
+function endDrag() {
+    if (dragState) document.querySelectorAll('.card-circle').forEach(el => el.classList.remove('ring-active'));
+    dragState = null;
+}
+
+// ==========================================
+// COMMIT
+// ==========================================
+function commitSingle(i) {
+    const text = generateCommitText([i]);
+    navigator.clipboard.writeText(text).then(() => {
+        originals[i] = JSON.parse(JSON.stringify(cards[i]));
+        updateDirtyUI(); buildCards();
+        showToast(`${cards[i].name} change order copied to clipboard`);
+    });
+}
+function commitAll() {
+    const dirty = cards.map((_, i) => i).filter(i => isDirty(i));
+    if (!dirty.length) { showToast('No changes to commit'); return; }
+    const text = generateCommitText(dirty);
+    navigator.clipboard.writeText(text).then(() => {
+        dirty.forEach(i => { originals[i] = JSON.parse(JSON.stringify(cards[i])); });
+        updateDirtyUI(); buildCards();
+        showToast(`${dirty.length} card(s) change order copied`);
+    });
+}
+
+function generateCommitText(indexes) {
+    let out = `CHANGE ORDER \u2014 ${new Date().toLocaleString()}\n`;
+    out += '\u2501'.repeat(55) + '\n\n';
+    out += 'Please update the following card files.\n';
+    out += 'Also update change-order.html card data and /vcf/ files accordingly.\n\n';
+
+    indexes.forEach(i => {
+        const card = cards[i];
+        const changes = getChanges(i);
+        if (Object.keys(changes).length === 0) return;
+
+        out += `\u{1F4CB} ${card.name} (cards/${card.id}.html)\n`;
+        out += '\u2500'.repeat(40) + '\n';
+
+        if (changes.photo) {
+            out += `  [Photo]\n`;
+            out += `    object-position: ${changes.photo.posX}% ${changes.photo.posY}%\n`;
+            out += `    scale: ${(changes.photo.zoom / 100).toFixed(2)}\n`;
+        }
+
+        ['name','title','company','companyTagline'].forEach(k => {
+            if (changes[k]) out += `  ${k}: "${changes[k].from}" \u2192 "${changes[k].to}"\n`;
+        });
+
+        ['phone','email','website','calendarUrl','location'].forEach(k => {
+            if (changes[k]) out += `  ${k}: "${changes[k].from}" \u2192 "${changes[k].to}"\n`;
+        });
+
+        if (changes.bio) out += `  Bio: (CHANGED) "${changes.bio.to.substring(0, 80)}..."\n`;
+        if (changes.mission) out += `  Mission: (CHANGED) "${changes.mission.to.substring(0, 80)}..."\n`;
+
+        if (changes.colors) {
+            out += `  [Colors]\n`;
+            Object.entries(changes.colors).forEach(([k, v]) => {
+                out += `    ${k}: ${v.from} \u2192 ${v.to}\n`;
             });
         }
 
-        // ==========================================
-        // POSITION UPDATES
-        // ==========================================
-        function updatePos(index, axis, value) {
-            value = parseInt(value);
-            if (axis === 'x') cards[index].posX = value;
-            else cards[index].posY = value;
-            refreshCard(index);
+        if (changes.socials) {
+            out += `  [Social Links]\n`;
+            changes.socials.forEach(s => out += `    ${PLATFORM_LABELS[s.platform]}: ${s.url}\n`);
         }
 
-        function refreshCard(index) {
-            const card = cards[index];
-            const img = document.getElementById(`img-${index}`);
-            img.style.objectPosition = `${card.posX}% ${card.posY}%`;
-
-            document.getElementById(`val-x-${index}`).textContent = card.posX + '%';
-            document.getElementById(`val-y-${index}`).textContent = card.posY + '%';
-            document.getElementById(`class-${index}`).textContent = `object-[${card.posX}%_${card.posY}%]`;
-
-            // Update sliders
-            const sliders = document.querySelectorAll(`[data-index="${index}"]`);
+        if (changes.highlightsTitle) out += `  Highlights title: "${changes.highlightsTitle.from}" \u2192 "${changes.highlightsTitle.to}"\n`;
+        if (changes.highlights) {
+            out += `  [Highlights]\n`;
+            changes.highlights.forEach(h => out += `    \u2022 ${h.label}: ${h.text}\n`);
         }
 
-        // ==========================================
-        // DRAG TO ADJUST
-        // ==========================================
-        function startDrag(e, index) {
-            e.preventDefault();
-            const touch = e.touches ? e.touches[0] : e;
-            dragState = {
-                index,
-                startX: touch.clientX,
-                startY: touch.clientY,
-                origPosX: cards[index].posX,
-                origPosY: cards[index].posY
-            };
-        }
+        ['img','logo','logoInitials'].forEach(k => {
+            if (changes[k]) out += `  ${k}: "${changes[k].from}" \u2192 "${changes[k].to}"\n`;
+        });
 
-        document.addEventListener('mousemove', onDrag);
-        document.addEventListener('touchmove', onDrag, { passive: false });
-        document.addEventListener('mouseup', endDrag);
-        document.addEventListener('touchend', endDrag);
+        out += '\n';
+    });
 
-        function onDrag(e) {
-            if (!dragState) return;
-            e.preventDefault();
-            const touch = e.touches ? e.touches[0] : e;
-            const dx = touch.clientX - dragState.startX;
-            const dy = touch.clientY - dragState.startY;
+    return out;
+}
 
-            const newX = Math.max(0, Math.min(100, Math.round(dragState.origPosX - dx * 0.4)));
-            const newY = Math.max(0, Math.min(100, Math.round(dragState.origPosY - dy * 0.4)));
+// ==========================================
+// TOAST
+// ==========================================
+function showToast(message) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast bg-brand-primary text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-bold flex items-center gap-2';
+    toast.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-brand-accent"></i> ${message}`;
+    container.appendChild(toast);
+    lucide.createIcons();
+    setTimeout(() => toast.remove(), 3000);
+}
 
-            cards[dragState.index].posX = newX;
-            cards[dragState.index].posY = newY;
-            refreshCard(dragState.index);
-
-            // Also update sliders
-            const container = document.getElementById('cards-container');
-            const cardEl = container.children[dragState.index];
-            const sliders = cardEl.querySelectorAll('input[type="range"]');
-            sliders[0].value = newX;
-            sliders[1].value = newY;
-        }
-
-        function endDrag() {
-            dragState = null;
-        }
-
-        // ==========================================
-        // GUIDES TOGGLE
-        // ==========================================
-        function toggleGuides() {
-            guidesOn = !guidesOn;
-            document.querySelectorAll('.guide-line').forEach(el => {
-                el.style.display = guidesOn ? '' : 'none';
-            });
-            document.getElementById('guide-toggle').innerHTML = `
-                <i data-lucide="crosshair" class="w-3 h-3"></i> Guides: ${guidesOn ? 'ON' : 'OFF'}
-            `;
-            lucide.createIcons();
-        }
-
-        // ==========================================
-        // EXPORT
-        // ==========================================
-        function exportAll() {
-            const panel = document.getElementById('export-panel');
-            panel.classList.remove('hidden');
-            panel.scrollIntoView({ behavior: 'smooth' });
-
-            let output = `Photo Position Update — ${new Date().toLocaleDateString()}\n`;
-            output += `${'—'.repeat(50)}\n\n`;
-            output += `Please update these card files with the following object-position values:\n\n`;
-
-            cards.forEach(card => {
-                const cls = `object-[${card.posX}%_${card.posY}%]`;
-                output += `${card.name.padEnd(22)} → ${cls.padEnd(22)} (cards/${card.id}.html)\n`;
-            });
-
-            output += `\nApply to both img tags in each card (simple view + full view).\n`;
-            output += `Also update change-order.html card data to match.`;
-
-            document.getElementById('export-code').textContent = output;
-        }
-
-        function copyExport() {
-            const text = document.getElementById('export-code').textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.getElementById('copy-btn-text');
-                btn.textContent = 'Copied!';
-                setTimeout(() => { btn.textContent = 'Copy to Clipboard'; }, 2000);
-                showToast('Positions copied — paste to Claude to apply');
-            });
-        }
-
-        function copySingle(index) {
-            const card = cards[index];
-            const text = `object-[${card.posX}%_${card.posY}%]`;
-            navigator.clipboard.writeText(text).then(() => {
-                showToast(`${card.name}: ${text} copied`);
-            });
-        }
-
-        // ==========================================
-        // TOAST
-        // ==========================================
-        function showToast(message) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast bg-brand-primary text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-bold flex items-center gap-2';
-            toast.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-brand-accent"></i> ${message}`;
-            container.appendChild(toast);
-            lucide.createIcons();
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        // ==========================================
-        // INIT
-        // ==========================================
-        lucide.createIcons();
-        buildCards();
-    </script>
+// ==========================================
+// INIT
+// ==========================================
+lucide.createIcons();
+</script>
 </body>
 </html>

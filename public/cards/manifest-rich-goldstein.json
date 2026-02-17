@@ -1,0 +1,22 @@
+{
+  "name": "Rich Goldstein | Goldstein Patent Law",
+  "short_name": "Rich Goldstein",
+  "description": "Professional ID Card",
+  "start_url": "/cards/rich-goldstein.html",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#1a1a1a",
+  "background_color": "#FBF9F7",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

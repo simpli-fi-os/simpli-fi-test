@@ -1,0 +1,22 @@
+{
+  "name": "Krista Cordier | Option Spreaders",
+  "short_name": "Krista Cordier",
+  "description": "Professional ID Card",
+  "start_url": "/cards/krista-cordier.html",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#1a1a2e",
+  "background_color": "#FBF9F7",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

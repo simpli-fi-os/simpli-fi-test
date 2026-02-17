@@ -1,0 +1,22 @@
+{
+  "name": "Rhonda Swan | Unstoppable Branding",
+  "short_name": "Rhonda Swan",
+  "description": "Professional ID Card",
+  "start_url": "/cards/rhonda-swan.html",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#1a1a2e",
+  "background_color": "#FBF9F7",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

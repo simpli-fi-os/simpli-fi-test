@@ -498,8 +498,11 @@
             { id: 6, title: "Ty Crandall — ID Card", category: "public", url: "cards/ty-crandall.html", desc: "Credit Suite CEO.", icon: "id-card", color: "text-cyan-500", bg: "bg-cyan-50" },
             { id: 7, title: "Rich Goldstein — ID Card", category: "public", url: "cards/rich-goldstein.html", desc: "Goldstein Patent Law.", icon: "id-card", color: "text-slate-500", bg: "bg-slate-50" },
             { id: 8, title: "Carl Gould — ID Card", category: "public", url: "cards/carl-gould.html", desc: "7 Stage Advisors.", icon: "id-card", color: "text-orange-500", bg: "bg-orange-50" },
-            { id: 9, title: "Hunter Lott — ID Card", category: "public", url: "cards/hunter.html", desc: "Simpli-FI Alpha LLC.", icon: "id-card", color: "text-teal-500", bg: "bg-teal-50" },
-            { id: 10, title: "Lindsey Lott — ID Card", category: "public", url: "cards/lindsey.html", desc: "Simpli-FI Life.", icon: "id-card", color: "text-pink-500", bg: "bg-pink-50" }
+            { id: 9, title: "Colten Page — ID Card", category: "public", url: "cards/colten-page.html", desc: "Platinum Payment Systems.", icon: "id-card", color: "text-indigo-500", bg: "bg-indigo-50" },
+            { id: 10, title: "Hunter Lott — ID Card", category: "public", url: "cards/hunter.html", desc: "Simpli-FI Alpha LLC.", icon: "id-card", color: "text-teal-500", bg: "bg-teal-50" },
+            { id: 11, title: "Lindsey Lott — ID Card", category: "public", url: "cards/lindsey.html", desc: "Simpli-FI Life.", icon: "id-card", color: "text-pink-500", bg: "bg-pink-50" },
+            { id: 12, title: "Jessica Haley — ID Card", category: "public", url: "cards/jessica-haley.html", desc: "AVA Jewelry.", icon: "id-card", color: "text-rose-500", bg: "bg-rose-50" },
+            { id: 13, title: "Krista Cordier — ID Card", category: "public", url: "cards/krista-cordier.html", desc: "Option Spreaders.", icon: "id-card", color: "text-violet-500", bg: "bg-violet-50" }
         ];
 
         let contacts = [
@@ -512,7 +515,10 @@
             { id: "jeff-hayzlett", name: "Jeff Hayzlett", title: "Chairman & CEO", business: "C-Suite Network", field: "Media / Executive Leadership", avatar: "assets/images/contacts/jeff-hayzlett.png", cardUrl: "cards/jeff-hayzlett.html" },
             { id: "ty-crandall", name: "Ty Crandall", title: "CEO", business: "Credit Suite", field: "Business Credit", avatar: "assets/images/contacts/ty-crandall.png", cardUrl: "cards/ty-crandall.html" },
             { id: "rich-goldstein", name: "Rich Goldstein", title: "Founder & Principal", business: "Goldstein Patent Law", field: "Intellectual Property", avatar: "assets/images/contacts/rich-goldstein.png", cardUrl: "cards/rich-goldstein.html" },
-            { id: "carl-gould", name: "Carl Gould", title: "CEO & Hypergrowth Strategist", business: "7 Stage Advisors", field: "Business Growth", avatar: "assets/images/contacts/carl-gould.png", cardUrl: "cards/carl-gould.html" }
+            { id: "carl-gould", name: "Carl Gould", title: "CEO & Hypergrowth Strategist", business: "7 Stage Advisors", field: "Business Growth", avatar: "assets/images/contacts/carl-gould.png", cardUrl: "cards/carl-gould.html" },
+            { id: "colten-page", name: "Colten Page", title: "Chief Sales Officer & Equity Partner", business: "Platinum Payment Systems", field: "Payments / FinTech", avatar: "assets/images/contacts/colten-page.png", cardUrl: "cards/colten-page.html" },
+            { id: "jessica-haley", name: "Jessica Haley", title: "Founder & Performance Coach", business: "AVA Jewelry", field: "Jewelry / Coaching", avatar: "assets/images/contacts/jessica-haley.png", cardUrl: "cards/jessica-haley.html" },
+            { id: "krista-cordier", name: "Krista Cordier", title: "Principal & Director of Business Operations", business: "Option Spreaders", field: "Finance / Options Trading", avatar: "assets/images/contacts/krista-cordier.png", cardUrl: "cards/krista-cordier.html" }
         ];
 
         // --- RENDER LOGIC: RESOURCES ---
@@ -585,7 +591,58 @@
 
         // ... (Existing openDetails, openQR, openUploadModal, saveResource, handleFileSelect, etc. remain the same) ...
         // Re-included for completeness
-        function openDetails(id) { const item = resources.find(r => r.id === id); if(!item) return; document.getElementById('detail-title').innerText = item.title; document.getElementById('detail-category').innerText = item.category; document.getElementById('detail-desc').innerText = item.desc; document.getElementById('detail-icon-bg').innerHTML = `<i data-lucide="${item.icon}" class="w-10 h-10 ${item.color}"></i>`; document.getElementById('details-modal').classList.remove('hidden'); document.getElementById('details-modal').classList.add('flex'); lucide.createIcons(); }
+        let currentDetailItem = null;
+
+        function openDetails(id) {
+            const item = resources.find(r => r.id === id);
+            if (!item) return;
+            currentDetailItem = item;
+
+            document.getElementById('detail-title').innerText = item.title;
+            document.getElementById('detail-category').innerText = item.category;
+            document.getElementById('detail-desc').innerText = item.desc;
+            document.getElementById('detail-icon-bg').innerHTML = `<i data-lucide="${item.icon}" class="w-10 h-10 ${item.color}"></i>`;
+
+            // Wire up Preview button
+            const previewBtn = document.getElementById('detail-open-btn');
+            previewBtn.onclick = function() {
+                if (item.url) window.open(item.url, '_blank');
+            };
+
+            // Wire up Generate QR button
+            const qrBtn = document.getElementById('detail-qr-btn');
+            qrBtn.onclick = function() {
+                closeModal('details-modal');
+                openQR(item);
+            };
+
+            document.getElementById('details-modal').classList.remove('hidden');
+            document.getElementById('details-modal').classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function openQR(item) {
+            document.getElementById('qr-title').innerText = item.title;
+
+            // Build full URL for the QR code
+            const baseUrl = window.location.origin;
+            const fullUrl = item.url.startsWith('http') ? item.url : baseUrl + '/' + item.url;
+
+            // Clear previous QR code and generate new one
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: fullUrl,
+                width: 200,
+                height: 200,
+                colorDark: getComputedStyle(document.documentElement).getPropertyValue('--brand-primary').trim() || '#1e293b',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            document.getElementById('qr-modal').classList.remove('hidden');
+            document.getElementById('qr-modal').classList.add('flex');
+        }
         function openUploadModal() { document.getElementById('upload-modal').classList.remove('hidden'); document.getElementById('upload-modal').classList.add('flex'); }
         function selectUploadCategory(cat) { selectedCategory = cat; }
         function saveResource() { /* Existing logic */ closeModal('upload-modal'); }

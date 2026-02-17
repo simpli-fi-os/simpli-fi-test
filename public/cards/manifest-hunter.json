@@ -1,0 +1,22 @@
+{
+  "name": "Hunter Lott | Simpli-FI Alpha",
+  "short_name": "Hunter Lott",
+  "description": "Professional ID Card",
+  "start_url": "/cards/hunter.html",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#1e293b",
+  "background_color": "#FBF9F7",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
