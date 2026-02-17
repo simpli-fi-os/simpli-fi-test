@@ -99,8 +99,8 @@
 
         /* --- CARD SCALING LOGIC --- */
         #card-wrapper {
-            width: 650px;
-            height: 370px;
+            width: 750px;
+            height: 400px;
             position: relative;
             transform-origin: center center;
             transition: transform 0.1s ease-out;
@@ -255,7 +255,7 @@
 
                     <!-- Profile Pic -->
                     <div class="relative mb-6 group cursor-pointer z-20" onclick="toggleQR()">
-                        <div class="w-36 h-36 rounded-full p-2.5 bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-2xl">
+                        <div class="w-44 h-44 rounded-full p-2.5 bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-2xl">
                             <div class="w-full h-full rounded-full overflow-hidden relative border-4 border-brand-accent">
                                 <img src="../assets/images/contacts/rhonda-swan.png" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Rhonda&backgroundColor=1a1a2e'" alt="Rhonda Swan" class="w-full h-full object-cover object-[40%_-39%]" style="transform: scale(1.49)">
                             </div>
@@ -511,8 +511,8 @@
         function resizeCard() {
             const availableWidth = window.innerWidth - 40;
             const availableHeight = window.innerHeight - 40;
-            const cardWidth = 650;
-            const cardHeight = 370;
+            const cardWidth = 750;
+            const cardHeight = 400;
 
             const scaleX = availableWidth / cardWidth;
             const scaleY = availableHeight / cardHeight;

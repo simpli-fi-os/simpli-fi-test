@@ -11,12 +11,14 @@
     {
       "src": "https://raw.githubusercontent.com/simpli-fi-os/assets/abc740cc26a619c8153bbfeafbcb85c23879fcdf/lindsey-lott.jpg",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/jpeg",
+      "purpose": "any"
     },
     {
       "src": "https://raw.githubusercontent.com/simpli-fi-os/assets/abc740cc26a619c8153bbfeafbcb85c23879fcdf/lindsey-lott.jpg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }

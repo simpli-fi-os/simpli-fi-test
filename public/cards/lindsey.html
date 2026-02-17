@@ -111,8 +111,8 @@
 
         /* --- CARD SCALING LOGIC --- */
         #card-wrapper {
-            width: 650px; 
-            height: 370px;
+            width: 750px; 
+            height: 400px;
             position: relative;
             transform-origin: center center;
             transition: transform 0.1s ease-out; /* Smooth zoom */
@@ -271,7 +271,7 @@
                      
                     <!-- Profile Pic -->
                     <div class="relative mb-6 group cursor-pointer z-20" onclick="toggleQR()">
-                        <div class="w-36 h-36 rounded-full p-2.5 bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-2xl">
+                        <div class="w-44 h-44 rounded-full p-2.5 bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-2xl">
                             <div class="w-full h-full rounded-full overflow-hidden relative border-4 border-brand-canvas">
                                 <img src="https://raw.githubusercontent.com/simpli-fi-os/assets/abc740cc26a619c8153bbfeafbcb85c23879fcdf/lindsey-lott.jpg" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Lindsey&backgroundColor=7178c8'" alt="Lindsey Lott" class="w-full h-full object-cover">
                             </div>
@@ -477,8 +477,8 @@
         function resizeCard() {
             const availableWidth = window.innerWidth - 40;
             const availableHeight = window.innerHeight - 40;
-            const cardWidth = 650;
-            const cardHeight = 370;
+            const cardWidth = 750;
+            const cardHeight = 400;
             
             const scaleX = availableWidth / cardWidth;
             const scaleY = availableHeight / cardHeight;
