@@ -9,12 +9,12 @@
   "background_color": "#FBF9F7",
   "icons": [
     {
-      "src": "/favicon.png",
+      "src": "/assets/images/contacts/rhonda-swan.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/favicon.png",
+      "src": "/assets/images/contacts/rhonda-swan.png",
       "sizes": "512x512",
       "type": "image/png"
     }

@@ -133,7 +133,7 @@ const cards = [
     id: 'hunter', name: 'Hunter Lott', title: 'Co-Founder & Managing Partner', company: 'Simpli-FI Alpha LLC', companyTagline: 'Investment Stewardship',
     phone: '(940) 373-0151', email: 'hunter.lott@simpli-fi-alpha.com', website: 'https://www.simpli-fi-alpha.com', calendarUrl: 'https://calendar.app.google/ZBGrPEYJsonQmnwL8', location: '513 W Oak St, Ste 105\nDenton, TX 76201',
     socials: [ { platform: 'website', url: 'https://www.simpli-fi-alpha.com' }, { platform: 'email', url: 'mailto:hunter.lott@simpli-fi-alpha.com' } ],
-    img: '../assets/images/hunter-lott.png', logo: '../assets/images/alpha-logo.png', logoInitials: '', posX: 50, posY: 0, zoom: 100,
+    img: '../assets/images/hunter-lott.png', logo: '../assets/images/alpha-logo.png', logoInitials: '', posX: 50, posY: 0, zoom: 100, logoPosX: 50, logoPosY: 50, logoZoom: 100,
     colors: { primary: '#003b46', accent: '#fca311', canvas: '#ebe9e5', surface: '#e1dfdb' },
     bio: 'My background in high-stakes leadership\u2014as a Captain in the United States Marine Corps, Denton Fire Department Captain, and trustee on a firefighter pension fund board\u2014has defined my approach to risk. Today, I apply that same institutional precision to financial stewardship, helping clients navigate market trends with confidence and discipline.',
     mission: 'Connecting with qualified partners to raise capital for the Simpli-FI Legacy Fund\u2014delivering uncorrelated, income-generating returns for families and institutions.',
@@ -331,6 +331,10 @@ function getChanges(i) {
     if (c.posX !== o.posX || c.posY !== o.posY || c.zoom !== o.zoom) {
         changes.photo = { posX: c.posX, posY: c.posY, zoom: c.zoom };
     }
+    // Logo
+    if ((c.logoPosX||50) !== (o.logoPosX||50) || (c.logoPosY||50) !== (o.logoPosY||50) || (c.logoZoom||100) !== (o.logoZoom||100)) {
+        changes.logo = { logoPosX: c.logoPosX||50, logoPosY: c.logoPosY||50, logoZoom: c.logoZoom||100 };
+    }
     // Colors
     ['primary','accent','canvas','surface'].forEach(k => {
         if (c.colors[k] !== o.colors[k]) {
@@ -442,7 +446,7 @@ function buildPhotoTab(card, i) {
                 </div>
                 <div class="mt-1">
                     <label class="text-[10px] text-slate-400 font-bold">Logo Path (or leave empty)</label>
-                    <input class="field-input text-[11px]" value="${card.logo}" onchange="cards[${i}].logo=this.value; updateDirtyUI();">
+                    <input class="field-input text-[11px]" value="${card.logo}" onchange="cards[${i}].logo=this.value; buildCards(); updateDirtyUI();">
                 </div>
                 <div class="mt-1">
                     <label class="text-[10px] text-slate-400 font-bold">Logo Initials (fallback)</label>
@@ -450,6 +454,31 @@ function buildPhotoTab(card, i) {
                 </div>
             </div>
         </div>
+        ${card.logo ? `
+        <div class="border-t border-slate-700 mt-4 pt-4">
+            <h4 class="text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-3">Logo Positioning</h4>
+            <div class="flex gap-6">
+                <div class="w-20 h-20 rounded-full border-2 shadow-lg overflow-hidden" style="border-color: ${card.colors.accent}; background: ${card.colors.primary}">
+                    <img id="logo-img-${i}" src="${card.logo}" alt="Logo" class="w-full h-full object-cover" style="object-position: ${card.logoPosX || 50}% ${card.logoPosY || 50}%; transform: scale(${(card.logoZoom || 100) / 100});">
+                </div>
+                <div class="flex-1 space-y-2 pt-1">
+                    ${['X','Y','Zoom'].map((label, si) => {
+                        const key = si===0?'logoPosX':si===1?'logoPosY':'logoZoom';
+                        const min = si===2?50:-50, max = si===2?250:150;
+                        const val = card[key] || (si===2?100:50);
+                        return \`<div class="flex items-center gap-2">
+                            <span class="text-[10px] text-slate-400 font-bold w-10">\${label}</span>
+                            <input type="range" id="slider-\${key}-\${i}" min="\${min}" max="\${max}" value="\${val}" class="flex-1" oninput="updateLogo(\${i}, '\${key}', this.value)">
+                            <span id="val-\${key}-\${i}" class="text-[11px] font-mono font-bold text-brand-accent w-12 text-right">\${val}%</span>
+                        </div>\`;
+                    }).join('')}
+                    <div class="bg-slate-900 rounded-lg px-2.5 py-1.5 mt-2">
+                        <code id="logo-class-${i}" class="text-brand-accent text-[10px] font-mono font-bold">object-[${card.logoPosX||50}%_${card.logoPosY||50}%]${(card.logoZoom||100)!==100?` scale(${((card.logoZoom||100)/100).toFixed(2)})`:''}</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+        ` : ''}
     </div>`;
 }
 
@@ -601,6 +630,21 @@ function updatePhoto(i, key, val) {
     updateDirtyUI();
 }
 
+function updateLogo(i, key, val) {
+    val = parseInt(val);
+    cards[i][key] = val;
+    const img = document.getElementById(`logo-img-${i}`);
+    if (img) {
+        img.style.objectPosition = `${cards[i].logoPosX || 50}% ${cards[i].logoPosY || 50}%`;
+        img.style.transform = `scale(${(cards[i].logoZoom || 100) / 100})`;
+    }
+    const el = document.getElementById(`val-${key}-${i}`);
+    if (el) el.textContent = val + '%';
+    const cls = document.getElementById(`logo-class-${i}`);
+    if (cls) cls.textContent = `object-[${cards[i].logoPosX||50}%_${cards[i].logoPosY||50}%]${(cards[i].logoZoom||100)!==100?` scale(${((cards[i].logoZoom||100)/100).toFixed(2)})`:''}`;
+    updateDirtyUI();
+}
+
 function addSocial(i) {
     cards[i].socials.push({ platform: 'linkedin', url: '' });
     buildCards(); updateDirtyUI();
@@ -693,6 +737,12 @@ function generateCommitText(indexes) {
             out += `  [Photo]\n`;
             out += `    object-position: ${changes.photo.posX}% ${changes.photo.posY}%\n`;
             out += `    scale: ${(changes.photo.zoom / 100).toFixed(2)}\n`;
+        }
+
+        if (changes.logo) {
+            out += `  [Logo]\n`;
+            out += `    object-position: ${changes.logo.logoPosX}% ${changes.logo.logoPosY}%\n`;
+            out += `    scale: ${(changes.logo.logoZoom / 100).toFixed(2)}\n`;
         }
 
         ['name','title','company','companyTagline'].forEach(k => {
