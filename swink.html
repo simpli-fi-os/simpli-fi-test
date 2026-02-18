@@ -122,6 +122,14 @@ ul { list-style: none; }
   border-right: 1px solid rgba(245,158,11,0.2);
   border-bottom: 1px solid rgba(245,158,11,0.2);
 }
+.tooltip-below .tooltip-inner::after {
+  bottom: auto;
+  top: -6px;
+  border-right: none;
+  border-bottom: none;
+  border-left: 1px solid rgba(245,158,11,0.2);
+  border-top: 1px solid rgba(245,158,11,0.2);
+}
 .tooltip-title {
   display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
 }
@@ -1040,14 +1048,20 @@ function renderAllocRing() {
 
 // ===== TOOLTIPS =====
 let activeTooltip = null;
+let activeAcronym = null;
 let tooltipTimeout = null;
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 function showTooltip(el) {
   clearTimeout(tooltipTimeout);
+  if (activeTooltip && activeAcronym === el) return; // already showing for this element
+  hideTooltip(true); // force close any existing
+
   const term = el.dataset.term;
   const data = ACRONYMS[term];
   if (!data) return;
-  hideTooltip();
+
+  activeAcronym = el;
 
   const rect = el.getBoundingClientRect();
   const tip = document.createElement('div');
@@ -1057,28 +1071,75 @@ function showTooltip(el) {
   document.body.appendChild(tip);
   activeTooltip = tip;
 
-  const tw = 320, pad = 16;
+  // Position ABOVE the element with a gap so it never overlaps the trigger
+  const tipRect = tip.getBoundingClientRect();
+  const tw = 320, gap = 12, pad = 16;
   let left = rect.left + rect.width/2 - tw/2;
   if (left < pad) left = pad;
   if (left + tw > window.innerWidth - pad) left = window.innerWidth - tw - pad;
-  tip.style.left = left + 'px';
-  tip.style.top = (rect.top - 8) + 'px';
-  tip.style.transform = 'translateY(-100%)';
 
-  tip.addEventListener('mouseenter', () => clearTimeout(tooltipTimeout));
-  tip.addEventListener('mouseleave', () => { tooltipTimeout = setTimeout(hideTooltip, 100); });
+  let top = rect.top - gap;
+  // If not enough room above, show below
+  if (top - tipRect.height < pad) {
+    top = rect.bottom + gap;
+    tip.style.transform = 'translateY(0)';
+    tip.classList.add('tooltip-below');
+  } else {
+    tip.style.transform = 'translateY(-100%)';
+    tip.classList.remove('tooltip-below');
+  }
+
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+
+  // Desktop: allow hovering into tooltip
+  if (!isTouchDevice) {
+    tip.addEventListener('mouseenter', () => clearTimeout(tooltipTimeout));
+    tip.addEventListener('mouseleave', () => scheduleHide());
+  }
 }
 
-function hideTooltip() {
-  if (activeTooltip) { activeTooltip.remove(); activeTooltip = null; }
+function scheduleHide() {
+  clearTimeout(tooltipTimeout);
+  tooltipTimeout = setTimeout(() => hideTooltip(), 200);
+}
+
+function hideTooltip(force) {
+  clearTimeout(tooltipTimeout);
+  if (activeTooltip) { activeTooltip.remove(); activeTooltip = null; activeAcronym = null; }
 }
 
 function bindTooltips(container) {
   (container||document).querySelectorAll('.acronym').forEach(el => {
-    el.addEventListener('mouseenter', () => showTooltip(el));
-    el.addEventListener('mouseleave', () => { tooltipTimeout = setTimeout(hideTooltip, 150); });
+    // Desktop hover
+    el.addEventListener('mouseenter', () => {
+      if (isTouchDevice) return;
+      clearTimeout(tooltipTimeout);
+      showTooltip(el);
+    });
+    el.addEventListener('mouseleave', () => {
+      if (isTouchDevice) return;
+      scheduleHide();
+    });
+    // Mobile tap
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (activeAcronym === el && activeTooltip) {
+        hideTooltip();
+      } else {
+        showTooltip(el);
+      }
+    });
   });
 }
+
+// Close tooltip on tap/click anywhere else (mobile)
+document.addEventListener('click', (e) => {
+  if (activeTooltip && !e.target.closest('.acronym') && !e.target.closest('.tooltip-box')) {
+    hideTooltip();
+  }
+});
 
 // ===== COUNT UP =====
 function animateCountUps() {
