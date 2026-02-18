@@ -98,8 +98,8 @@
 
         /* --- CARD SCALING LOGIC --- */
         #card-wrapper {
-            width: 700px;
-            height: 380px;
+            width: 875px;
+            height: 500px;
             position: relative;
             transform-origin: center center;
             transition: none;
@@ -131,29 +131,7 @@
         }
         .toggle-btn:active { transform: scale(0.95); }
 
-        /* Icon Transitions */
-        .fab-icon {
-            position: absolute;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        #icon-plus {
-            opacity: 1;
-            transform: rotate(0deg) scale(1);
-        }
-        #icon-minus {
-            opacity: 0;
-            transform: rotate(-90deg) scale(0.5);
-        }
-
-        body.show-full #icon-plus {
-            opacity: 0;
-            transform: rotate(90deg) scale(0.5);
-        }
-        body.show-full #icon-minus {
-            opacity: 1;
-            transform: rotate(0deg) scale(1);
-        }
+        /* QR FAB always visible */
 
         /* Physics Elements */
         .dollar-bill {
@@ -277,7 +255,7 @@
 
     <!-- FULL VIEW (Scrollable) -->
     <div id="full-view">
-        <div id="scroll-container" class="w-full flex justify-center p-4">
+        <div id="scroll-container" class="w-full flex justify-center p-4 pt-12">
 
             <main id="main-card" class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-brand-surface relative flex flex-col shrink-0 my-auto transition-transform duration-75 will-change-transform">
 
@@ -444,9 +422,8 @@
     </div>
 
     <!-- UNIFIED FAB BUTTON -->
-    <button id="toggle-view-btn" onclick="toggleView()" aria-label="Toggle View" class="toggle-btn">
-        <i data-lucide="plus" id="icon-plus" class="fab-icon w-8 h-8 text-brand-primary"></i>
-        <i data-lucide="minus" id="icon-minus" class="fab-icon w-8 h-8 text-brand-primary"></i>
+    <button id="qr-fab-btn" onclick="toggleQR()" aria-label="Show QR Code" class="toggle-btn">
+        <i data-lucide="qr-code" class="w-7 h-7 text-brand-primary"></i>
     </button>
 
     <!-- Save Contact Toast -->
@@ -514,8 +491,8 @@
         function resizeCard() {
             const availableWidth = window.innerWidth - 24;
             const availableHeight = window.innerHeight - 24;
-            const cardWidth = 700;
-            const cardHeight = 380;
+            const cardWidth = 875;
+            const cardHeight = 500;
 
             // Scale to fit width primarily, allow some vertical overflow
             const scaleX = availableWidth / cardWidth;
@@ -725,14 +702,20 @@
             ], { duration: duration, easing: 'ease-out', fill: 'forwards' });
         }
 
-        // --- VIEW TOGGLING ---
-        function toggleView() {
-            document.body.classList.toggle('show-full');
+        // --- AUTO VIEW SWITCHING (Orientation-Based) ---
+        function updateView() {
+            const isLandscape = window.innerWidth > window.innerHeight;
+            if (isLandscape) {
+                document.body.classList.remove('show-full');
+            } else {
+                document.body.classList.add('show-full');
+            }
+            resizeCard();
         }
 
-        window.addEventListener('resize', resizeCard);
-        window.addEventListener('orientationchange', () => setTimeout(resizeCard, 100));
-        window.addEventListener('load', resizeCard);
+        window.addEventListener('resize', updateView);
+        window.addEventListener('orientationchange', () => setTimeout(updateView, 100));
+        window.addEventListener('load', updateView);
 
 
         // --- MODAL & VCARD LOGIC ---
