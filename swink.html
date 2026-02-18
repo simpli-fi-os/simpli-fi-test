@@ -87,6 +87,9 @@ ul { list-style: none; }
   transition: border-color 0.2s;
 }
 .acronym:hover { border-color: #fbbf24; }
+@media (pointer: coarse) {
+  .acronym { padding: 4px 2px; margin: -4px -2px; }
+}
 .acronym .info-dot {
   width: 10px; height: 10px;
   color: rgba(245,158,11,0.3);
@@ -653,7 +656,7 @@ footer {
     </div>
     <div class="steps-grid fade-target" id="stepsGrid"></div>
     <div class="cta-wrap fade-target">
-      <a href="mailto:info@simpli-fi-alpha.com?subject=Swink%20Family%20Office%20Inquiry" class="cta-btn">
+      <a href="mailto:hunter.lott@simpli-fi-alpha.com,colby.ivey@simpli-fi-alpha.com?subject=Swink%20Family%20Office%20%E2%80%94%20Getting%20Started&body=Hunter%20%26%20Colby%2C%0A%0AI%E2%80%99d%20like%20to%20schedule%20a%20discovery%20meeting%20to%20discuss%20setting%20up%20the%20Swink%20Family%20Office.%20Please%20let%20me%20know%20your%20availability%20for%20a%20call%20or%20in-person%20meeting.%0A%0ALooking%20forward%20to%20connecting.%0A%0ABest%2C%0A" class="cta-btn">
         Initialize Swink Family Office
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
@@ -1050,12 +1053,16 @@ function renderAllocRing() {
 let activeTooltip = null;
 let activeAcronym = null;
 let tooltipTimeout = null;
-const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+let lastInteractionWasTouch = false;
+
+// Detect touch vs mouse AT EVENT TIME, not page load
+document.addEventListener('touchstart', () => { lastInteractionWasTouch = true; }, { passive: true });
+document.addEventListener('mousemove', () => { lastInteractionWasTouch = false; }, { passive: true });
 
 function showTooltip(el) {
   clearTimeout(tooltipTimeout);
-  if (activeTooltip && activeAcronym === el) return; // already showing for this element
-  hideTooltip(true); // force close any existing
+  if (activeTooltip && activeAcronym === el) return;
+  hideTooltip(true);
 
   const term = el.dataset.term;
   const data = ACRONYMS[term];
@@ -1071,7 +1078,6 @@ function showTooltip(el) {
   document.body.appendChild(tip);
   activeTooltip = tip;
 
-  // Position ABOVE the element with a gap so it never overlaps the trigger
   const tipRect = tip.getBoundingClientRect();
   const tw = 320, gap = 12, pad = 16;
   let left = rect.left + rect.width/2 - tw/2;
@@ -1079,7 +1085,6 @@ function showTooltip(el) {
   if (left + tw > window.innerWidth - pad) left = window.innerWidth - tw - pad;
 
   let top = rect.top - gap;
-  // If not enough room above, show below
   if (top - tipRect.height < pad) {
     top = rect.bottom + gap;
     tip.style.transform = 'translateY(0)';
@@ -1092,8 +1097,8 @@ function showTooltip(el) {
   tip.style.left = left + 'px';
   tip.style.top = top + 'px';
 
-  // Desktop: allow hovering into tooltip
-  if (!isTouchDevice) {
+  // Only allow hover-into-tooltip on mouse (not touch)
+  if (!lastInteractionWasTouch) {
     tip.addEventListener('mouseenter', () => clearTimeout(tooltipTimeout));
     tip.addEventListener('mouseleave', () => scheduleHide());
   }
@@ -1113,18 +1118,18 @@ function bindTooltips(container) {
   (container||document).querySelectorAll('.acronym').forEach(el => {
     // Desktop hover
     el.addEventListener('mouseenter', () => {
-      if (isTouchDevice) return;
+      if (lastInteractionWasTouch) return;
       clearTimeout(tooltipTimeout);
       showTooltip(el);
     });
     el.addEventListener('mouseleave', () => {
-      if (isTouchDevice) return;
+      if (lastInteractionWasTouch) return;
       scheduleHide();
     });
-    // Mobile tap
-    el.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+
+    // Touch: use touchend to avoid double-fire with click
+    el.addEventListener('touchend', (e) => {
+      e.preventDefault(); // prevents ghost click
       if (activeAcronym === el && activeTooltip) {
         hideTooltip();
       } else {
@@ -1134,7 +1139,12 @@ function bindTooltips(container) {
   });
 }
 
-// Close tooltip on tap/click anywhere else (mobile)
+// Close tooltip on tap/click anywhere else
+document.addEventListener('touchstart', (e) => {
+  if (activeTooltip && !e.target.closest('.acronym') && !e.target.closest('.tooltip-box')) {
+    hideTooltip();
+  }
+}, { passive: true });
 document.addEventListener('click', (e) => {
   if (activeTooltip && !e.target.closest('.acronym') && !e.target.closest('.tooltip-box')) {
     hideTooltip();
